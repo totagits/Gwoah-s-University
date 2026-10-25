@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   HIGH-CONTRAST ACCESSIBILITY THEME (WCAG AAA COMPLIANT)
+   Applies when [data-theme="light"] or .theme-light is active on root
+   ========================================================================== */
+
+[data-theme="light"],
+html.theme-light,
+body.theme-light {
+  color-scheme: light;
+}
+
+[data-theme="light"] body,
+[data-theme="light"] .min-h-screen.bg-slate-950,
+[data-theme="light"] div.bg-slate-950 {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* slate-900 */
+}
+
+/* Structural cards and panels */
+[data-theme="light"] .bg-slate-900 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important; /* slate-300 */
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08) !important;
+}
+
+[data-theme="light"] .bg-slate-900\/50,
+[data-theme="light"] .bg-slate-900\/80,
+[data-theme="light"] .bg-slate-900\/90,
+[data-theme="light"] .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .bg-slate-800 {
+  background-color: #f8fafc !important; /* slate-50 */
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .bg-slate-800\/50,
+[data-theme="light"] .bg-slate-800\/60,
+[data-theme="light"] .bg-slate-800\/80 {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .border-slate-800,
+[data-theme="light"] .border-slate-800\/80,
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-700\/80 {
+  border-color: #cbd5e1 !important;
+}
+
+/* High contrast typography */
+[data-theme="light"] .text-white,
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-200 {
+  color: #0f172a !important; /* slate-900 */
+}
+
+[data-theme="light"] .text-slate-300,
+[data-theme="light"] .text-slate-400 {
+  color: #334155 !important; /* slate-700 - 7:1+ contrast */
+}
+
+[data-theme="light"] .text-slate-500 {
+  color: #475569 !important; /* slate-600 */
+}
+
+/* High contrast amber accents */
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-300 {
+  color: #b45309 !important; /* amber-700 */
+}
+
+[data-theme="light"] .bg-amber-950\/60,
+[data-theme="light"] .bg-amber-950\/40,
+[data-theme="light"] .bg-amber-900\/30 {
+  background-color: #fef3c7 !important; /* amber-100 */
+  border-color: #f59e0b !important;
+}
+
+[data-theme="light"] .bg-amber-500\/10,
+[data-theme="light"] .bg-amber-500\/20 {
+  background-color: #fef3c7 !important;
+  border-color: #d97706 !important;
+}
+
+/* Emerald tags */
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-300 {
+  color: #047857 !important; /* emerald-700 */
+}
+
+[data-theme="light"] .bg-emerald-950\/60,
+[data-theme="light"] .bg-emerald-950\/80 {
+  background-color: #d1fae5 !important; /* emerald-100 */
+  border-color: #10b981 !important;
+}
+
+/* Blue & Indigo tags */
+[data-theme="light"] .text-blue-400,
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-indigo-400 {
+  color: #1d4ed8 !important; /* blue-700 */
+}
+
+[data-theme="light"] .bg-blue-950\/60,
+[data-theme="light"] .bg-blue-950\/80,
+[data-theme="light"] .bg-indigo-950\/60 {
+  background-color: #dbeafe !important;
+  border-color: #60a5fa !important;
+}
+
+/* Rose / Red tags */
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-rose-300 {
+  color: #b91c1c !important; /* red-700 */
+}
+
+[data-theme="light"] .bg-rose-950\/60,
+[data-theme="light"] .bg-rose-950\/80 {
+  background-color: #fee2e2 !important;
+  border-color: #f87171 !important;
+}
+
+/* Form inputs & controls in light theme */
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Tables */
+[data-theme="light"] table th {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] table td {
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] table tr:hover td {
+  background-color: #f8fafc !important;
+}

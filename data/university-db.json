@@ -1,0 +1,947 @@
+{
+  "users": [
+    {
+      "id": "u-admin",
+      "name": "Dr. Gabriel M. Gwoah",
+      "email": "president@gwoah.edu.lr",
+      "role": "super_admin",
+      "title": "University President & Vice-Chancellor",
+      "department": "Office of the President",
+      "staffId": "GU-ADM-001",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      "id": "u-registrar",
+      "name": "Mrs. Patricia Tweh",
+      "email": "registrar@gwoah.edu.lr",
+      "role": "registrar",
+      "title": "Chief University Registrar",
+      "department": "Office of the Registrar",
+      "staffId": "GU-REG-014",
+      "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      "id": "u-dean",
+      "name": "Prof. Joseph Flomo",
+      "email": "dean.engineering@gwoah.edu.lr",
+      "role": "dean",
+      "title": "Dean, College of Engineering & Technology",
+      "department": "College of Engineering",
+      "staffId": "GU-FAC-102",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      "id": "u-lecturer",
+      "name": "Dr. Moses S. Doe",
+      "email": "m.doe@gwoah.edu.lr",
+      "role": "lecturer",
+      "title": "Senior Lecturer in Computer Science",
+      "department": "Computer Science & Software Eng.",
+      "staffId": "GU-FAC-209",
+      "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      "id": "u-student",
+      "name": "Sando Fahnbulleh",
+      "email": "s.fahnbulleh@student.gwoah.edu.lr",
+      "role": "student",
+      "title": "Continuing Undergraduate Student (Junior)",
+      "department": "Computer Science",
+      "studentId": "GU-2024-04821",
+      "avatarUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      "id": "u-bursar",
+      "name": "Mr. Samuel Barclay",
+      "email": "bursar@gwoah.edu.lr",
+      "role": "bursar",
+      "title": "Chief Bursar & Comptroller",
+      "department": "University Finance & Accounts",
+      "staffId": "GU-FIN-008",
+      "avatarUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      "id": "u-admissions",
+      "name": "Ms. Helena Kollie",
+      "email": "admissions@gwoah.edu.lr",
+      "role": "admissions_officer",
+      "title": "Director of Admissions & Outreach",
+      "department": "Admissions Office",
+      "staffId": "GU-ADM-022",
+      "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-101",
+      "title": "Prepare NCHE Institutional Self-Study for 2026/2027 Re-Accreditation",
+      "description": "Compile academic evidence, faculty credential audits, laboratory inventory, and curriculum alignment for the National Commission on Higher Education inspection.",
+      "category": "accreditation_nche",
+      "priority": "urgent",
+      "status": "in_progress",
+      "assigneeName": "Mrs. Patricia Tweh",
+      "assigneeRole": "registrar",
+      "assigneeEmail": "registrar@gwoah.edu.lr",
+      "dueDate": "2026-11-20T00:00:00Z",
+      "createdAt": "2026-10-10T09:00:00Z",
+      "updatedAt": "2026-10-22T14:30:00Z",
+      "estimatedHours": 40,
+      "actualHours": 24,
+      "tags": [
+        "NCHE",
+        "Accreditation",
+        "Quality Assurance"
+      ],
+      "department": "Registry",
+      "slaDays": 30
+    },
+    {
+      "id": "task-102",
+      "title": "Finalize Semester I 2026/2027 Course Master Schedule & Room Allocations",
+      "description": "Resolve lecture room conflicts between Capitol Campus and Fendall Campus; verify laboratory hours for Engineering and Health Sciences.",
+      "category": "academic_review",
+      "priority": "high",
+      "status": "review",
+      "assigneeName": "Prof. Joseph Flomo",
+      "assigneeRole": "dean",
+      "assigneeEmail": "dean.engineering@gwoah.edu.lr",
+      "dueDate": "2026-10-30T00:00:00Z",
+      "createdAt": "2026-10-05T08:00:00Z",
+      "updatedAt": "2026-10-23T11:00:00Z",
+      "estimatedHours": 20,
+      "actualHours": 18,
+      "tags": [
+        "Timetable",
+        "Course Schedule",
+        "Senate"
+      ],
+      "department": "Academic Affairs",
+      "slaDays": 14
+    },
+    {
+      "id": "task-103",
+      "title": "Verify WASSCE Transcripts for Batch 3 Direct Undergraduate Applicants",
+      "description": "Reconcile West African Senior School Certificate Examination results through WAEC online verification for 120 applicants.",
+      "category": "admissions",
+      "priority": "high",
+      "status": "in_progress",
+      "assigneeName": "Ms. Helena Kollie",
+      "assigneeRole": "admissions_officer",
+      "assigneeEmail": "admissions@gwoah.edu.lr",
+      "dueDate": "2026-11-05T00:00:00Z",
+      "createdAt": "2026-10-18T10:00:00Z",
+      "updatedAt": "2026-10-24T09:15:00Z",
+      "estimatedHours": 25,
+      "actualHours": 12,
+      "tags": [
+        "WASSCE",
+        "Admissions",
+        "Verification"
+      ],
+      "department": "Admissions",
+      "slaDays": 10
+    },
+    {
+      "id": "task-104",
+      "title": "Audit Student Tuition Payments: EcoBank, UBA & MTN Mobile Money",
+      "description": "Reconcile bank deposit slips with mobile money automated ledger. Ensure students with cleared balances receive registration access.",
+      "category": "finance",
+      "priority": "urgent",
+      "status": "todo",
+      "assigneeName": "Mr. Samuel Barclay",
+      "assigneeRole": "bursar",
+      "assigneeEmail": "bursar@gwoah.edu.lr",
+      "dueDate": "2026-10-28T00:00:00Z",
+      "createdAt": "2026-10-20T08:30:00Z",
+      "updatedAt": "2026-10-20T08:30:00Z",
+      "estimatedHours": 16,
+      "actualHours": 0,
+      "tags": [
+        "Bursar",
+        "Reconciliation",
+        "Mobile Money",
+        "EcoBank"
+      ],
+      "department": "Finance",
+      "slaDays": 7
+    },
+    {
+      "id": "task-105",
+      "title": "Conduct Liberia DEI Policy Compliance Audit for Disability Accessibility",
+      "description": "Implement recommendations from the Liberia DEI Policy in Higher Education (Oct 2024): ramp installations, digital screen-reader compatibility, and braille course handouts.",
+      "category": "student_support",
+      "priority": "medium",
+      "status": "in_progress",
+      "assigneeName": "Mrs. Patricia Tweh",
+      "assigneeRole": "registrar",
+      "assigneeEmail": "registrar@gwoah.edu.lr",
+      "dueDate": "2026-11-25T00:00:00Z",
+      "createdAt": "2026-10-12T11:00:00Z",
+      "updatedAt": "2026-10-21T16:00:00Z",
+      "estimatedHours": 30,
+      "actualHours": 15,
+      "tags": [
+        "DEI",
+        "Accessibility",
+        "MoE Policy"
+      ],
+      "department": "Student Affairs",
+      "slaDays": 21
+    },
+    {
+      "id": "task-106",
+      "title": "Moderation of Final Exam Questions for CSC 301 Data Structures",
+      "description": "Complete departmental peer review of examination questions, marking rubric, and answer key in accordance with quality assurance standards.",
+      "category": "academic_review",
+      "priority": "medium",
+      "status": "completed",
+      "assigneeName": "Dr. Moses S. Doe",
+      "assigneeRole": "lecturer",
+      "assigneeEmail": "m.doe@gwoah.edu.lr",
+      "dueDate": "2026-10-22T00:00:00Z",
+      "createdAt": "2026-10-08T09:00:00Z",
+      "updatedAt": "2026-10-22T17:00:00Z",
+      "estimatedHours": 8,
+      "actualHours": 8,
+      "tags": [
+        "Exam Moderation",
+        "Quality Assurance",
+        "Computer Science"
+      ],
+      "department": "Computer Science",
+      "slaDays": 5
+    },
+    {
+      "id": "task-107",
+      "title": "Deploy Redundant Satellite Broadband for Fendall Campus Learning Center",
+      "description": "Configure multi-WAN failover router with Starlink low-latency satellite link and local cache proxy server for offline LMS accessibility.",
+      "category": "it_infrastructure",
+      "priority": "high",
+      "status": "completed",
+      "assigneeName": "Dr. Gabriel M. Gwoah",
+      "assigneeRole": "super_admin",
+      "assigneeEmail": "president@gwoah.edu.lr",
+      "dueDate": "2026-10-15T00:00:00Z",
+      "createdAt": "2026-10-01T10:00:00Z",
+      "updatedAt": "2026-10-14T18:00:00Z",
+      "estimatedHours": 24,
+      "actualHours": 22,
+      "tags": [
+        "IT",
+        "Broadband",
+        "Connectivity",
+        "Fendall"
+      ],
+      "department": "ICT Services",
+      "slaDays": 14
+    },
+    {
+      "id": "task-108",
+      "title": "MoE Higher Education EMIS Reporting Data Format Export",
+      "description": "Prepare tertiary enrolment, faculty qualification, and gender parity datasets formatted for Ministry of Education national EMIS portal return.",
+      "category": "accreditation_nche",
+      "priority": "medium",
+      "status": "todo",
+      "assigneeName": "Mrs. Patricia Tweh",
+      "assigneeRole": "registrar",
+      "assigneeEmail": "registrar@gwoah.edu.lr",
+      "dueDate": "2026-12-05T00:00:00Z",
+      "createdAt": "2026-10-21T13:00:00Z",
+      "updatedAt": "2026-10-21T13:00:00Z",
+      "estimatedHours": 18,
+      "actualHours": 0,
+      "tags": [
+        "EMIS",
+        "MoE",
+        "National Data"
+      ],
+      "department": "Registry",
+      "slaDays": 30
+    }
+  ],
+  "courses": [
+    {
+      "id": "c-csc101",
+      "code": "CSC 101",
+      "title": "Introduction to Computing & Python Programming",
+      "credits": 3,
+      "department": "Computer Science",
+      "faculty": "Engineering & Technology",
+      "description": "Fundamental principles of algorithmic thinking, computer systems architecture, and structured programming using Python.",
+      "prerequisites": [],
+      "level": 100,
+      "feePerCreditUSD": 45
+    },
+    {
+      "id": "c-csc201",
+      "code": "CSC 201",
+      "title": "Object-Oriented Software Engineering & Java",
+      "credits": 4,
+      "department": "Computer Science",
+      "faculty": "Engineering & Technology",
+      "description": "Software design patterns, modular architecture, object-oriented concepts, and enterprise Java development.",
+      "prerequisites": [
+        "CSC 101"
+      ],
+      "level": 200,
+      "feePerCreditUSD": 45
+    },
+    {
+      "id": "c-csc301",
+      "code": "CSC 301",
+      "title": "Data Structures and Algorithms Analysis",
+      "credits": 4,
+      "department": "Computer Science",
+      "faculty": "Engineering & Technology",
+      "description": "Advanced data abstractions, trees, graphs, sorting, searching, time-space asymptotic complexity, and optimization.",
+      "prerequisites": [
+        "CSC 201",
+        "MAT 101"
+      ],
+      "level": 300,
+      "feePerCreditUSD": 45
+    },
+    {
+      "id": "c-mat101",
+      "code": "MAT 101",
+      "title": "Calculus with Analytical Geometry I",
+      "credits": 4,
+      "department": "Mathematics",
+      "faculty": "Science & Applied Arts",
+      "description": "Functions, limits, continuous differentiation, mean value theorems, and applications in physical sciences.",
+      "prerequisites": [],
+      "level": 100,
+      "feePerCreditUSD": 40
+    },
+    {
+      "id": "c-mat201",
+      "code": "MAT 201",
+      "title": "Discrete Mathematical Structures",
+      "credits": 3,
+      "department": "Mathematics",
+      "faculty": "Science & Applied Arts",
+      "description": "Propositional logic, set theory, combinatorics, graph theory, relations, and formal mathematical proofs.",
+      "prerequisites": [
+        "MAT 101"
+      ],
+      "level": 200,
+      "feePerCreditUSD": 40
+    },
+    {
+      "id": "c-eng101",
+      "code": "ENG 101",
+      "title": "Advanced Academic Writing & Research Communication",
+      "credits": 3,
+      "department": "English & Humanities",
+      "faculty": "Arts & Social Sciences",
+      "description": "Expository writing, rhetoric, academic citations (APA/MLA), research synthesis, and scholarly discourse.",
+      "prerequisites": [],
+      "level": 100,
+      "feePerCreditUSD": 35
+    },
+    {
+      "id": "c-een205",
+      "code": "EEN 205",
+      "title": "Digital Electronics & Microprocessor Systems",
+      "credits": 4,
+      "department": "Electrical Engineering",
+      "faculty": "Engineering & Technology",
+      "description": "Logic gates, Boolean algebra, flip-flops, microprocessor registers, embedded hardware interfacing, and laboratory experiments.",
+      "prerequisites": [
+        "MAT 101"
+      ],
+      "level": 200,
+      "feePerCreditUSD": 50
+    },
+    {
+      "id": "c-acc201",
+      "code": "ACC 201",
+      "title": "Principles of Financial Accounting",
+      "credits": 3,
+      "department": "Accounting & Finance",
+      "faculty": "Business & Public Administration",
+      "description": "Double-entry accounting, ledger trial balances, cash flows, financial reporting standards, and corporate valuation.",
+      "prerequisites": [],
+      "level": 200,
+      "feePerCreditUSD": 40
+    }
+  ],
+  "sections": [
+    {
+      "id": "sec-csc301-01",
+      "courseId": "c-csc301",
+      "courseCode": "CSC 301",
+      "courseTitle": "Data Structures and Algorithms Analysis",
+      "sectionCode": "Section 01",
+      "lecturerName": "Dr. Moses S. Doe",
+      "schedule": "Mon/Wed 10:00 AM - 12:00 PM",
+      "room": "Technology Lab 3, Monrovia Main",
+      "capacity": 35,
+      "enrolled": 28,
+      "semester": "Semester I",
+      "academicYear": "2026/2027"
+    },
+    {
+      "id": "sec-csc201-01",
+      "courseId": "c-csc201",
+      "courseCode": "CSC 201",
+      "courseTitle": "Object-Oriented Software Engineering & Java",
+      "sectionCode": "Section 01",
+      "lecturerName": "Dr. Moses S. Doe",
+      "schedule": "Tue/Thu 08:00 AM - 10:00 AM",
+      "room": "Computer Lab 2, Monrovia Main",
+      "capacity": 40,
+      "enrolled": 36,
+      "semester": "Semester I",
+      "academicYear": "2026/2027"
+    },
+    {
+      "id": "sec-mat201-01",
+      "courseId": "c-mat201",
+      "courseCode": "MAT 201",
+      "courseTitle": "Discrete Mathematical Structures",
+      "sectionCode": "Section 01",
+      "lecturerName": "Prof. Joseph Flomo",
+      "schedule": "Mon/Wed 02:00 PM - 03:30 PM",
+      "room": "Hall B, Science Complex",
+      "capacity": 50,
+      "enrolled": 42,
+      "semester": "Semester I",
+      "academicYear": "2026/2027"
+    },
+    {
+      "id": "sec-een205-01",
+      "courseId": "c-een205",
+      "courseCode": "EEN 205",
+      "courseTitle": "Digital Electronics & Microprocessor Systems",
+      "sectionCode": "Section 01",
+      "lecturerName": "Engr. Aloysius Kpadeh",
+      "schedule": "Fri 09:00 AM - 01:00 PM",
+      "room": "Electrical Hardware Lab, Fendall",
+      "capacity": 30,
+      "enrolled": 22,
+      "semester": "Semester I",
+      "academicYear": "2026/2027"
+    },
+    {
+      "id": "sec-eng101-02",
+      "courseId": "c-eng101",
+      "courseCode": "ENG 101",
+      "courseTitle": "Advanced Academic Writing & Research Communication",
+      "sectionCode": "Section 02",
+      "lecturerName": "Dr. Mary Karnga",
+      "schedule": "Tue/Thu 02:00 PM - 03:30 PM",
+      "room": "Humanities Hall 104",
+      "capacity": 45,
+      "enrolled": 39,
+      "semester": "Semester I",
+      "academicYear": "2026/2027"
+    },
+    {
+      "id": "sec-acc201-01",
+      "courseId": "c-acc201",
+      "courseCode": "ACC 201",
+      "courseTitle": "Principles of Financial Accounting",
+      "sectionCode": "Section 01",
+      "lecturerName": "Mr. Emmanuel Weah",
+      "schedule": "Mon/Wed 08:30 AM - 10:00 AM",
+      "room": "Business Hall 201",
+      "capacity": 60,
+      "enrolled": 54,
+      "semester": "Semester I",
+      "academicYear": "2026/2027"
+    }
+  ],
+  "student": {
+    "id": "u-student",
+    "studentNumber": "GU-2024-04821",
+    "fullName": "Sando Fahnbulleh",
+    "email": "s.fahnbulleh@student.gwoah.edu.lr",
+    "phone": "+231 770 123 456",
+    "dob": "2003-08-14",
+    "gender": "Male",
+    "nationality": "Liberian",
+    "county": "Grand Cape Mount",
+    "campus": "Monrovia Main Campus",
+    "program": "B.Sc. in Computer Science",
+    "faculty": "College of Engineering & Technology",
+    "degreeType": "B.Sc.",
+    "cohortYear": 2024,
+    "academicStanding": "Dean's List",
+    "totalCreditsEarned": 68,
+    "targetDegreeCredits": 128,
+    "cgpa": 3.86,
+    "accommodationsNeeded": "None reported",
+    "financialHold": false,
+    "advisorName": "Dr. Moses S. Doe"
+  },
+  "registrations": [
+    {
+      "id": "reg-01",
+      "studentId": "u-student",
+      "sectionId": "sec-csc301-01",
+      "courseCode": "CSC 301",
+      "courseTitle": "Data Structures and Algorithms Analysis",
+      "credits": 4,
+      "status": "registered",
+      "score": 95,
+      "grade": "A",
+      "registeredDate": "2026-10-02T10:00:00Z"
+    },
+    {
+      "id": "reg-02",
+      "studentId": "u-student",
+      "sectionId": "sec-mat201-01",
+      "courseCode": "MAT 201",
+      "courseTitle": "Discrete Mathematical Structures",
+      "credits": 3,
+      "status": "registered",
+      "score": 92,
+      "grade": "A",
+      "registeredDate": "2026-10-02T10:05:00Z"
+    },
+    {
+      "id": "reg-03",
+      "studentId": "u-student",
+      "sectionId": "sec-een205-01",
+      "courseCode": "EEN 205",
+      "courseTitle": "Digital Electronics & Microprocessor Systems",
+      "credits": 4,
+      "status": "registered",
+      "score": 85,
+      "grade": "B+",
+      "registeredDate": "2026-10-02T10:10:00Z"
+    },
+    {
+      "id": "reg-04",
+      "studentId": "u-student",
+      "sectionId": "sec-eng101-02",
+      "courseCode": "ENG 101",
+      "courseTitle": "Advanced Academic Writing & Research Communication",
+      "credits": 3,
+      "status": "registered",
+      "score": 91,
+      "grade": "A",
+      "registeredDate": "2026-10-02T10:15:00Z"
+    }
+  ],
+  "financialAccount": {
+    "studentId": "u-student",
+    "studentNumber": "GU-2024-04821",
+    "studentName": "Sando Fahnbulleh",
+    "tuitionBilledUSD": 630,
+    "feesBilledUSD": 95,
+    "scholarshipCreditUSD": 250,
+    "totalPaidUSD": 475,
+    "currentBalanceUSD": 0,
+    "status": "cleared",
+    "transactions": [
+      {
+        "id": "tx-001",
+        "date": "2026-09-28",
+        "type": "Tuition Bill",
+        "reference": "INV-2026-S1-4821",
+        "amountUSD": 725
+      },
+      {
+        "id": "tx-002",
+        "date": "2026-09-29",
+        "type": "Scholarship Aid",
+        "reference": "MOE-STEM-GRANT-4821",
+        "amountUSD": 250,
+        "receivedBy": "Ministry of Education STEM Grant Fund"
+      },
+      {
+        "id": "tx-003",
+        "date": "2026-10-01",
+        "type": "Mobile Money",
+        "reference": "MM-LONESTAR-8839219",
+        "amountUSD": 300,
+        "paymentMethod": "Lonestar MTN Mobile Money",
+        "receivedBy": "Automated Mobile Gateway"
+      },
+      {
+        "id": "tx-004",
+        "date": "2026-10-02",
+        "type": "Bank Deposit",
+        "reference": "ECO-DEPOSIT-994102",
+        "amountUSD": 175,
+        "paymentMethod": "EcoBank Slip",
+        "receivedBy": "Barclay, Samuel (Bursar Cashier)"
+      }
+    ]
+  },
+  "applications": [
+    {
+      "id": "app-901",
+      "applicationNumber": "GU-APP-2026-081",
+      "applicantName": "Fatu K. Kromah",
+      "email": "fatu.kromah@gmail.com",
+      "phone": "+231 886 443 219",
+      "programDesired": "B.Sc. in Nursing & Community Health",
+      "faculty": "College of Health & Allied Medical Sciences",
+      "wassceIndex": "0010948219",
+      "wassceCoreSubjects": [
+        {
+          "subject": "English Language",
+          "grade": "B2"
+        },
+        {
+          "subject": "Mathematics",
+          "grade": "B3"
+        },
+        {
+          "subject": "Biology",
+          "grade": "A1"
+        },
+        {
+          "subject": "Chemistry",
+          "grade": "B2"
+        },
+        {
+          "subject": "Physics",
+          "grade": "C4"
+        }
+      ],
+      "applicationDate": "2026-10-14T11:20:00Z",
+      "status": "admitted",
+      "reviewerNotes": "Strong WAEC science profile. High interview score in health aptitude test.",
+      "scoringTotal": 88,
+      "applicationFeePaid": true
+    },
+    {
+      "id": "app-902",
+      "applicationNumber": "GU-APP-2026-082",
+      "applicantName": "Tamba J. Saah",
+      "email": "tamba.saah@yahoo.com",
+      "phone": "+231 776 991 432",
+      "programDesired": "B.Sc. in Computer Science",
+      "faculty": "College of Engineering & Technology",
+      "wassceIndex": "0010837261",
+      "wassceCoreSubjects": [
+        {
+          "subject": "English Language",
+          "grade": "B3"
+        },
+        {
+          "subject": "Mathematics",
+          "grade": "A1"
+        },
+        {
+          "subject": "Physics",
+          "grade": "B2"
+        },
+        {
+          "subject": "Chemistry",
+          "grade": "C4"
+        },
+        {
+          "subject": "Economics",
+          "grade": "B2"
+        }
+      ],
+      "applicationDate": "2026-10-18T14:45:00Z",
+      "status": "under_review",
+      "reviewerNotes": "Excellent mathematics foundation. Scheduled for technical aptitude interview.",
+      "scoringTotal": 84,
+      "applicationFeePaid": true
+    },
+    {
+      "id": "app-903",
+      "applicationNumber": "GU-APP-2026-083",
+      "applicantName": "Comfort N. Gibson",
+      "email": "c.gibson@hotmail.com",
+      "phone": "+231 880 771 223",
+      "programDesired": "B.B.A. in Accounting & Public Finance",
+      "faculty": "College of Business & Public Administration",
+      "wassceIndex": "0010928174",
+      "wassceCoreSubjects": [
+        {
+          "subject": "English Language",
+          "grade": "C4"
+        },
+        {
+          "subject": "Mathematics",
+          "grade": "B3"
+        },
+        {
+          "subject": "Principles of Cost Accounting",
+          "grade": "B2"
+        },
+        {
+          "subject": "Economics",
+          "grade": "A1"
+        },
+        {
+          "subject": "Commerce",
+          "grade": "B2"
+        }
+      ],
+      "applicationDate": "2026-10-21T09:10:00Z",
+      "status": "under_review",
+      "reviewerNotes": "High marks in business subjects. Transcripts pending final WAEC scratch card verification.",
+      "scoringTotal": 79,
+      "applicationFeePaid": true
+    },
+    {
+      "id": "app-904",
+      "applicationNumber": "GU-APP-2026-084",
+      "applicantName": "Morris V. Sirleaf",
+      "email": "m.sirleaf@gmail.com",
+      "phone": "+231 777 552 108",
+      "programDesired": "B.Sc. in Agronomy & Crop Science",
+      "faculty": "College of Agriculture & Environmental Studies",
+      "wassceIndex": "0010774829",
+      "wassceCoreSubjects": [
+        {
+          "subject": "English Language",
+          "grade": "C5"
+        },
+        {
+          "subject": "Mathematics",
+          "grade": "C4"
+        },
+        {
+          "subject": "Agricultural Science",
+          "grade": "A1"
+        },
+        {
+          "subject": "Biology",
+          "grade": "B3"
+        },
+        {
+          "subject": "Chemistry",
+          "grade": "C5"
+        }
+      ],
+      "applicationDate": "2026-10-23T16:30:00Z",
+      "status": "conditional",
+      "reviewerNotes": "Conditional offer subject to completion of Remedial Chemistry before Semester II.",
+      "scoringTotal": 72,
+      "applicationFeePaid": true
+    }
+  ],
+  "policies": [
+    {
+      "id": "pol-01",
+      "sourceAuthority": "National Commission on Higher Education (NCHE)",
+      "sourceDate": "Official Gazette / Act of Legislature 1989 (Amended Standards)",
+      "documentTitle": "NCHE Institutional Accreditation & Program Recognition Manual",
+      "statutoryReference": "NCHE Act Sec. 4 & Policy Circular on Minimum Credit Requirements",
+      "mandateDescription": "Mandates minimum 120-132 credits for 4-year Baccalaureate degrees; full-time enrollment capped between 12-21 credits per semester; mandatory qualified faculty ratio of at least 30% terminal PhD degrees for post-graduate recognition.",
+      "systemControlImplemented": "System blocks registration exceeding 21 credits without Senate waiver; enforces 12 credit full-time floor during Add/Drop; verifies degree audit completion against program rules.",
+      "complianceStatus": "Compliant",
+      "responsibleOffice": "Office of the Registrar & Quality Assurance"
+    },
+    {
+      "id": "pol-02",
+      "sourceAuthority": "Ministry of Education (MoE), Republic of Liberia",
+      "sourceDate": "31 October 2024",
+      "documentTitle": "Liberia’s Diversity, Equity, and Inclusion (DEI) Policy in Higher Education",
+      "statutoryReference": "MoE DEI Higher Ed Policy 2024 (Section 3: Universal Accessibility & Non-Discrimination)",
+      "mandateDescription": "Directs all tertiary institutions to provide non-discriminatory access, gender-sensitive accommodations, physical and digital accessibility aids for students with disabilities, and transparent grievance channels.",
+      "systemControlImplemented": "Student accessibility accommodation tracking built into student profile; screen-reader accessible forms conforming to WCAG 2.2 AA; confidential student welfare reporting mechanism.",
+      "complianceStatus": "Compliant",
+      "responsibleOffice": "Student Affairs & DEI Office"
+    },
+    {
+      "id": "pol-03",
+      "sourceAuthority": "Ministry of Education (MoE)",
+      "sourceDate": "28-29 September 2026 Consultation / Sector Plan 2022/23-2026/27",
+      "documentTitle": "National Education Management Information System (EMIS) Tertiary Exchange Standards",
+      "statutoryReference": "Liberia Education Sector Plan (ESP) Pillar III: Data-Driven Governance",
+      "mandateDescription": "Standardized tertiary reporting schema for student enrolment by gender, county of origin, program accreditation status, graduation output, and faculty qualification metrics.",
+      "systemControlImplemented": "Automated EMIS data aggregation engine; real-time disaggregation by county and gender; one-click verified CSV export for Ministry submission.",
+      "complianceStatus": "Compliant",
+      "responsibleOffice": "ICT & Academic Planning"
+    },
+    {
+      "id": "pol-04",
+      "sourceAuthority": "Republic of Liberia Statutory Authorities",
+      "sourceDate": "Data Protection & Electronic Transactions Framework",
+      "documentTitle": "Liberia Data Protection & Cybersecurity Guidelines for Academic Records",
+      "statutoryReference": "Telecommunications Act of 2007 & Electronic Transactions Directives",
+      "mandateDescription": "Requires student academic transcripts and personal identifiable information (PII) to be encrypted, protected against tampering, backed up securely, and audited on all write/update access.",
+      "systemControlImplemented": "Tamper-evident audit log recording every grade amendment, registration event, and financial transaction; SHA-256 digital verification hashes embedded in issued transcripts.",
+      "complianceStatus": "Compliant",
+      "responsibleOffice": "Chief Information Officer (CIO) & Internal Auditor"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "audit-1792899008083-310",
+      "timestamp": "2026-10-25T03:30:08.083Z",
+      "userId": "u-registrar",
+      "userName": "Mrs. Patricia Tweh",
+      "userRole": "registrar",
+      "action": "USER_LOGIN_SUCCESS",
+      "entityType": "Session",
+      "entityId": "u-registrar",
+      "details": "Signed in as Chief University Registrar (registrar)",
+      "ipAddress": "143.105.145.175, 169.254.169.126"
+    },
+    {
+      "id": "audit-1792898314011-14",
+      "timestamp": "2026-10-25T03:18:34.011Z",
+      "userId": "anonymous",
+      "userName": "Dr. Gabriel M. Gwoah",
+      "userRole": "lecturer",
+      "action": "GRADE_AMENDED",
+      "entityType": "StudentRegistrationItem",
+      "entityId": "reg-01",
+      "details": "Updated final score to 95% (A) for course CSC 301. New CGPA: 3.86",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "audit-001",
+      "timestamp": "2026-10-24T18:30:15Z",
+      "userId": "u-admin",
+      "userName": "Dr. Gabriel M. Gwoah",
+      "userRole": "super_admin",
+      "action": "SYSTEM_POLICY_SYNC",
+      "entityType": "PolicyRegistry",
+      "entityId": "pol-02",
+      "details": "Verified institutional compliance indicators for Liberia DEI Policy in Higher Education.",
+      "ipAddress": "197.231.14.92"
+    },
+    {
+      "id": "audit-002",
+      "timestamp": "2026-10-24T15:12:00Z",
+      "userId": "u-bursar",
+      "userName": "Mr. Samuel Barclay",
+      "userRole": "bursar",
+      "action": "PAYMENT_RECEIPT_POSTED",
+      "entityType": "FinancialTransaction",
+      "entityId": "tx-004",
+      "details": "Posted EcoBank validated deposit slip $175.00 for Student GU-2024-04821; cleared registration hold.",
+      "ipAddress": "197.231.14.105"
+    },
+    {
+      "id": "audit-003",
+      "timestamp": "2026-10-23T14:40:22Z",
+      "userId": "u-admissions",
+      "userName": "Ms. Helena Kollie",
+      "userRole": "admissions_officer",
+      "action": "APPLICATION_ADMITTED",
+      "entityType": "ApplicationRecord",
+      "entityId": "app-901",
+      "details": "Admitted Fatu K. Kromah into B.Sc. Nursing after WAEC transcript validation.",
+      "ipAddress": "197.231.14.98"
+    },
+    {
+      "id": "audit-004",
+      "timestamp": "2026-10-22T17:00:10Z",
+      "userId": "u-lecturer",
+      "userName": "Dr. Moses S. Doe",
+      "userRole": "lecturer",
+      "action": "TASK_COMPLETED",
+      "entityType": "UniversityTask",
+      "entityId": "task-106",
+      "details": "Completed exam questions moderation for CSC 301 Data Structures and submitted rubric to Dean.",
+      "ipAddress": "197.231.15.22"
+    }
+  ],
+  "materials": [
+    {
+      "id": "mat-csc301-syl",
+      "courseCode": "CSC 301",
+      "title": "CSC 301: Comprehensive Course Syllabus & Assessment Rubrics",
+      "weekNumber": 1,
+      "type": "syllabus",
+      "description": "Official Senate-approved syllabus covering asymptotic complexity, trees, graphs, sorting algorithms, and NCHE laboratory requirements.",
+      "fileSizeKB": 245,
+      "downloadUrl": "#",
+      "uploadedDate": "2026-10-02T08:00:00Z",
+      "facultyAuthor": "Dr. Moses S. Doe"
+    },
+    {
+      "id": "mat-csc301-wk1",
+      "courseCode": "CSC 301",
+      "title": "Week 1 Lecture Notes: Time-Space Complexity & Asymptotic Notation",
+      "weekNumber": 1,
+      "type": "lecture_notes",
+      "description": "Detailed analysis of Big-O, Big-Omega, Big-Theta, recursion trees, and Master Theorem applications with practical Python & C++ examples.",
+      "fileSizeKB": 580,
+      "downloadUrl": "#",
+      "uploadedDate": "2026-10-05T10:30:00Z",
+      "facultyAuthor": "Dr. Moses S. Doe"
+    },
+    {
+      "id": "mat-csc301-wk2",
+      "courseCode": "CSC 301",
+      "title": "Week 2 Lecture Notes: Self-Balancing AVL & Red-Black Trees",
+      "weekNumber": 2,
+      "type": "lecture_notes",
+      "description": "Rotations, height-balancing proofs, node insertion invariants, and benchmark comparisons under low-memory environments.",
+      "fileSizeKB": 720,
+      "downloadUrl": "#",
+      "uploadedDate": "2026-10-12T09:15:00Z",
+      "facultyAuthor": "Dr. Moses S. Doe"
+    },
+    {
+      "id": "mat-csc201-syl",
+      "courseCode": "CSC 201",
+      "title": "CSC 201: Object-Oriented Software Engineering Course Guide",
+      "weekNumber": 1,
+      "type": "syllabus",
+      "description": "Curriculum syllabus covering design patterns, enterprise Java, unit testing with JUnit, and modular clean architecture.",
+      "fileSizeKB": 310,
+      "downloadUrl": "#",
+      "uploadedDate": "2026-10-03T11:00:00Z",
+      "facultyAuthor": "Dr. Moses S. Doe"
+    },
+    {
+      "id": "mat-mat201-wk1",
+      "courseCode": "MAT 201",
+      "title": "Week 1-2 Notes: Propositional Logic & Mathematical Induction",
+      "weekNumber": 2,
+      "type": "lecture_notes",
+      "description": "Formal logic proofs, truth tables, contrapositive statements, and mathematical induction techniques for discrete algorithms.",
+      "fileSizeKB": 490,
+      "downloadUrl": "#",
+      "uploadedDate": "2026-10-08T14:00:00Z",
+      "facultyAuthor": "Prof. Joseph Flomo"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-001",
+      "senderId": "u-student",
+      "senderName": "Sando Fahnbulleh",
+      "senderRole": "student",
+      "recipientId": "u-lecturer",
+      "recipientName": "Dr. Moses S. Doe",
+      "courseCode": "CSC 301",
+      "subject": "Question on Lab 2: AVL Tree Balance Factors",
+      "content": "Good morning Dr. Doe. For the lab implementation in Python, should we perform double rotations immediately upon balance factor exceeding +1 or after recursive tree return? Thank you.",
+      "timestamp": "2026-10-23T10:15:00Z",
+      "read": true
+    },
+    {
+      "id": "msg-002",
+      "senderId": "u-lecturer",
+      "senderName": "Dr. Moses S. Doe",
+      "senderRole": "lecturer",
+      "recipientId": "u-student",
+      "recipientName": "Sando Fahnbulleh",
+      "courseCode": "CSC 301",
+      "subject": "Re: Question on Lab 2: AVL Tree Balance Factors",
+      "content": "Hello Sando. Always perform the rotations on the bottom-most unbalanced ancestor node during the unwinding phase of the recursive insert. I will demonstrate this during Monday office hours in Lab 3.",
+      "timestamp": "2026-10-23T14:30:00Z",
+      "read": true
+    },
+    {
+      "id": "msg-003",
+      "senderId": "u-registrar",
+      "senderName": "Mrs. Patricia Tweh",
+      "senderRole": "registrar",
+      "recipientId": "u-lecturer",
+      "recipientName": "Dr. Moses S. Doe",
+      "courseCode": "CSC 301",
+      "subject": "Midterm Assessment Schedule & NCHE Verification",
+      "content": "Dear Dr. Doe, please submit your midterm question paper and answer key for peer moderation by Friday so the Registry can archive accredited copies.",
+      "timestamp": "2026-10-24T09:00:00Z",
+      "read": false
+    }
+  ]
+}

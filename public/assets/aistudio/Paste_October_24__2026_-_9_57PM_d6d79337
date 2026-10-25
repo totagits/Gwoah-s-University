@@ -1,0 +1,297 @@
+Master Prompt: Build a Liberia University ERP Website and Platform
+
+Copy-and-use prompt
+
+Act as a senior product architect, higher-education systems analyst, Liberia education-policy researcher, security engineer, UX designer, and full-stack software architect. Build a modern, reliable, inclusive, and implementation-ready University ERP as a polished, responsive website and working web application for Liberia. Support public, private, and faith-based universities and colleges, with configurable institutional policies and a path to later support community colleges, TVET institutions, and multi-campus systems.
+
+The primary deliverable is one actual university website with the ERP built into it as a restricted, under-the-hood area, not two separate sites and not just a written blueprint or static mockup. The same site, domain, visual identity, and application should contain the public pages and the protected ERP workflows, backed by the working database, APIs, and services. Build the interface to feel like a credible, modern 21st-century university platform: clear visual hierarchy, professional typography, consistent colors and components, responsive layouts, accessible controls, thoughtful empty/loading/error/offline states, and print-ready academic documents. Keep the university name, logo, colors, campuses, policy rules, and public content configurable. Do not invent institutional identity, accreditation status, degree programs, fees, or partnerships; use clearly labeled demo content until the customer provides verified facts.
+
+Do not stop after presenting a feature list or architecture. Explain the design as needed, then implement the website and ERP in the available project environment, connect real persistence and server-enforced access control, and provide a reviewable running preview/deployment path. Do not simulate core workflows with buttons that do nothing, hard-coded screens, localStorage-only persistence, or unmarked mock data. Separate core release requirements from later modules. Do not invent Liberian legal or accreditation requirements: research current official sources, identify the controlling authority and source date, cite sources with links, distinguish binding requirements from policy direction and good practice, and label any unresolved question for confirmation with the institution or regulator.
+
+0. One website with a restricted ERP under the hood
+
+Build one polished, responsive university website that contains both public information and the university ERP. The ERP is a protected subsystem within the same website and application; do not build or present it as a second, separate product website or an openly exposed ERP site.
+
+Public site: landing page, university profile, faculties/program catalogue, admissions information and application entry, academic calendar, student-service information, accessibility/support, FAQs, and contact channels. Keep the university name, logo, colors, campus details, programs, fees, policies, and public content configurable. Do not invent institutional facts or accreditation status; label all sample content as demonstration content.
+
+ERP access by nested navigation: place the portal entry several steps inside the site navigation, not as a prominent home-page button or a separate public portal site. Provide a configurable multi-hop path such as Home → University → Academic Services → Student Services → University Portal → Sign in. The exact menu labels and number of hops can be configured, but the ERP must feel like a feature reached from within the university website.
+
+Credentials required: after reaching the portal entry, require valid user credentials and server-side authentication before showing any ERP dashboard, student or staff record, finance information, course tools, reports, or protected workflow. Use role-based permissions after login. Provide credential recovery and account-support flows that do not reveal whether protected accounts exist.
+
+Security requirement: deep navigation is an information architecture choice, not a security control. Every protected page, API, file, and data operation must still enforce authentication and authorization on the server. Direct URL access without a valid session must redirect to authentication or return an access-denied response. Do not expose protected ERP pages to search indexing, public APIs, caches, or unauthenticated users.
+
+One coherent experience: use the same site domain, design system, branding, responsive behavior, and accessible components. After successful sign-in, show the user only the menus, records, dashboards, and actions their assigned role permits. Keep public and protected data boundaries explicit, even though both parts are under one website.
+
+Visual quality: establish tokens for color, typography, spacing, elevation, borders, and status states; reusable components; consistent charts and tables; responsive desktop/tablet/mobile behavior; WCAG 2.2 AA as a target; readable print layouts; and polished loading, empty, validation, permission-denied, network-loss, and error states. Avoid generic admin-template styling; make the site credible for a university in Liberia while remaining configurable.
+
+Real functionality: connect sign-in, server-enforced authorization, database persistence, uploads, audit history, and workflows to the backend. Use demo seed data only when clearly labeled and isolated from production. Provide a safe first-run setup path, initial administrator creation, environment configuration, and instructions for changing demo credentials. Never embed secrets in client code or commit real credentials.
+
+Deliver alongside the site: source code and project structure; database schema and migrations; configuration/environment variable example without secrets; seed/demo data; setup and deployment instructions; role-based demo guide; implementation notes; and a concise map of implemented features versus planned integrations. Keep payment, SMS, identity verification, LMS, and government interfaces in sandbox/configurable mode until provider credentials, approval, and specifications are available.
+
+1. Policy and regulatory grounding
+
+Before proposing the design, research and summarize the current Liberian higher-education environment. At minimum:
+
+Verify the current legal mandate, policies, accreditation and recognition requirements of the National Commission on Higher Education (NCHE), including the NCHE Act, current accreditation rules, approved program requirements, and any current or successor higher-education transformation plan.
+
+Review the Liberia Education Sector Plan 2022/23–2026/27, Ministry of Education (MoE) higher-education priorities, digital learning priorities, and any successor plan, implementation circular, or FY2027 budget guidance that has since been adopted.
+
+Review Liberia’s Diversity, Equity, and Inclusion (DEI) Policy in Higher Education and convert relevant goals into accessible workflows and measurable system controls for disability support, equitable participation, gender equity, non-discrimination, student support, and safe reporting.
+
+Check the latest status and official text of the Liberia Data Protection Act, Cybercrime Act, electronic transactions and records rules, and any education-sector privacy, cybersecurity, records-retention, or cross-border data rules. Use the latest gazetted or government-published text where available. Do not rely on outdated summaries. Identify the institution’s and software provider’s likely responsibilities, lawful processing basis, student rights, retention and deletion rules, breach response, processor agreements, and hosting/transfer questions for legal review.
+
+Examine current MoE/NCHE education data and EMIS developments, including national data standards, reporting calendars, unique identifiers, data quality expectations, and any planned university or tertiary-data exchange. Do not assume that a school EMIS interface automatically applies to universities.
+
+Identify which requirements are confirmed, which are policy objectives, and which need written confirmation. Provide a concise policy-to-product traceability table with columns: source and date; verified requirement or policy direction; platform implication; evidence/configuration needed; open question/owner.
+
+Use official sources first: NCHE, MoE, Ministry of Posts and Telecommunications, Ministry of Justice, Ministry of Foreign Affairs/gazette, relevant statutory agencies, and official donor/project documents. Use secondary reporting only to identify leads or explain context. Include publication dates and direct source links.
+
+2. Product vision and operating principles
+
+Build the platform to help a university manage the full student and institutional lifecycle, strengthen academic quality, make administration auditable, and provide flexible learning access. The product architecture and live implementation must:
+
+Be configurable by institution, campus, college/faculty, department, academic year, semester/term, program, grading scale, fee schedule, and approved policy, without hard-coding one university’s rules.
+
+Support both online and in-person operations, including low-bandwidth and intermittent-connectivity contexts common in Liberia. Provide responsive mobile-first experiences, save-and-resume forms, graceful retry/offline capture where safe, compressed media, downloadable learning resources, and clear sync status.
+
+Provide accessible experiences aligned with WCAG 2.2 AA as a design target; include keyboard and screen-reader support, captions/transcripts, readable print views, accessible documents, language-ready content, and reasonable disability accommodation workflows.
+
+Use server-enforced role-based access control (RBAC), least privilege, separation of duties, institution/campus data boundaries, strong authentication, configurable MFA, secure sessions, audit logs, and privacy by design. Never depend on hidden buttons or client-side checks to enforce permissions.
+
+Keep policy decisions configurable and versioned. Record who changed a rule, when it became effective, who approved it, and which student cohort or academic period it applies to.
+
+Protect records from unauthorized editing. Maintain version history, reliable backups, disaster recovery, retention schedules, export controls, and tamper-evident audit events.
+
+Support clear handoffs between academic, registry, finance, student affairs, HR, IT, library, and executive functions while preserving appropriate confidentiality.
+
+Avoid using AI as the final decision maker for admission, grading, discipline, financial aid, hiring, or progression. If AI features are proposed, describe human review, explainability, bias checks, data minimization, opt-outs, and safeguards.
+
+3. Users, roles, and access model
+
+Define a permission matrix, data scope, and key actions for at least:
+
+System/platform administrator; university owner/super administrator; campus administrator.
+
+President/vice president, registrar, deputy registrar, dean, department chair, program coordinator, academic adviser.
+
+Admissions officer, records officer, examination/results officer, student-affairs/counselling staff, disability-support staff.
+
+Bursar/finance officer, cashier, financial-aid/scholarship officer, internal auditor.
+
+Lecturer/instructor, teaching assistant, examination moderator, external examiner where applicable.
+
+Librarian, HR officer, payroll officer, procurement officer, facilities/assets officer, IT/help-desk staff.
+
+Applicant, admitted student, continuing student, guardian/sponsor (only if institution policy permits), alumnus, employer/partner with limited access.
+
+Show how the system handles delegated authority, temporary access, conflicts of interest, student self-service, confidential records, and audit review. Ensure that finance staff cannot alter academic results, teaching staff cannot change assessed grades after approval without a controlled amendment, and users see only records needed for their duties.
+
+4. End-to-end modules and required workflows
+
+A. Public website, inquiry, and admissions
+
+Institution, campus, program, department, accreditation/recognition status display, academic calendar, prospectus, entry criteria, fees, scholarships, and application deadlines.
+
+Inquiry capture and applicant relationship management; application creation; document uploads; application-fee tracking; application completeness checks; duplicate detection; configurable entry requirements; references and entrance assessments where used.
+
+Application review, scoring/rubrics, reviewer assignment, conflict declarations, committee decision, waitlist, conditional offer, rejection, appeal, and applicant communications.
+
+Offer acceptance, deposit/payment verification, identity checks as allowed by law, student-number generation, onboarding checklist, orientation, and conversion of applicant to student without duplicate records.
+
+Safeguards for fair, explainable decisions and accessible application routes for applicants with disabilities or limited internet access.
+
+B. Academic catalog, curriculum, course planning, and registration
+
+Program and curriculum versioning; academic year and semester/term setup; course catalog; credit/contact hours; prerequisites/corequisites; elective groups; approved program sequence; class sections; lecturer assignment; room and timetable planning; capacity and waitlist rules.
+
+Student-facing academic planning and adviser approvals, including semester plan printout (personal semester registration plan, course codes/titles, credits, section, meeting time, lecturer, status, fees/holds, adviser approval, and print/PDF output).
+
+Course registration and validation; program/credit limits; prerequisite checks; timetable clash checks; duplicate and repeat-course rules; financial/administrative holds; special permissions; late registration; waitlists; add/drop; withdrawal; section changes; repeat/audit status; approval routing and deadlines.
+
+Define the ADD & DROP process in detail: student request, reason, deadline, impact preview, adviser/department approval if required, seat availability, financial consequences, LMS roster update, transcript/attempt treatment, notifications, audit event, and printable confirmation. Make deadlines and consequences configurable by institution and semester.
+
+Credit accumulation, transfer credits, exemptions, equivalencies, inter-campus registration, exchange/visiting status, degree audit, progression, academic standing, probation, suspension, leave of absence, return from leave, and graduation eligibility.
+
+Curriculum governance: proposals, committee reviews, Senate/board approval, accreditation evidence, effective dates, course mappings, and protection of enrolled cohorts when curricula change.
+
+C. Online learning and teaching
+
+Learning management system (LMS) functions: course spaces, announcements, weekly modules, lesson materials, readings, video/audio, live-session links, discussion boards, quizzes, assignments, rubrics, submission/feedback, group work, plagiarism/similarity workflow where licensed, gradebook, and learning analytics.
+
+Low-bandwidth modes: downloadable materials, audio-first or text alternatives, compressed video, asynchronous participation, interrupted-upload recovery, and a mobile-friendly student experience.
+
+Lecturer course setup and roster sync from approved registration; course templates; content versioning; accessibility checks; office hours; class communication; academic integrity policy acknowledgement.
+
+Learning analytics should be supportive and transparent; define appropriate alerts, human follow-up, false-positive handling, and restrictions against punitive automated profiling.
+
+Optional integration with established LMS standards/platforms (e.g., LTI, OneRoster, SCORM/xAPI where appropriate) only after technical and policy validation. Distinguish required interoperability from optional implementation choices.
+
+D. Student records, identity, and services
+
+A complete student information record: demographic/contact details; identity documents; emergency contact; previous education; program and cohort; enrolment status; course attempts; results; credits; accommodations; scholarship/financial-aid status; conduct and support records with restricted access; official documents and consent/preferences.
+
+Student portal for profile updates subject to verification, registration, schedule, semester plan printout, attendance, results, fees/balances, statements, receipts, messages, service requests, downloadable letters, transcript requests, and graduation clearance.
+
+Registrar-controlled records, certified transcript generation, secure QR/verification code or digital signature options, duplicate/reissue controls, transcript holds and appeal/exception processes, and tamper-evident history.
+
+Student case management for advising, counselling/referrals, complaints, appeals, safeguarding, disability accommodations, and grievances, with confidentiality boundaries, escalation, service-level tracking, and policy-controlled retention.
+
+Student organizations, housing/residence, transport, clinic referrals, campus safety, ID cards, and alumni relations as optional modules, with clear release priority and data-protection review.
+
+E. Attendance and engagement
+
+Course session attendance with lecturer roster, late/absent/excused statuses, correction requests, supporting notes, and audit history.
+
+Support manual, QR, or institution-approved device-based attendance; do not mandate biometric attendance by default. If biometrics are proposed, require a documented legal basis, necessity/proportionality assessment, alternatives, explicit governance, secure templates, retention/deletion, breach plan, accessibility, and written approval before implementation.
+
+Attendance thresholds, alerts, and academic consequences must be configurable and transparent, not assumed. Allow offline capture with secure sync and duplicate/conflict resolution.
+
+F. Assessments, grades, examinations, and progression
+
+Assessment plans and weights; exam scheduling; examination room/seating lists; invigilation; question banks with permission controls; coursework submission; marking; moderation; anonymous marking where appropriate; external examiner workflow; results approval and publication.
+
+Configurable grading schemes by program/course/cohort; GPA/CGPA calculations; pass/fail; repeats; incompletes; deferred exams; resits; special consideration; appeals; correction/amendment process; academic standing; degree classification; progression and graduation audit.
+
+Do not assume a universal grading scale or pass mark. Include test cases proving grade calculations and historical rule versions. Restrict grade visibility until authorized publication; maintain immutable approval and amendment records.
+
+G. Fees, scholarships, and finance
+
+Configurable tuition and fee schedules by program, credit load, semester, student category, campus, and approved policy; invoices; instalment plans; balances; receipts; payment allocation; refunds; waivers; penalties; sponsorship; scholarships; financial aid; and financial clearance.
+
+Integrate payment channels only through verified providers and reconciliation workflows. Support manual bank/cash/mobile-money recording only with dual control, reference validation, duplicate detection, daily reconciliation, reversals, and audit evidence. Never store raw card or payment credentials.
+
+Student and sponsor statements, cashier close, finance dashboards, aging balances, collection reports, scholarship disbursement tracking, and export to accounting systems. Make all financial actions permissioned and traceable.
+
+H. Staff, HR, payroll, and workload
+
+Staff records, recruitment, onboarding, contracts, qualifications, rank/grade, department, workload, teaching assignments, leave, attendance, performance review, training, promotion, disciplinary records with restricted access, separation, and alumni/faculty association if appropriate.
+
+Lecturer workload planning linked to course sections and contact hours; approval and workload history; research, service, advising, and administrative duties where configured.
+
+Payroll preparation may be included as a later module. Keep payroll rules, statutory deductions, approvals, bank-payment files, and accounting integration separate from student finance; require local legal/accounting validation and dual approval before live payroll.
+
+I. Library, research, and academic quality
+
+Library catalog, circulation, holds, fines if used, e-resource links, course reserves, access entitlements, and integration with library systems through standard protocols where available.
+
+Research project and ethics-review tracking, grant/award records, publications, intellectual property declarations, laboratory/equipment booking, research compliance documents, and research performance reporting as optional phased modules.
+
+Program/course quality assurance, accreditation evidence repository, learning-outcome mapping, curriculum review, course evaluations with privacy safeguards, action plans, audit trails, and NCHE reporting/evidence exports where required.
+
+J. Document and records management
+
+Secure repository for applications, transcripts, credentials, policies, minutes, contracts, assessment records, and finance evidence; metadata, tags, ownership, version control, retention/disposition, search, approvals, e-signature support where legally valid, access logs, malware scanning, and controlled sharing.
+
+Define records classification and retention schedules by record type, legal hold, export, archival, deletion, and backup treatment. Keep student health, disability, counselling, identity, disciplinary, and payment information in appropriately restricted scopes.
+
+Generate print-ready forms and reports with institution branding, document numbers, issue dates, signatory/verification, and clear draft/final status.
+
+K. Governance, compliance, communications, and integrations
+
+Policy register and workflow engine for admission rules, academic calendars, add/drop deadlines, prerequisites, grading, fees, scholarship criteria, approvals, data retention, and delegated authority.
+
+Email/SMS/WhatsApp or app notifications using institution-approved providers; delivery status, templates, opt-in/consent where required, language and accessibility settings, and low-cost message controls.
+
+Integration architecture with payment providers, identity/SSO, email/SMS, accounting/payroll, LMS, library, video-conferencing, and MoE/NCHE reporting or EMIS interfaces if specified. Use documented APIs, webhooks, CSV templates where necessary, idempotency, retries, validation, monitoring, and reconciliation. Do not claim a government integration exists until a partner API, specification, authority, and approval are confirmed.
+
+Export/import, migration tooling, data dictionary, unique IDs, reconciliation reports, provenance, and institution ownership of its data. Explain vendor exit, full data export, deletion certification, and migration to another provider.
+
+L. Executive dashboards and reporting
+
+Create role-specific dashboards for leadership, registrar, deans, department heads, finance, student affairs, IT, and lecturers. Include configurable indicators such as applications and conversion; enrollment by program/campus/cohort; registration completion; course capacity and waitlists; attendance; assessment completion; pass/withdrawal/retention/progression; graduation; fees billed/collected/outstanding; scholarship coverage; staff workload; LMS participation; support case volumes; system uptime; and data quality.
+
+For every indicator, define formula, source tables, refresh frequency, filters, access controls, suppression for small groups, owner, and interpretation limits. Provide scheduled reports, NCHE/MoE-ready exports when formats are confirmed, audit extracts, and print-friendly board reports. Do not expose individual sensitive records on aggregate dashboards without a lawful need.
+
+5. Core data model and technical architecture
+
+Provide:
+
+A domain model/ERD in Mermaid or an equivalent clear schema covering institutions, campuses, academic years/terms, faculties/departments, programs, curriculum versions, courses, sections, staff, applicants, students, guardians/sponsors, applications, admissions decisions, registration, add/drop events, attendance, assessments, grades, invoices, payments, scholarships, documents, support cases, roles/permissions, audit events, notifications, and integrations.
+
+API boundaries and example endpoints/events for application submission, decision, registration, add/drop, LMS roster sync, attendance, grade publication, invoice/payment reconciliation, transcript issuance, and audit logging.
+
+Deployment recommendation suitable for a Liberian university: cloud, local/on-premise, or hybrid options; connectivity and power contingency; encryption in transit/at rest; secrets management; backup and restore; disaster recovery; observability; environment separation; safe updates; security patching; and realistic scaling costs/operational staffing.
+
+Security threat model and privacy impact assessment outline, with specific controls for account takeover, insider misuse, grade tampering, payment fraud, lost devices, insecure exports, ransomware, data leakage, and service outages.
+
+Data migration strategy from paper, spreadsheets, or legacy software, including cleansing, deduplication, document scanning/OCR review, reconciliation, student ID mapping, parallel run, sign-off, and rollback.
+
+Recommend a maintainable architecture and technology stack, but justify each choice in terms of skills, cost, low-bandwidth performance, data portability, security, supportability, and deployment constraints. Avoid overengineering and avoid assuming constant broadband or continuous power.
+
+6. Build plan, workflows, screens, and acceptance checks
+
+Deliver and implement the work in this order:
+
+Executive summary, product positioning, and a short description of the public website and secure application.
+
+Policy/source review with dated citations and a policy-to-product traceability matrix.
+
+Assumptions, decision log, risks, and questions requiring university/NCHE/MoE confirmation.
+
+Personas, role-permission matrix, and student/staff lifecycle maps.
+
+Module-by-module functional requirements with acceptance criteria.
+
+Detailed workflow diagrams for admissions, semester planning and registration, add/drop, online course delivery, examination-to-approved-results, tuition billing-to-reconciliation, transcript issuance, graduation clearance, and academic appeals.
+
+Screen inventory with key fields, actions, permissions, validation rules, empty/error/offline states, and print views. Include sample semester plan printout and sample student statement.
+
+Core data model, API/integration design, architecture, security/privacy model, backup/recovery, and data migration plan.
+
+Implement the public website and secure ERP in the project environment; connect real backend persistence and permissions; provide working routes, forms, dashboards, workflows, and print views. Clearly list any feature that remains unavailable or depends on external credentials/specifications.
+
+Dashboard/report catalogue with KPI definitions and any mock data clearly marked as illustrative.
+
+Phased implementation plan: discovery and policy validation; MVP; pilot; stabilization; expansion. Include deliverables, accountable roles, training, support, change management, dependencies, budget categories, and measurable exit criteria per phase.
+
+Acceptance checks for realistic Liberia-specific scenarios, including low-bandwidth, power/network interruptions, student add/drop, late fees, duplicate payments, grade correction, lost credentials, disability accommodations, data export, and restore from backup. Verify that actual routes and API permissions match the role matrix.
+
+Prioritized product backlog: Must/Should/Could, dependencies, effort bands, and release recommendation.
+
+7. MVP and phased rollout guidance
+
+Recommend a realistic MVP that first delivers high-value, low-risk workflows: applicant intake and admissions decisions; student master records; program/course catalog; academic calendar and semester planning; registration with add/drop; student portal; fees/balances and reconciled payment recording; attendance; assessment/gradebook with approval; downloadable transcript/letters; basic LMS or integration; staff records; role permissions; audit trail; operational dashboards; backups; and support processes.
+
+Separate features that need institutional/legal approval or a mature partner—biometrics, automated high-stakes decisions, payroll disbursement, national identity verification, government integrations, advanced proctoring, and sensitive health/disciplinary case handling—into gated later phases. For each gate, state the evidence and approval required.
+
+8. Quality bar
+
+The proposed platform must be:
+
+Accurate: academic, financial, and policy rules are configurable, versioned, testable, and approved by the responsible university authority.
+
+Secure: authorization is enforced on the server and all privileged actions are auditable.
+
+Usable: routine tasks are clear to students and staff with limited digital confidence; forms explain what is required and what happens next.
+
+Resilient: the design supports unreliable connectivity, backup/restore, and documented manual continuity procedures.
+
+Inclusive: accessible design, non-discrimination, disability support, gender-sensitive safeguards, and alternative service paths are built in.
+
+Interoperable and portable: APIs, documented formats, clear data ownership, complete exports, and vendor exit are planned from the beginning.
+
+Measurable: every major workflow has an owner, service target, indicator, and acceptance test.
+
+Now build the complete website and University ERP. Begin by checking the current project and official policy sources, then implement the public website and working application with an appropriate persistent backend. Use dated citations in the accompanying implementation notes, distinguish completed functionality from future integrations, and state what remains to be validated with the selected university and Liberian regulators before live deployment.
+
+Initial policy/source leads to verify
+
+These are starting points for research, not a substitute for checking current official texts and later updates:
+
+Liberia Ministry of Education, “A Transformative Leap Towards Inclusion: Launch of Liberia’s DEI Policy in Higher Education” (31 October 2024): https://moe.gov.lr/a-transformative-leap-towards-inclusion-launch-of-liberias-dei-policy-in-higher-education/
+
+Liberia Ministry of Education, “Ministry Advances FY2027 Education Sector Budget Planning” (17 August 2026): https://moe.gov.lr/ministry-advances-fy2027-education-sector-budget-planning/
+
+Liberia Education Sector Plan 2022/23–2026/27, UNESCO Africa Education Knowledge Platform record: https://www.iicba.unesco.org/en/africa-education-knowledge-platform/education-sector-plan-2022/23-2026/27
+
+Liberia National Commission on Higher Education information and statutory mandate (confirm official current domain and documents): https://nche.info/
+
+Liberia Ministry of Education EMIS policy development update (28–29 September 2026 consultation): https://moe.gov.lr/liberia-advances-development-of-national-emis-policy/
+
+Liberia Ministry of Education, “Liberia’s Ministry of Education Champions Data-Driven Reform Through EMIS Peer Review and National Dialogue” (September 2025): https://moe.gov.lr/liberias-ministry-of-education-champions-data-driven-reform-through-emis-peer-review-and-national-dialogue/
+
+Ministry of Education official website and current policy/bulletin library: https://moe.gov.lr/
+
+Instruction for use
+
+Before coding or presenting the platform as compliant, refresh every policy and legal source, obtain the university’s approved academic and financial rules, confirm the institution’s NCHE status and program approvals, and document decisions with the Registrar, Finance/Bursar, ICT, Student Affairs, academic leadership, and institutional counsel or designated compliance lead.

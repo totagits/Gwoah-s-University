@@ -1,0 +1,6 @@
+{
+  "name": "Gwoah's University ERP & Portal",
+  "description": "Comprehensive university platform for Liberia featuring admissions, curriculum, academic planning, student portal, role-based ERP, institutional task management, and integrated analytics aligned with NCHE standards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

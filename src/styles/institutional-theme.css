@@ -1,0 +1,7 @@
+/* Gwoah's University design tokens — navy, forest, heritage gold and ivory. */
+:root { --gu-navy:#10263c; --gu-forest:#145a53; --gu-gold:#c39a53; --gu-ivory:#f6f8fa; --gu-border:#dce5e8; --gu-focus:#0d7c80; }
+.gu-surface { background:var(--gu-ivory); color:var(--gu-navy); }
+.gu-panel { background:#fff; border:1px solid var(--gu-border); border-radius:16px; box-shadow:0 5px 20px rgba(16,38,60,.06); }
+.gu-action { background:var(--gu-forest); color:white; border-radius:10px; padding:.65rem 1rem; }
+.gu-action:focus-visible { outline:3px solid var(--gu-focus); outline-offset:3px; }
+.gu-muted { color:#526775; }

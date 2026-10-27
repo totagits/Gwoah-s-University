@@ -57,7 +57,7 @@ export function validateRows(
       row.studentId.length > 100 ||
       !Number.isInteger(row.cohort) ||
       row.cohort < 200001 ||
-      featureNames.some((k) => raw[k] === '' || !Number.isFinite(row[k])) ||
+      featureNames.some((k) => raw[k] == null || !['number','string'].includes(typeof raw[k]) || (typeof raw[k]==='string'&&!raw[k].trim()) || !Number.isFinite(row[k])) ||
       row.priorGpa < 0 ||
       row.priorGpa > 4 ||
       row.attendance < 0 ||
@@ -77,7 +77,7 @@ export function validateRows(
     seen.add(key);
     if (historical) {
       row.needsSupport = Number(raw.needsSupport);
-      if (raw.needsSupport === '' || ![0, 1].includes(row.needsSupport))
+      if (raw.needsSupport == null || !['number','string'].includes(typeof raw.needsSupport) || (typeof raw.needsSupport==='string'&&!raw.needsSupport.trim()) || ![0, 1].includes(row.needsSupport))
         throw Error(`Row ${index + 2}: needsSupport must be 0 or 1.`);
     }
     return row;

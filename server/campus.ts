@@ -95,17 +95,20 @@ export function installCampus(app: Express, context: { directory: string; databa
     req.on('close', () => { clients.delete(res); clearInterval(timer); });
   });
   app.use('/api', (req, res, next) => {
+    const endpoint = req.originalUrl.split('?')[0];
+    if (endpoint.startsWith('/api/campus')) return next();
     res.on('finish', () => {
-      if (res.statusCode < 300 && req.method !== 'GET' && !req.path.startsWith('/campus')) {
-        activity(safe(req.body?.userId) || 'u-admin', `${req.method} ${req.path}`);
-        if (/tasks|grades/.test(req.path)) notify(/grades/.test(req.path) ? 'A course grade has been updated. Check your student record.' : 'An assignment or task has been updated.');
+      if (res.statusCode < 300 && req.method !== 'GET' && !endpoint.endsWith('/theme')) {
+        const title = /grades/.test(endpoint) ? 'Updated a course grade' : /registration\/add/.test(endpoint) ? 'Registered for a course' : /registration\/drop/.test(endpoint) ? 'Updated course enrollment' : /tasks/.test(endpoint) ? 'Updated a university task' : /materials/.test(endpoint) ? 'Uploaded course materials' : /messages/.test(endpoint) ? 'Sent a portal message' : /login/.test(endpoint) ? 'Signed in to the portal' : 'Updated a university record';
+        activity(safe(req.body?.userId || req.body?.studentId || req.body?.senderId) || 'u-admin', title);
+        if (/tasks|grades/.test(endpoint)) notify(/grades/.test(endpoint) ? 'A course grade has been updated. Check your student record.' : 'An assignment or task has been updated.');
         persist(); emit('refresh', {});
       }
     }); next();
   });
   app.get('/api/campus', (_req, res) => {
     const { evaluations, ...rest } = state;
-    res.json({ ...rest, evaluations: evaluations.map(({ user, ...entry }) => entry), integrations: {
+    res.json({ ...rest, activities: rest.activities.filter(item => !/^(POST|PATCH|PUT|DELETE)\s\/api/.test(item.title)), evaluations: evaluations.map(({ user, ...entry }) => entry), integrations: {
       email: !!process.env.RESEND_API_KEY, cloudBackup: !!process.env.BACKUP_WEBHOOK_URL,
       lectureCapture: !!process.env.LECTURE_CAPTURE_TOKEN, occupancy: !!process.env.OCCUPANCY_FEED_TOKEN,
       aiTags: !!process.env.GEMINI_API_KEY && !!process.env.GEMINI_MODEL,

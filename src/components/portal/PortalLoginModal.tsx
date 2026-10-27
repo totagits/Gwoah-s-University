@@ -134,6 +134,11 @@ export function PortalLoginModal({
             {message}
           </p>
         </form>
+        {!activation && <button className="campus-button secondary" disabled={busy} onClick={async()=>{
+          if(!email.trim()){setMessage('Enter your university email above first.');return;}
+          setBusy(true);
+          try{const response=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const result=await response.json();if(!response.ok)throw Error(result.error);setMessage('If your account can receive recovery email, a private link will be sent. Otherwise contact the university administrator.');}catch(error){setMessage(error instanceof Error?error.message:'Could not request account recovery.');}finally{setBusy(false);}
+        }}>Request password recovery</button>}
         <button className="campus-button secondary" onClick={onClose}>
           Back to university website
         </button>

@@ -9,7 +9,8 @@ export type UserRole =
   | 'lecturer'
   | 'student'
   | 'bursar'
-  | 'admissions_officer';
+  | 'admissions_officer'
+  | 'alumni';
 
 export interface UserProfile {
   id: string;

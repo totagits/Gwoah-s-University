@@ -9,3 +9,6 @@ coverage/
 runtime-data/
 data/campus.json
 data/backups/
+data/*.sqlite*
+data/.attendance-key
+data/encrypted-backups/

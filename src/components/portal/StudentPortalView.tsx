@@ -122,7 +122,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
     }
   };
 
-  if (loading || !student) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center p-16 text-amber-400">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400" />
@@ -131,6 +131,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
     );
   }
 
+  if(!student)return <div className="campus-panel">Your academic record has not been linked yet. Please contact the registrar.</div>;
   const degreeProgress = calculateDegreeProgress(
     student.totalCreditsEarned,
     student.targetDegreeCredits

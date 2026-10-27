@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSyncedBookmarks } from '../../services/bookmarks';
 import {
   BookOpen,
   ShieldCheck,
@@ -61,7 +62,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('all');
   const [pinnedOnly, setPinnedOnly] = useState<boolean>(false);
-  const [savedIds, setSavedIds] = useState<string[]>(() => JSON.parse(localStorage.getItem('gu_saved_catalog') || '[]'));
+  const [savedIds, setSavedIds] = useSyncedBookmarks('catalog');
   const [savedOnly, setSavedOnly] = useState(false);
   const [publishedAfter, setPublishedAfter] = useState('');
   const [documentType, setDocumentType] = useState('all');
@@ -147,6 +148,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
   const handleDownload = (resource: LibraryResource) => {
     const { filename, content } = generateResourceDownload(resource);
     downloadCSV(content, filename);
+    void fetch('/api/platform/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'download',title:resource.title})});
     showNotification(`Downloaded "${resource.title}" (${filename}) for offline study.`);
   };
 
@@ -692,7 +694,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
 
                   {/* Card Action Footer */}
                   <div className="mt-5 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2.5">
-                    <button className="campus-button secondary" onClick={() => { const next = savedIds.includes(res.id) ? savedIds.filter(id => id !== res.id) : [...savedIds, res.id];setSavedIds(next);localStorage.setItem('gu_saved_catalog', JSON.stringify(next)); }}>{savedIds.includes(res.id) ? '★ Saved' : '☆ Save resource'}</button>
+                    <button className="campus-button secondary" onClick={() => { const next = savedIds.includes(res.id) ? savedIds.filter(id => id !== res.id) : [...savedIds, res.id];setSavedIds(next); }}>{savedIds.includes(res.id) ? '★ Saved' : '☆ Save resource'}</button>
                     <button
                       onClick={() => handleCopyCitation(res)}
                       className="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-slate-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"

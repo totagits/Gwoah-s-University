@@ -1,4 +1,5 @@
 import React from 'react';
+import { LanguagePicker, useLocalization } from '../../i18n/Localization';
 import { GlobalSearch, NotificationCenter } from './CampusServices';
 import {
   GraduationCap,
@@ -26,7 +27,7 @@ interface PortalHeaderProps {
   currentUser: UserProfile;
   activeTab: string;
   onSelectTab: (tabId: string) => void;
-  onSwitchRole: (role: UserRole) => void;
+
   onLogout: () => void;
   onBackToPublic: () => void;
   currentTheme: ThemeMode;
@@ -38,13 +39,14 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
   currentUser,
   activeTab,
   onSelectTab,
-  onSwitchRole,
+
   onLogout,
   onBackToPublic,
   currentTheme,
   onToggleTheme,
   onOpenThemeSettings,
 }) => {
+  const {t}=useLocalization();
   const tabs = [
     { id: 'campus', label: 'Campus life', icon: GraduationCap },
     { id: 'tasks', label: 'Tasks Dashboard', icon: ListTodo, badge: 'Core' },
@@ -60,6 +62,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
     { id: 'studio', label: 'Learning studio', icon: BookOpen },
     { id: 'alumni', label: 'Alumni', icon: GraduationCap },
     { id: 'institution', label: 'Institutional controls', icon: ShieldCheck },
+    { id: 'account', label: 'Account & integrations', icon: Settings },
   ];
 
   const roleOptions: Array<{ role: UserRole; label: string }> = [
@@ -97,24 +100,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
               <span>Staging workspace</span>
             </span>
 
-            {/* Quick Role Switcher */}
-            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-2 py-1 rounded-lg">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="text-[11px] text-slate-400 font-medium">Switch Role:</span>
-              <select
-                value={currentUser.role}
-                onChange={(e) => onSwitchRole(e.target.value as UserRole)}
-                className="bg-transparent text-amber-300 font-semibold text-xs focus:outline-none cursor-pointer"
-                aria-label="Switch User Role"
-              >
-                {roleOptions.map((opt) => (
-                  <option key={opt.role} value={opt.role} className="bg-slate-900 text-white">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+            <span className="text-xs font-semibold">Signed in · {currentUser.role.replaceAll('_',' ')}</span>
             {/* Theme Toggle Button */}
             <button
               onClick={onToggleTheme}
@@ -181,11 +167,14 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           </div>
         </div>
 
-        <div className="campus-header-tools"><GlobalSearch navigate={onSelectTab}/><NotificationCenter/><label className="campus-language">Language<select aria-label="Portal language" defaultValue="en"><option value="en">English</option><option disabled>Kpelle — translation pending</option><option disabled>Bassa — translation pending</option><option disabled>Vai — translation pending</option><option disabled>Grebo — translation pending</option></select></label></div>
+        <div className="campus-header-tools"><GlobalSearch navigate={onSelectTab}/><NotificationCenter/><LanguagePicker/></div>
 
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pt-3 border-t border-slate-800/80 mt-3 no-scrollbar">
-          {tabs.map((tab) => {
+          {tabs.filter(tab => {
+  const permissions:Record<string,string[]>={student:['campus','tasks','academics','student_portal','library_tools','studio','account'],alumni:['alumni','library_tools','account'],lecturer:['tasks','faculty_admin','faculty_tools','library_tools','studio','account'],dean:['tasks','analytics','faculty_admin','faculty_tools','library_tools','studio','compliance','account'],bursar:['tasks','finance','account'],admissions_officer:['tasks','admissions','account']};
+  return currentUser.role==='super_admin'||currentUser.role==='registrar'||permissions[currentUser.role]?.includes(tab.id);
+}).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -199,7 +188,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-amber-400'}`} />
-                <span>{tab.label}</span>
+                <span>{t(tab.label)}</span>
                 {tab.badge && (
                   <span
                     className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase ${

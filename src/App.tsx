@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { setSessionCsrf } from './services/session';
+import { useLocalization } from './i18n/Localization';
+import { AccountCenter, HistoricalPrediction } from './components/portal/AccountCenter';
 import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
@@ -37,19 +40,13 @@ import {
 } from './utils/themeManager';
 
 export default function App() {
+  useLocalization();
   // Current view mode: 'public' or 'portal'
   const [viewMode, setViewMode] = useState<'public' | 'portal'>('public');
   const [activePublicSection, setActivePublicSection] = useState('hero');
 
   // Authentication State
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
-    // Check if auto-start or default demo user
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('autostart') === '1' || params.get('portal') === '1') {
-      return DEMO_USERS[0]; // Super Admin
-    }
-    return null;
-  });
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
@@ -107,17 +104,15 @@ export default function App() {
   };
 
 
-  // Auto-switch to portal if autostart query param is present
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('autostart') === '1' || params.get('portal') === '1') {
-      setViewMode('portal');
-      if (params.get('tab')) {
-        setActivePortalTab(params.get('tab')!);
-      }
-    }
+    fetch('/api/auth/me').then(async response => {
+      if (response.ok) { const session = await response.json();setSessionCsrf(session.csrf);setCurrentUser(session.user);setActivePortalTab(session.user.role==='alumni'?'alumni':session.user.role==='bursar'?'finance':session.user.role==='admissions_officer'?'admissions':['lecturer','dean'].includes(session.user.role)?'faculty_admin':'campus'); if(params.has('portal'))setViewMode('portal'); }
+      else if(params.has('portal')||params.has('activate'))setIsLoginModalOpen(true);
+    }).catch(() => {if(params.has('portal')||params.has('activate'))setIsLoginModalOpen(true);});
+    const expired=()=>{setSessionCsrf('');setCurrentUser(null);setViewMode('public');setIsLoginModalOpen(true);};
+    window.addEventListener('gu:session-expired',expired);return()=>window.removeEventListener('gu:session-expired',expired);
   }, []);
-
   // Fetch updated student and finance data for print documents
   const refreshStudentPrintData = async () => {
     try {
@@ -140,28 +135,14 @@ export default function App() {
 
   const handleLoginSuccess = (user: UserProfile, _token: string) => {
     setCurrentUser(user);
+    setActivePortalTab(user.role==='alumni'?'alumni':user.role==='bursar'?'finance':user.role==='admissions_officer'?'admissions':['lecturer','dean'].includes(user.role)?'faculty_admin':'campus');
     setIsLoginModalOpen(false);
     setViewMode('portal');
   };
 
-  const handleSwitchRole = (role: UserRole) => {
-    const found = DEMO_USERS.find((u) => u.role === role);
-    if (found) {
-      setCurrentUser(found);
-      // Route role conveniently to default relevant dashboard tab
-      if (role === 'student') {
-        setActivePortalTab('student_portal');
-      } else if (role === 'lecturer' || role === 'dean') {
-        setActivePortalTab('faculty_admin');
-      } else if (role === 'bursar') {
-        setActivePortalTab('finance');
-      } else if (role === 'admissions_officer') {
-        setActivePortalTab('admissions');
-      }
-    }
-  };
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setSessionCsrf('');
     setCurrentUser(null);
     setViewMode('public');
   };
@@ -224,7 +205,7 @@ export default function App() {
             currentUser={currentUser}
             activeTab={activePortalTab}
             onSelectTab={setActivePortalTab}
-            onSwitchRole={handleSwitchRole}
+
             onLogout={handleLogout}
             onBackToPublic={() => setViewMode('public')}
             currentTheme={theme}
@@ -233,7 +214,8 @@ export default function App() {
           />
 
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <div className="campus-staging"><span>STAGING</span> Test environment with sample records. Please use fictional data.</div>
+            <div className="campus-staging"><span>STAGING</span> Authenticated staging environment. Use fictional data during evaluation.</div>
+            {activePortalTab === 'account' && <AccountCenter user={currentUser} />}
             {activePortalTab === 'campus' && <StudentServices />}
             {activePortalTab === 'alumni' && <AlumniPortalView />}
             {activePortalTab === 'faculty_tools' && <FacultyTools />}
@@ -245,7 +227,7 @@ export default function App() {
             )}
 
             {activePortalTab === 'analytics' && (
-              <><SuccessPredictor />
+              <><HistoricalPrediction />
               <IntegratedAnalyticsHub />
               </>
             )}

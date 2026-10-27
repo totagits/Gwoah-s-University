@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { installCampus } from './server/campus';
+import { installIdentity } from './server/identity';
+import { installPlatform } from './server/platform';
 import { fileURLToPath } from 'url';
 import {
   DEMO_USERS,
@@ -82,7 +84,7 @@ function loadDatabase(): AppDatabase {
       return parsed;
     }
   } catch (err) {
-    console.warn('Failed to read db file, loading initial demo seeds:', err);
+    throw new Error('University data could not be read. Preserve the existing data file and restore a verified snapshot before starting.');
   }
 
   const initialDb: AppDatabase = {
@@ -112,17 +114,25 @@ function saveDatabase(db: AppDatabase) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf-8');
+    const temporary=DB_FILE+'.tmp';
+    fs.writeFileSync(temporary, JSON.stringify(db, null, 2), {encoding:'utf-8',mode:0o600});
+    fs.renameSync(temporary,DB_FILE);
   } catch (err) {
-    console.error('Failed to persist database file:', err);
+    throw new Error('University data could not be saved.');
   }
 }
 
 let db = loadDatabase();
 
 const app = express();
-app.use(express.json({ limit: '60mb' }));
-installCampus(app, { directory: DATA_DIR, database: () => db, save: () => saveDatabase(db) });
+app.use((req,res,next)=>{
+  if(/^\/api\/auth\/|^\/api\/applications$|^\/api\/campus\/integrations\//.test(req.path))return express.json({limit:'64kb'})(req,res,next);
+  next();
+});
+const identity = installIdentity(app, { directory: DATA_DIR, users: () => db.users, save: () => saveDatabase(db) });
+let platform: ReturnType<typeof installPlatform>;
+const campus = installCampus(app, { directory: DATA_DIR, database: () => db, save: () => saveDatabase(db), push: targets => platform?.notifyPush(targets) });
+platform = installPlatform(app, { directory: DATA_DIR, campus, identity, database: () => db, restore: data => {db=data;saveDatabase(db);} });
 
 // Helper to record audit logs
 function recordAudit(
@@ -133,6 +143,7 @@ function recordAudit(
   details: string,
   req: Request
 ) {
+  user = (req as any).actor || {id:'public',name:'Public applicant',role:'guest'};
   const ip = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || '127.0.0.1';
   const entry: AuditLogEntry = {
     id: `audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -157,42 +168,6 @@ function recordAudit(
 /* ==========================================================================
    AUTHENTICATION ENDPOINTS
    ========================================================================== */
-app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { email, password, role } = req.body;
-
-  let matchedUser: UserProfile | undefined;
-
-  // Support quick demo sign-in via role or by email
-  if (role) {
-    matchedUser = db.users.find((u) => u.role === role);
-  } else if (email) {
-    matchedUser = db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-  }
-
-  if (!matchedUser) {
-    // Default to Super Admin for demo if neither matched
-    matchedUser = db.users[0];
-  }
-
-  // Simulated session token
-  const token = `token-${matchedUser.id}-${Date.now()}`;
-
-  recordAudit(
-    matchedUser,
-    'USER_LOGIN_SUCCESS',
-    'Session',
-    matchedUser.id,
-    `Signed in as ${matchedUser.title} (${matchedUser.role})`,
-    req
-  );
-
-  return res.json({
-    success: true,
-    token,
-    user: matchedUser,
-  });
-});
-
 app.get('/api/auth/users', (_req: Request, res: Response) => {
   return res.json({ users: db.users });
 });
@@ -316,7 +291,7 @@ app.get('/api/calendar/export.ics', (req: Request, res: Response) => {
 app.get('/api/tasks', (req: Request, res: Response) => {
   const { category, priority, status, department, search } = req.query;
 
-  let results = [...db.tasks];
+  let results = res.locals.actor.role==='student' ? db.tasks.filter(t=>t.assigneeEmail===res.locals.actor.email) : [...db.tasks];
 
   if (category && category !== 'all') {
     results = results.filter((t) => t.category === category);
@@ -542,9 +517,10 @@ app.get('/api/courses', (_req: Request, res: Response) => {
 
 app.get('/api/students/:id', (req: Request, res: Response) => {
   const { id } = req.params;
-  const student = db.student.id === id ? db.student : db.student;
+  if (db.student.id !== id) return res.status(404).json({ error: 'Student record not found.' });
+  const student = db.student;
   const regs = db.registrations.filter((r) => r.studentId === student.id);
-  const fin = db.financialAccount;
+  const fin = ['super_admin', 'registrar', 'bursar', 'student'].includes(res.locals.actor.role) ? db.financialAccount : null;
 
   // Recalculate GPA dynamically
   const gradeEntries = regs
@@ -722,20 +698,17 @@ app.post('/api/applications', (req: Request, res: Response) => {
     applicationNumber: `GU-APP-2026-${Math.floor(100 + Math.random() * 900)}`,
     applicantName,
     email,
-    phone: phone || '+231 770 000 000',
+    phone: phone || '',
     programDesired,
     faculty: faculty || 'College of Engineering & Technology',
-    wassceIndex: wassceIndex || '0010999999',
+    wassceIndex: wassceIndex || '',
     wassceCoreSubjects: Array.isArray(wassceCoreSubjects)
       ? wassceCoreSubjects
-      : [
-          { subject: 'English Language', grade: 'B3' },
-          { subject: 'Mathematics', grade: 'B2' },
-        ],
+      : [],
     applicationDate: new Date().toISOString(),
     status: 'under_review',
-    scoringTotal: 75,
-    applicationFeePaid: true,
+    scoringTotal: 0,
+    applicationFeePaid: false,
   };
 
   db.applications.unshift(newApp);
@@ -843,6 +816,7 @@ app.get('/api/faculty/roster/:sectionId', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Section not found' });
   }
 
+  if(res.locals.actor.role==='lecturer'&&section.lecturerName!==res.locals.actor.name)return res.status(403).json({error:'This section is not assigned to your account.'});
   // Get registrations for this section
   const sectionRegs = db.registrations.filter((r) => r.sectionId === sectionId && r.status === 'registered');
 
@@ -871,8 +845,10 @@ app.post('/api/faculty/grades', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Registration record not found' });
   }
 
+  if(res.locals.actor.role==='lecturer'&&!db.sections.some(s=>s.id===reg.sectionId&&s.lecturerName===res.locals.actor.name))return res.status(403).json({error:'This grade is outside your assigned sections.'});
   const numericScore = Number(score);
-  const grade = letterGrade || scoreToLetterGrade(numericScore);
+  if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > 100) return res.status(400).json({error:'Score must be between 0 and 100.'});
+  const grade = scoreToLetterGrade(numericScore);
 
   reg.score = numericScore;
   reg.grade = grade;
@@ -994,7 +970,7 @@ app.get('/api/resources/:id', (req: Request, res: Response) => {
    FACULTY - STUDENT MESSAGING ENDPOINTS
    ========================================================================== */
 app.get('/api/messages', (req: Request, res: Response) => {
-  const { userId } = req.query;
+  const userId = res.locals.actor.id;
   let msgs = db.messages || [];
   if (userId && typeof userId === 'string') {
     msgs = msgs.filter((m) => m.senderId === userId || m.recipientId === userId);
@@ -1207,6 +1183,9 @@ app.post('/api/reset-demo', (req: Request, res: Response) => {
 /* ==========================================================================
    VITE DEV MIDDLEWARE OR STATIC SERVING
    ========================================================================== */
+app.use('/api', (_req, res) => res.status(404).json({error:'API endpoint not found.'}));
+app.use((error:any,_req:Request,res:Response,_next:any)=>res.status(500).json({error:'The server could not complete this operation.'}));
+
 async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
 

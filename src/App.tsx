@@ -219,8 +219,8 @@ export default function App() {
             {activePortalTab === 'campus' && <StudentServices />}
             {activePortalTab === 'alumni' && <AlumniPortalView />}
             {activePortalTab === 'faculty_tools' && <FacultyTools />}
-            {activePortalTab === 'library_tools' && <LibraryTools faculty={currentUser.role !== 'student'} />}
-            {activePortalTab === 'studio' && <><LearningStudio faculty={currentUser.role !== 'student'} /><Proctoring faculty={currentUser.role !== 'student'} /></>}
+            {activePortalTab === 'library_tools' && <LibraryTools faculty={['super_admin','registrar','dean','lecturer'].includes(currentUser.role)} />}
+            {activePortalTab === 'studio' && <><LearningStudio faculty={['super_admin','registrar','dean','lecturer'].includes(currentUser.role)} /><Proctoring faculty={['super_admin','registrar','dean','lecturer'].includes(currentUser.role)} /></>}
             {activePortalTab === 'institution' && <InstitutionalControls />}
             {activePortalTab === 'tasks' && (
               <TaskManagementDashboard currentUser={currentUser} />

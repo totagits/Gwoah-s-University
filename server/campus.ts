@@ -230,4 +230,3 @@ export function installCampus(app: Express, context: { directory: string; databa
     if (!fs.existsSync(file)) return res.sendStatus(404); res.download(file, `university-snapshot-${req.params.id}.json`);
   });
 }
-

@@ -259,6 +259,11 @@ test('authentication and authorization enforce server identities', async (t) => 
         );
       },
     );
+    await t.test('parallel password attempts cannot bypass the rate limit',async()=>{
+      const responses=await Promise.all(Array.from({length:12},()=>call('/api/auth/login','POST',{email:'throttle@example.test',password:'IncorrectTestPassword2026!'})));
+      assert.ok(responses.filter(r=>r.status===429).length>=4);
+      assert.ok(responses.every(r=>[401,429].includes(r.status)));
+    });
     await t.test(
       'logout revokes the session and the security chain verifies',
       async () => {

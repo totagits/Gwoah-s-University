@@ -244,6 +244,8 @@ export function installIdentity(
       return res
         .status(429)
         .json({ error: 'Too many attempts. Try again in 15 minutes.' });
+    failed(email);
+    failed(ipKey);
     const account = sql
       .prepare('SELECT * FROM accounts WHERE email=?')
       .get(email) as any;
@@ -256,8 +258,6 @@ export function installIdentity(
     const valid = await verifyPassword(password, account?.password || fallback);
     const actor = publicActor(account);
     if (!valid || !actor) {
-      failed(email);
-      failed(ipKey);
       log('anonymous', 'LOGIN_FAILED');
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
@@ -270,6 +270,7 @@ export function installIdentity(
       .prepare('INSERT INTO sessions VALUES(?,?,?,?,?,?)')
       .run(digest(token), actor.id, csrf, now, now, now + 8 * 3600000);
     sql.prepare('DELETE FROM attempts WHERE key=?').run(email);
+    sql.prepare('UPDATE attempts SET count=MAX(0,count-1) WHERE key=?').run(ipKey);
     setCookie(res, token, 8 * 3600000);
     log(actor.id, 'LOGIN_SUCCESS');
     return res.json({ success: true, user: actor, csrf, token: '' });

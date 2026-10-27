@@ -58,7 +58,6 @@ ASSESSMENT BREAKDOWN:
     version: '1.0',
     fileFormat: 'PDF',
     fileSizeKB: 380,
-    courseCode: 'CSC 301',
     description: 'Digitized lecture notes on time-space complexity, formal mathematical limit proofs, recurrence relations, and algorithm performance in resource-constrained infrastructure.',
     contentSummary: `LECTURE SUMMARY - WEEK 1:
 In this lecture, students examine formal definitions of computational complexity and worst-case runtime bounds.
@@ -88,7 +87,6 @@ CORE CONCEPTS:
     version: '1.1',
     fileFormat: 'PDF',
     fileSizeKB: 460,
-    courseCode: 'CSC 301',
     description: 'Detailed analysis of self-balancing binary search trees, balance factor calculations, single and double rotations (LL, RR, LR, RL), and deletion rebalancing.',
     contentSummary: `LECTURE SUMMARY - WEEK 2:
 AVL trees guarantee logarithmic height O(log n) for all search, insert, and delete operations by maintaining a strict balance factor difference of at most 1.
@@ -119,7 +117,6 @@ ROTATION ALGORITHMS:
     version: '2.0',
     fileFormat: 'PDF',
     fileSizeKB: 320,
-    courseCode: 'CSC 301',
     description: 'Practical lab instructions for building, profiling, and benchmarking data structures in Unix terminal environments with memory footprint analysis.',
     contentSummary: `LAB MANUAL INSTRUCTIONS:
 Lab 1: Memory alignment and cache locality of C-style contiguous arrays vs linked lists.
@@ -176,7 +173,6 @@ MODULES:
     version: '1.2',
     fileFormat: 'PDF',
     fileSizeKB: 410,
-    courseCode: 'MAT 201',
     description: 'Comprehensive study packet on propositional calculus, predicate logic, mathematical induction, set theory, combinatorics, and discrete probability.',
     contentSummary: `DIGITIZED LECTURE PACKET:
 Chapter 1: Logic, propositions, connectives, truth tables, and equivalence laws.

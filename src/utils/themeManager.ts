@@ -6,7 +6,7 @@ export const THEME_STORAGE_KEY = 'gwoah_erp_theme_preference';
  * Resolves active theme preference with the following priority:
  * 1. User profile preference in ERP database
  * 2. Cached preference in browser localStorage
- * 3. Default to 'dark'
+ * 3. Default to 'light'
  */
 export function resolveUserTheme(
   userPref?: 'dark' | 'light' | null,
@@ -18,7 +18,7 @@ export function resolveUserTheme(
   if (localPref === 'dark' || localPref === 'light') {
     return localPref;
   }
-  return 'dark';
+  return 'light';
 }
 
 /**

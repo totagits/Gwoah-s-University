@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --color-amber-100: #dff2ec;
+  --color-amber-200: #b9ddd3;
+  --color-amber-300: #86c6b7;
+  --color-amber-400: #4ca48f;
+  --color-amber-500: #26836f;
+  --color-amber-600: #176858;
+  --color-amber-700: #0f5549;
+  --color-amber-800: #10483f;
+  --color-amber-900: #103a34;
+  --color-amber-950: #082b27;
+}
+
 /* ==========================================================================
    HIGH-CONTRAST ACCESSIBILITY THEME (WCAG AAA COMPLIANT)
    Applies when [data-theme="light"] or .theme-light is active on root
@@ -73,7 +86,7 @@ body.theme-light {
 /* High contrast amber accents */
 [data-theme="light"] .text-amber-400,
 [data-theme="light"] .text-amber-300 {
-  color: #b45309 !important; /* amber-700 */
+  color: #176858 !important;
 }
 
 [data-theme="light"] .bg-amber-950\/60,

@@ -9,6 +9,10 @@ import { PublicDEI } from './components/public/PublicDEI';
 import { PublicFooter } from './components/public/PublicFooter';
 
 import { PortalHeader } from './components/portal/PortalHeader';
+import { CampusProvider } from './components/portal/CampusContext';
+import { StudentServices, AlumniPortalView, CourseDependencyMapper } from './components/portal/CampusServices';
+import { LibraryTools, LearningStudio } from './components/portal/LearningStudio';
+import { FacultyTools, InstitutionalControls, SuccessPredictor, TuitionReminders, Proctoring, NcheComplianceMonitor } from './components/portal/InstitutionalTools';
 import { PortalLoginModal } from './components/portal/PortalLoginModal';
 import { TaskManagementDashboard } from './components/portal/TaskManagementDashboard';
 import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsHub';
@@ -51,7 +55,7 @@ export default function App() {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
 
   // Active ERP Tab
-  const [activePortalTab, setActivePortalTab] = useState<string>('tasks');
+  const [activePortalTab, setActivePortalTab] = useState<string>('campus');
 
   // Printable Document Modal State
   const [printDocType, setPrintDocType] = useState<'registration_plan' | 'transcript' | 'financial_statement' | null>(null);
@@ -214,6 +218,7 @@ export default function App() {
 
       {/* RENDER PROTECTED ERP SUBSYSTEM VIEW */}
       {viewMode === 'portal' && currentUser && (
+        <CampusProvider user={currentUser.id}>
         <div className="flex flex-col min-h-screen bg-slate-950">
           <PortalHeader
             currentUser={currentUser}
@@ -228,30 +233,45 @@ export default function App() {
           />
 
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <div className="campus-staging"><span>STAGING</span> Test environment with sample records. Please use fictional data.</div>
+            {activePortalTab === 'campus' && <StudentServices />}
+            {activePortalTab === 'alumni' && <AlumniPortalView />}
+            {activePortalTab === 'faculty_tools' && <FacultyTools />}
+            {activePortalTab === 'library_tools' && <LibraryTools faculty={currentUser.role !== 'student'} />}
+            {activePortalTab === 'studio' && <><LearningStudio faculty={currentUser.role !== 'student'} /><Proctoring faculty={currentUser.role !== 'student'} /></>}
+            {activePortalTab === 'institution' && <InstitutionalControls />}
             {activePortalTab === 'tasks' && (
               <TaskManagementDashboard currentUser={currentUser} />
             )}
 
             {activePortalTab === 'analytics' && (
+              <><SuccessPredictor />
               <IntegratedAnalyticsHub />
+              </>
             )}
 
             {activePortalTab === 'faculty_admin' && (
+              <><FacultyTools />
               <FacultyAdminDashboard currentUser={currentUser} />
+              </>
             )}
 
             {activePortalTab === 'academics' && (
+              <><CourseDependencyMapper />
               <AcademicPlanningRegistration
                 currentUser={currentUser}
                 onOpenPrintModal={handleOpenPrintModal}
               />
+              </>
             )}
 
             {activePortalTab === 'student_portal' && (
+              <><StudentServices />
               <StudentPortalView
                 currentUser={currentUser}
                 onOpenPrintModal={handleOpenPrintModal}
               />
+              </>
             )}
 
             {activePortalTab === 'admissions' && (
@@ -259,18 +279,23 @@ export default function App() {
             )}
 
             {activePortalTab === 'finance' && (
+              <><TuitionReminders />
               <FinanceBursarModule currentUser={currentUser} />
+              </>
             )}
 
             {activePortalTab === 'compliance' && (
+              <><NcheComplianceMonitor />
               <PolicyComplianceRegister currentUser={currentUser} />
+              </>
             )}
           </main>
 
           <footer className="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-            Gwoah's University ERP Subsystem • Republic of Liberia • NCHE Reference: NCHE/ACCR/2026-GU • All transactions encrypted & audited
+            Gwoah’s University · Republic of Liberia · Staging evaluation environment
           </footer>
         </div>
+        </CampusProvider>
       )}
 
       {/* LOGIN MODAL */}

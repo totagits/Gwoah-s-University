@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { installCampus } from './server/campus';
 import { fileURLToPath } from 'url';
 import {
   DEMO_USERS,
@@ -44,7 +45,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
-const DB_FILE = path.join(__dirname, 'data', 'university-db.json');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_DIR, 'university-db.json');
 
 // In-memory working database structure
 interface AppDatabase {
@@ -119,7 +121,8 @@ function saveDatabase(db: AppDatabase) {
 let db = loadDatabase();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '60mb' }));
+installCampus(app, { directory: DATA_DIR, database: () => db, save: () => saveDatabase(db) });
 
 // Helper to record audit logs
 function recordAudit(
@@ -850,8 +853,8 @@ app.get('/api/faculty/roster/:sectionId', (req: Request, res: Response) => {
     studentName: db.student.fullName,
     courseCode: reg.courseCode,
     credits: reg.credits,
-    score: reg.score || 85,
-    grade: reg.grade || scoreToLetterGrade(reg.score || 85),
+    score: reg.score ?? 85,
+    grade: reg.grade || scoreToLetterGrade(reg.score ?? 85),
     attendanceRate: 94,
   }));
 

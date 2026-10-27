@@ -1,4 +1,5 @@
 import React from 'react';
+import { GlobalSearch, NotificationCenter } from './CampusServices';
 import {
   GraduationCap,
   ListTodo,
@@ -45,6 +46,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
   onOpenThemeSettings,
 }) => {
   const tabs = [
+    { id: 'campus', label: 'Campus life', icon: GraduationCap },
     { id: 'tasks', label: 'Tasks Dashboard', icon: ListTodo, badge: 'Core' },
     { id: 'analytics', label: 'Integrated Analytics', icon: BarChart3, badge: 'Realtime' },
     { id: 'faculty_admin', label: 'Faculty & Admin Desk', icon: Users, badge: 'New' },
@@ -53,6 +55,11 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
     { id: 'admissions', label: 'Admissions Desk', icon: Inbox },
     { id: 'finance', label: 'Finance & Bursar', icon: CreditCard },
     { id: 'compliance', label: 'NCHE & Audit', icon: ShieldCheck },
+    { id: 'faculty_tools', label: 'Faculty tools & Research', icon: Users },
+    { id: 'library_tools', label: 'Digital library', icon: BookOpen },
+    { id: 'studio', label: 'Learning studio', icon: BookOpen },
+    { id: 'alumni', label: 'Alumni', icon: GraduationCap },
+    { id: 'institution', label: 'Institutional controls', icon: ShieldCheck },
   ];
 
   const roleOptions: Array<{ role: UserRole; label: string }> = [
@@ -87,7 +94,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 text-emerald-400 text-[11px] font-medium bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded-full">
               <Wifi className="w-3 h-3" />
-              <span>Low-Bandwidth Sync Online</span>
+              <span>Staging workspace</span>
             </span>
 
             {/* Quick Role Switcher */}
@@ -173,6 +180,8 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             </div>
           </div>
         </div>
+
+        <div className="campus-header-tools"><GlobalSearch navigate={onSelectTab}/><NotificationCenter/><label className="campus-language">Language<select aria-label="Portal language" defaultValue="en"><option value="en">English</option><option disabled>Kpelle — translation pending</option><option disabled>Bassa — translation pending</option><option disabled>Vai — translation pending</option><option disabled>Grebo — translation pending</option></select></label></div>
 
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pt-3 border-t border-slate-800/80 mt-3 no-scrollbar">

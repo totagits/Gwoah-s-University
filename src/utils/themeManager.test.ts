@@ -16,9 +16,9 @@ test('resolveUserTheme falls back to localStorage if user profile has no prefere
   assert.equal(theme, 'light');
 });
 
-test('resolveUserTheme defaults to dark if neither preference is provided', () => {
+test('resolveUserTheme defaults to light if neither preference is provided', () => {
   const theme = resolveUserTheme(undefined, null);
-  assert.equal(theme, 'dark');
+  assert.equal(theme, 'light');
 });
 
 test('toggleTheme alternates between dark and light correctly', () => {

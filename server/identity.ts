@@ -571,7 +571,7 @@ export function installIdentity(
         .prepare(
           'SELECT id,email,role,disabled,password IS NOT NULL AS activated FROM accounts ORDER BY email',
         )
-        .all(),
+        .all().filter((account:any)=>options.users().some(user=>user.id===account.id)),
     );
   });
   app.post('/api/identity/invite', (req, res) => {
@@ -592,7 +592,7 @@ export function installIdentity(
     let profile = options.users().find((u) => u.email.toLowerCase() === email);
     if (!profile) {
       profile = {
-        id: crypto.randomUUID(),
+        id: (sql.prepare('SELECT id FROM accounts WHERE email=?').get(email) as any)?.id || crypto.randomUUID(),
         email,
         role,
         name: req.body.name.slice(0, 100),

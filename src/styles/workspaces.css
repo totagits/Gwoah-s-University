@@ -1,0 +1,398 @@
+.ws-app {
+  min-height: 100vh;
+  background: #f6f5ef;
+  color: #173e39;
+  font-family: Inter, 'Segoe UI', sans-serif;
+}
+.ws-loading {
+  padding: 80px;
+  text-align: center;
+  color: #176858;
+}
+.ws-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+}
+.ws-brand svg {
+  color: #176858;
+}
+.ws-brand small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #718077;
+  margin-top: 3px;
+}
+.ws-header {
+  height: 82px;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #dde4de;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.ws-user {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-size: 12px;
+}
+.ws-user small {
+  display: block;
+  color: #718077;
+  margin-top: 5px;
+}
+.ws-sidebar {
+  position: fixed;
+  top: 82px;
+  bottom: 0;
+  width: 228px;
+  padding: 28px 16px;
+  border-right: 1px solid #dde4de;
+  background: #fafaf6;
+  overflow: auto;
+}
+.ws-sidebar button {
+  width: 100%;
+  padding: 12px 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 12px;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: #5b6e64;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+.ws-sidebar button.active {
+  background: #176858;
+  color: #fff;
+}
+.ws-sidebar-note {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #7b897f;
+  padding: 24px 12px;
+}
+.ws-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #7c8b7e;
+  text-transform: uppercase;
+}
+.ws-main {
+  margin-left: 228px;
+  padding: 35px;
+  max-width: 1600px;
+}
+.ws-page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 28px;
+  gap: 15px;
+}
+.ws-page-head h1 {
+  font-family: Georgia, serif;
+  font-size: 35px;
+  font-weight: 400;
+  margin: 10px 0;
+}
+.ws-main .campus-panel h3 {
+  font-size: 17px;
+}
+.ws-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+}
+.ws-metrics > div {
+  background: #fff;
+  border: 1px solid #dde4de;
+  border-radius: 12px;
+  padding: 22px;
+}
+.ws-metrics span {
+  font-size: 11px;
+  color: #78867c;
+}
+.ws-metrics strong {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 34px;
+  font-weight: 400;
+  color: #176858;
+  margin-top: 12px;
+}
+.ws-metrics .ws-small-number {
+  font:
+    600 16px 'Segoe UI',
+    sans-serif;
+}
+.ws-badge {
+  display: inline-block;
+  background: #edf4ef;
+  color: #276253;
+  border: 1px solid #d7e5da;
+  border-radius: 5px;
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 4px 7px;
+}
+.ws-table {
+  width: 100%;
+  overflow: auto;
+  margin: 20px 0;
+}
+.ws-table table {
+  border-collapse: collapse;
+  min-width: 560px;
+  font-size: 12px;
+  width: 100%;
+}
+.ws-table th {
+  font-size: 10px;
+  letter-spacing: 0.035em;
+  color: #7a887e;
+  background: #f6f8f4;
+  border-bottom: 1px solid #dce5dc;
+  padding: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+.ws-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #e7ece4;
+  vertical-align: top;
+  line-height: 1.6;
+}
+.ws-table td small {
+  display: block;
+  font-size: 10px;
+  color: #7d8b81;
+  margin-top: 3px;
+}
+.ws-table td pre {
+  font-size: 10px;
+  max-height: 300px;
+  max-width: 400px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+.ws-form-details {
+  border: 1px dashed #cfdbcf;
+  border-radius: 8px;
+  padding: 14px 17px;
+  margin: 15px 0;
+  background: #fbfcf9;
+}
+.ws-form-details > summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: #176858;
+  cursor: pointer;
+}
+.ws-table .ws-form-details {
+  min-width: 180px;
+  margin: 0 0 6px;
+  padding: 8px;
+}
+.ws-table .ws-form-details[open] {
+  min-width: 300px;
+}
+.ws-table .campus-form {
+  display: flex;
+  flex-direction: column;
+}
+.ws-table .campus-form label {
+  font-size: 10px;
+}
+.ws-main input,
+.ws-main select,
+.ws-main textarea {
+  padding: 10px 11px;
+  border: 1px solid #ccd9ce;
+  background: #fff;
+  color: #173e39;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 12px;
+}
+.ws-main input[type='checkbox'] {
+  width: auto;
+}
+.ws-main label {
+  font-size: 12px;
+}
+.ws-error {
+  background: #fbece9;
+  border: 1px solid #e9cbc4;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #903e31;
+  margin-bottom: 22px;
+}
+.ws-steps {
+  margin: 20px 0;
+  padding-left: 23px;
+  display: grid;
+  gap: 20px;
+}
+.ws-steps li {
+  padding-left: 7px;
+  font-size: 13px;
+}
+.ws-steps p {
+  font-size: 12px;
+  color: #76857b;
+  margin: 6px 0;
+}
+.ws-welcome {
+  max-width: 1000px;
+  margin: auto;
+  padding: 70px 35px;
+}
+.ws-welcome > .ws-brand {
+  margin-bottom: 100px;
+}
+.ws-welcome h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(45px, 7vw, 76px);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 20px 0;
+}
+.ws-welcome > p {
+  font-size: 16px;
+  line-height: 1.8;
+  max-width: 570px;
+  color: #748278;
+  margin: 25px 0;
+}
+.ws-welcome .campus-muted {
+  font-size: 12px;
+}
+.ws-mobile-nav {
+  display: none;
+}
+.ws-main .campus-workspace {
+  padding-top: 0;
+}
+.ws-main .campus-workspace > h2 {
+  font-size: 28px;
+}
+.ws-main .campus-panel {
+  box-shadow: none;
+}
+.ws-main .campus-form {
+  margin-top: 22px;
+}
+.ws-header .campus-button {
+  font-size: 11px;
+}
+.ws-header .ws-user > span {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1000px) {
+  .ws-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ws-main {
+    padding: 24px;
+  }
+  .ws-sidebar {
+    width: 205px;
+  }
+  .ws-main {
+    margin-left: 205px;
+  }
+  .ws-header {
+    padding: 0 22px;
+  }
+  .ws-user > span {
+    max-width: 180px;
+  }
+}
+@media (max-width: 700px) {
+  .ws-sidebar {
+    display: none;
+  }
+  .ws-main {
+    margin-left: 0;
+    padding: 20px 15px;
+  }
+  .ws-header {
+    height: 76px;
+    padding: 0 15px;
+  }
+  .ws-brand {
+    font-size: 14px;
+  }
+  .ws-user > span {
+    display: none;
+  }
+  .ws-header .campus-button {
+    padding: 8px;
+  }
+  .ws-mobile-nav {
+    display: block;
+    margin-bottom: 25px;
+  }
+  .ws-mobile-nav label {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 11px;
+  }
+  .ws-mobile-nav select {
+    flex: 1;
+  }
+  .ws-page-head h1 {
+    font-size: 27px;
+  }
+  .ws-page-head .campus-button {
+    font-size: 10px;
+    padding: 9px;
+  }
+  .ws-metrics {
+    gap: 10px;
+  }
+  .ws-metrics > div {
+    padding: 15px;
+  }
+  .ws-metrics strong {
+    font-size: 29px;
+  }
+  .ws-main .campus-panel {
+    padding: 18px;
+  }
+  .ws-welcome {
+    padding: 35px 25px;
+  }
+  .ws-welcome > .ws-brand {
+    margin-bottom: 80px;
+  }
+  .ws-page-head {
+    align-items: end;
+  }
+  .ws-main .campus-form {
+    grid-template-columns: 1fr;
+  }
+  .ws-welcome > p {
+    font-size: 14px;
+  }
+}

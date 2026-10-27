@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Panel, Empty, RecordList } from './CampusServices';
-import { useCampus } from './CampusContext';
+import { Panel, Empty, RecordList } from './Common';
+
 import { useLocalization } from '../../i18n/Localization';
 import { parseCSV } from '../../utils/importCSV';
 

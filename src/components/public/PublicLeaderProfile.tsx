@@ -69,7 +69,11 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [useSecondaryPhoto, setUseSecondaryPhoto] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState('');
+  const [sidebarCategory, setSidebarCategory] = useState<
+    'all' | 'Executive Leadership' | 'Governing Trustees' | 'Professors & Academic Deans'
+  >('all');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [copyFeedbackToast, setCopyFeedbackToast] = useState(false);
 
   // Scroll to top and reset state when profile changes
   useEffect(() => {
@@ -86,67 +90,67 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
   const nextMember =
     currentIndex >= 0 && currentIndex < allMembers.length - 1 ? allMembers[currentIndex + 1] : null;
 
-  // Copy shareable unique URL to clipboard
+  // Copy shareable unique URL to clipboard with fallback and toast feedback
   const handleCopyLink = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const shareUrl = `${origin}/#leader=${profile.id}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        setCopiedLink(true);
-        setTimeout(() => setCopiedLink(false), 2500);
-      });
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const shareUrl = `${origin}${pathname}#leader=${profile.id}`;
+
+    const onSuccess = () => {
+      setCopiedLink(true);
+      setCopyFeedbackToast(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+      setTimeout(() => setCopyFeedbackToast(false), 3500);
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(onSuccess)
+        .catch(() => fallbackCopy(shareUrl, onSuccess));
+    } else {
+      fallbackCopy(shareUrl, onSuccess);
+    }
+  };
+
+  const fallbackCopy = (text: string, onSuccess: () => void) => {
+    try {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.setAttribute('readonly', '');
+      el.style.position = 'fixed';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(el);
+      if (successful) onSuccess();
+    } catch (e) {
+      console.warn('Clipboard copy fallback error', e);
     }
   };
 
   const currentDisplayedImage =
     useSecondaryPhoto && profile.secondaryImage ? profile.secondaryImage : profile.image;
 
-  // Executive Core Three for the quick top switcher: Chancellor, President, and Board Chairman
-  const executiveOfficers = [
-    {
-      id: 'chancellor',
-      title: 'Chancellor',
-      role: 'Bishop Dr. Darlingston G. Johnson',
-      subtitle: 'Founder & Chancellor',
-      avatar: '/assets/images/hiau_chancellor_portrait_1794157550151.jpg',
-    },
-    {
-      id: 'deputy_chancellor',
-      title: 'Founding President',
-      role: 'Dr. Kona-Facia Freeman-Nepay',
-      subtitle: 'Deputy Chancellor & Founding Member',
-      avatar: '/assets/images/hiau_president_portrait_1794157550124.jpg',
-    },
-    {
-      id: 'president',
-      title: 'President',
-      role: 'Asst. Prof. Mamawa M. Freeman-Moore',
-      subtitle: 'President of the University',
-      avatar: '/assets/hiau/prof_mamawa_freeman_moore.png',
-    },
-    {
-      id: 'board_chair',
-      title: 'Board Chairman',
-      role: 'Dr. Jonathan C. Taylor',
-      subtitle: 'Chairman, Board of Trustees',
-      avatar: '/assets/images/hiau_chair_portrait_1794157551551.jpg',
-    },
-  ];
-
-  // Filter groups for side-navigation search
+  // Filter all 19 leader records across groups and search query
+  const q = sidebarSearch.toLowerCase().trim();
   const filteredGroups = LEADER_GROUPS.map((group) => {
-    const q = sidebarSearch.toLowerCase().trim();
+    if (sidebarCategory !== 'all' && group.category !== sidebarCategory) {
+      return null;
+    }
     if (!q) return group;
-    return {
-      ...group,
-      members: group.members.filter(
-        (m) =>
-          m.name.toLowerCase().includes(q) ||
-          m.role.toLowerCase().includes(q) ||
-          m.badge.toLowerCase().includes(q)
-      ),
-    };
-  }).filter((group) => group.members.length > 0);
+    const matched = group.members.filter(
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        m.role.toLowerCase().includes(q) ||
+        m.badge.toLowerCase().includes(q) ||
+        group.category.toLowerCase().includes(q)
+    );
+    return matched.length > 0 ? { ...group, members: matched } : null;
+  }).filter((group): group is typeof LEADER_GROUPS[0] => group !== null);
+
+  const totalFilteredCount = filteredGroups.reduce((acc, g) => acc + g.members.length, 0);
 
   return (
     <div className="bg-[#FAF8FB] min-h-screen text-[#2E0F34] animate-in fade-in duration-300">
@@ -260,7 +264,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
           {/* SLEEK, VERTICAL SIDE-NAVIGATION BAR (STICKY DESKTOP MENU) */}
           {/* ======================================================================= */}
           <aside
-            className={`w-full lg:w-80 shrink-0 bg-white border-2 border-purple-200/90 rounded-2xl shadow-md p-4 lg:sticky lg:top-24 transition-all z-20 ${
+            className={`w-full lg:w-84 shrink-0 bg-white border-2 border-purple-200/90 rounded-2xl shadow-md p-4 lg:sticky lg:top-24 transition-all z-20 ${
               mobileSidebarOpen ? 'block' : 'hidden lg:block'
             }`}
           >
@@ -272,121 +276,125 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xs font-collegiate font-black uppercase tracking-wider text-[#4A1249]">
-                    Institutional Leaders
+                    Leadership Directory
                   </h3>
-                  <span className="text-[10px] text-slate-500 font-medium">Direct Switch Menu</span>
+                  <span className="text-[10px] text-slate-500 font-medium">19 Officers, Trustees & Faculty</span>
                 </div>
               </div>
 
               {/* Mobile close button */}
               <button
                 onClick={() => setMobileSidebarOpen(false)}
-                className="lg:hidden p-1 text-slate-500 hover:text-slate-800"
+                className="lg:hidden p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
+                aria-label="Close directory menu"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Dedicated Primary Quick Switcher: Chancellor, President & Board Chairman */}
-            <div className="mt-3.5 space-y-2">
-              <div className="text-[10px] font-collegiate font-black uppercase tracking-widest text-[#A17A32] px-2 flex items-center justify-between">
-                <span>Executive Officers</span>
-                <span className="text-[#C39A53]">• Core</span>
+            {/* ================================================================= */}
+            {/* TOP SEARCH BAR (INSTANT FILTER ACROSS ALL 19 LEADERSHIP PROFILES) */}
+            {/* ================================================================= */}
+            <div className="mt-3 space-y-2.5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-[#822180] absolute left-2.5 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search faculty, staff & leadership..."
+                  value={sidebarSearch}
+                  onChange={(e) => setSidebarSearch(e.target.value)}
+                  className="w-full bg-[#FAF8FB] border border-purple-200 focus:border-[#4A1249] focus:ring-2 focus:ring-[#C39A53]/40 text-xs rounded-lg pl-8 pr-7 py-2 text-slate-900 font-medium placeholder-slate-400 transition-all outline-none"
+                />
+                {sidebarSearch && (
+                  <button
+                    onClick={() => setSidebarSearch('')}
+                    className="absolute right-2 top-2 p-0.5 text-slate-400 hover:text-slate-700 cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
-              <div className="space-y-1.5">
-                {executiveOfficers.map((exec) => {
-                  const isCurrent = exec.id === profile.id;
+              {/* Category Filter Chips */}
+              <div className="flex flex-wrap items-center gap-1">
+                {[
+                  { id: 'all', label: 'All', count: 19 },
+                  { id: 'Executive Leadership', label: 'Exec', count: 5 },
+                  { id: 'Governing Trustees', label: 'Trustees', count: 7 },
+                  { id: 'Professors & Academic Deans', label: 'Faculty', count: 7 },
+                ].map((tab) => {
+                  const isActive = sidebarCategory === tab.id;
                   return (
                     <button
-                      key={exec.id}
-                      onClick={() => {
-                        onSelectProfile(exec.id);
-                        setMobileSidebarOpen(false);
-                      }}
-                      className={`w-full text-left p-3 rounded-xl transition-all flex items-center gap-3 cursor-pointer group border ${
-                        isCurrent
-                          ? 'bg-[#4A1249] text-white shadow-lg border-[#C39A53] ring-2 ring-[#C39A53]'
-                          : 'bg-[#FAF8FB] hover:bg-purple-50 text-slate-800 border-purple-100 hover:border-purple-300'
+                      key={tab.id}
+                      onClick={() => setSidebarCategory(tab.id as typeof sidebarCategory)}
+                      className={`text-[10px] px-2 py-1 rounded-md font-bold tracking-tight transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-[#4A1249] text-white shadow-xs'
+                          : 'bg-purple-50 text-slate-700 hover:bg-purple-100 hover:text-[#4A1249]'
                       }`}
+                      style={isActive ? { color: '#FFFFFF' } : undefined}
                     >
-                      {/* Avatar */}
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-[#C39A53] bg-purple-900 shadow-xs">
-                        <img
-                          src={exec.avatar}
-                          alt={exec.role}
-                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <span
-                            className={`text-[10px] font-black uppercase tracking-wider ${
-                              isCurrent ? 'text-[#FCD34D]' : 'text-[#822180]'
-                            }`}
-                            style={isCurrent ? { color: '#FCD34D' } : undefined}
-                          >
-                            {exec.title}
-                          </span>
-                          {isCurrent && (
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#C39A53] ring-2 ring-white/60 animate-pulse" />
-                          )}
-                        </div>
-                        <div
-                          className={`text-xs font-bold truncate leading-tight mt-0.5 ${
-                            isCurrent ? 'text-white drop-shadow-xs' : 'text-slate-900 group-hover:text-[#4A1249]'
-                          }`}
-                          style={isCurrent ? { color: '#FFFFFF' } : undefined}
-                        >
-                          {exec.role}
-                        </div>
-                      </div>
-
-                      <ChevronRight
-                        className={`w-4 h-4 shrink-0 transition-transform ${
-                          isCurrent
-                            ? 'text-[#FCD34D] translate-x-0.5'
-                            : 'text-slate-400 group-hover:text-[#4A1249]'
-                        }`}
-                      />
+                      {tab.label} <span className="opacity-80">({tab.count})</span>
                     </button>
                   );
                 })}
               </div>
+
+              {/* Result Summary Bar when filtering */}
+              {(sidebarSearch.trim() || sidebarCategory !== 'all') && (
+                <div className="flex items-center justify-between text-[10px] px-1 text-slate-500 font-medium">
+                  <span>
+                    Showing <strong className="text-[#4A1249] font-bold">{totalFilteredCount}</strong> leader{totalFilteredCount !== 1 ? 's' : ''}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setSidebarSearch('');
+                      setSidebarCategory('all');
+                    }}
+                    className="text-[#A17A32] hover:text-[#4A1249] font-bold cursor-pointer underline"
+                  >
+                    Reset filters
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Quick Search Input */}
-            <div className="mt-4 pt-3 border-t border-purple-100">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Search other trustees & faculty..."
-                  value={sidebarSearch}
-                  onChange={(e) => setSidebarSearch(e.target.value)}
-                  className="w-full bg-[#FAF8FB] border border-purple-200 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-[#4A1249] text-slate-800"
-                />
-              </div>
-            </div>
-
-            {/* Secondary Leader Groups (Trustees & Professors) */}
-            <div className="mt-3 space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
-              {filteredGroups
-                .filter((g) => g.category !== 'Executive Leadership')
-                .map((group, gidx) => (
-                  <div key={gidx} className="space-y-1">
-                    <div className="px-2 py-0.5 text-[9px] font-collegiate font-bold uppercase tracking-widest text-slate-500 bg-purple-50/70 rounded">
-                      {group.category}
+            {/* ================================================================= */}
+            {/* DYNAMIC LEADERSHIP GROUPS & MEMBERS LIST */}
+            {/* ================================================================= */}
+            <div className="mt-3.5 space-y-4 max-h-[520px] overflow-y-auto pr-1">
+              {totalFilteredCount === 0 ? (
+                <div className="p-6 text-center bg-[#FAF8FB] border border-dashed border-purple-200 rounded-xl space-y-2">
+                  <Search className="w-6 h-6 text-slate-400 mx-auto" />
+                  <p className="text-xs font-bold text-slate-700">No leaders found</p>
+                  <p className="text-[11px] text-slate-500">
+                    No results matching "{sidebarSearch}".
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSidebarSearch('');
+                      setSidebarCategory('all');
+                    }}
+                    className="text-xs font-bold text-[#4A1249] hover:text-[#661B69] underline cursor-pointer pt-1 block mx-auto"
+                  >
+                    Clear Search Query
+                  </button>
+                </div>
+              ) : (
+                filteredGroups.map((group, gidx) => (
+                  <div key={gidx} className="space-y-1.5">
+                    {/* Category Label */}
+                    <div className="px-2 py-1 text-[10px] font-collegiate font-black uppercase tracking-wider text-[#A17A32] bg-[#FAF4E8] border border-[#E7D5B5] rounded-md flex items-center justify-between">
+                      <span>{group.category}</span>
+                      <span className="text-[#8C6215] font-bold">• {group.members.length}</span>
                     </div>
 
+                    {/* Member Buttons */}
                     <div className="space-y-1 pt-0.5">
                       {group.members.map((member) => {
-                        const isSelected = member.id === profile.id;
+                        const isCurrent = member.id === profile.id;
                         return (
                           <button
                             key={member.id}
@@ -394,47 +402,75 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                               onSelectProfile(member.id);
                               setMobileSidebarOpen(false);
                             }}
-                            className={`w-full text-left p-2 rounded-lg transition-all flex items-center gap-2.5 cursor-pointer group ${
-                              isSelected
-                                ? 'bg-[#4A1249] text-white shadow-md font-bold border-l-4 border-[#C39A53]'
-                                : 'text-slate-700 hover:bg-purple-50/80 hover:text-[#4A1249]'
+                            className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 cursor-pointer group border ${
+                              isCurrent
+                                ? 'bg-[#4A1249] text-white shadow-md border-2 border-[#C39A53] ring-2 ring-[#C39A53]/50'
+                                : 'bg-white hover:bg-purple-50/70 text-slate-800 border-purple-100 hover:border-purple-300'
                             }`}
                           >
                             {/* Avatar */}
-                            <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-purple-300 bg-purple-50">
+                            <div
+                              className={`relative w-9 h-9 rounded-full overflow-hidden shrink-0 border-2 ${
+                                isCurrent ? 'border-[#C39A53] ring-1 ring-white' : 'border-purple-200'
+                              } bg-purple-900 shadow-xs`}
+                            >
                               <img
                                 src={member.avatar}
                                 alt={member.name}
-                                className="w-full h-full object-cover object-top"
+                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
                               />
                             </div>
 
+                            {/* Info */}
                             <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span
+                                  className={`text-[9px] font-black uppercase tracking-wider ${
+                                    isCurrent ? 'text-[#FCD34D]' : 'text-[#822180]'
+                                  }`}
+                                  style={isCurrent ? { color: '#FCD34D' } : undefined}
+                                >
+                                  {member.badge}
+                                </span>
+                                {isCurrent && (
+                                  <span className="w-2 h-2 rounded-full bg-[#C39A53] ring-2 ring-white/70 animate-pulse shrink-0" />
+                                )}
+                              </div>
                               <div
-                                className={`text-[11px] font-bold truncate leading-tight ${
-                                  isSelected
-                                    ? 'text-white drop-shadow-xs'
-                                    : 'text-slate-800 group-hover:text-[#4A1249]'
+                                className={`text-xs font-extrabold truncate leading-tight mt-0.5 ${
+                                  isCurrent ? 'text-white drop-shadow-xs' : 'text-[#1F0620] group-hover:text-[#4A1249]'
                                 }`}
-                                style={isSelected ? { color: '#FFFFFF' } : undefined}
+                                style={isCurrent ? { color: '#FFFFFF' } : undefined}
                               >
                                 {member.name}
                               </div>
                               <div
-                                className={`text-[10px] truncate leading-tight ${
-                                  isSelected ? 'text-[#FCD34D] font-bold' : 'text-slate-500'
+                                className={`text-[10px] truncate leading-tight mt-0.5 ${
+                                  isCurrent ? 'text-purple-100 font-medium' : 'text-slate-500'
                                 }`}
-                                style={isSelected ? { color: '#FCD34D' } : undefined}
+                                style={isCurrent ? { color: '#F5EDF8' } : undefined}
                               >
                                 {member.role}
                               </div>
                             </div>
+
+                            <ChevronRight
+                              className={`w-4 h-4 shrink-0 transition-transform ${
+                                isCurrent
+                                  ? 'text-[#FCD34D] translate-x-0.5'
+                                  : 'text-slate-400 group-hover:text-[#4A1249]'
+                              }`}
+                            />
                           </button>
                         );
                       })}
                     </div>
                   </div>
-                ))}
+                ))
+              )}
             </div>
 
             {/* Bottom Overview Link */}
@@ -444,10 +480,10 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                   onClose();
                   setTimeout(() => onNavigateSection('about'), 50);
                 }}
-                className="text-[11px] font-bold text-[#4A1249] hover:text-[#661B69] cursor-pointer inline-flex items-center gap-1"
+                className="text-[11px] font-bold text-[#4A1249] hover:text-[#661B69] cursor-pointer inline-flex items-center gap-1 group"
               >
                 <span>View Full 19-Member Assembly</span>
-                <ArrowRight className="w-3 h-3 text-[#C39A53]" />
+                <ArrowRight className="w-3.5 h-3.5 text-[#C39A53] group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </aside>
@@ -538,6 +574,47 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                           <ExternalLink className="w-3 h-3 text-white/80 group-hover:translate-x-0.5 transition-transform" />
                         </a>
                       )}
+
+                      {/* Actionable Profile Share Button */}
+                      <button
+                        onClick={handleCopyLink}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAF4FB] hover:bg-[#F3EBF5] text-[#4A1249] text-xs font-bold transition-all shadow-xs hover:shadow border border-purple-300 hover:border-[#4A1249] cursor-pointer group active:scale-95 ml-auto sm:ml-0"
+                        title="Copy direct share link to this leader profile"
+                      >
+                        {copiedLink ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="font-bold text-emerald-700">Link Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="w-3.5 h-3.5 text-[#4A1249] group-hover:scale-110 transition-transform" />
+                            <span className="font-bold text-[#4A1249]">Share Profile</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* If no social links exist, still provide the direct share button */}
+                  {(!profile.socialLinks || (!profile.socialLinks.linkedin && !profile.socialLinks.twitter && !profile.socialLinks.website)) && (
+                    <div className="flex items-center gap-2 mt-3.5 pt-1">
+                      <button
+                        onClick={handleCopyLink}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#FAF4FB] hover:bg-[#F3EBF5] text-[#4A1249] text-xs font-bold transition-all shadow-xs hover:shadow border border-purple-300 hover:border-[#4A1249] cursor-pointer group active:scale-95"
+                      >
+                        {copiedLink ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="font-bold text-emerald-700">Link Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="w-3.5 h-3.5 text-[#4A1249] group-hover:scale-110 transition-transform" />
+                            <span className="font-bold text-[#4A1249]">Share Profile URL</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
 
@@ -1068,9 +1145,27 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 )}
               </div>
             </div>
-          </main>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 3. FLOATING COPY LINK FEEDBACK TOAST NOTIFICATION */}
+      {/* ========================================================================= */}
+      {copyFeedbackToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#1F0620] text-white px-5 py-3.5 rounded-xl shadow-2xl border-2 border-[#C39A53] flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="w-8 h-8 rounded-full bg-[#C39A53] flex items-center justify-center shrink-0 shadow-xs">
+            <Check className="w-4 h-4 text-[#1F0620]" />
+          </div>
+          <div>
+            <div className="text-xs font-collegiate font-black uppercase tracking-wider text-[#FCD34D]" style={{ color: '#FCD34D' }}>
+              Profile Link Copied to Clipboard!
+            </div>
+            <div className="text-[11px] text-purple-100 font-medium">
+              Direct link for {profile.name} is ready to paste and share.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

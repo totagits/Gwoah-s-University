@@ -6,6 +6,10 @@ COPY . .
 RUN npm run build
 
 FROM node:24-bookworm-slim
+# Coolify's HTTP healthcheck uses curl (falling back to wget).
+# Keep curl in the runtime image even though Dockerfile also has a Node healthcheck.
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production PORT=3000 DATA_DIR=/app/runtime-data
 WORKDIR /app
 COPY --from=build --chown=node:node /app/node_modules ./node_modules

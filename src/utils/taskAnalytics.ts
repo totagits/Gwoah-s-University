@@ -11,6 +11,7 @@ export interface TaskMetricsSummary {
   urgentCount: number;
   highCount: number;
   overdueTasksCount: number;
+  flaggedCount?: number;
   byCategory: Record<string, number>;
   byDepartment: Record<string, number>;
   slaComplianceRate: number;
@@ -32,6 +33,7 @@ export function computeTaskAnalytics(
   let backlogTasks = 0;
   let urgentCount = 0;
   let highCount = 0;
+  let flaggedCount = 0;
   let overdueTasksCount = 0;
 
   const byCategory: Record<string, number> = {};
@@ -46,6 +48,7 @@ export function computeTaskAnalytics(
 
     if (task.priority === 'urgent') urgentCount++;
     if (task.priority === 'high') highCount++;
+    if (task.isPriorityFlagged) flaggedCount++;
 
     // Overdue check
     if (task.status !== 'completed') {
@@ -78,6 +81,7 @@ export function computeTaskAnalytics(
     completionRate,
     urgentCount,
     highCount,
+    flaggedCount,
     overdueTasksCount,
     byCategory,
     byDepartment,
@@ -86,7 +90,7 @@ export function computeTaskAnalytics(
 }
 
 /**
- * Filters tasks by search query, status, priority, or department.
+ * Filters tasks by search query, status, priority, department, or urgent/flagged toggles.
  */
 export function filterTasks(
   tasks: UniversityTask[],
@@ -95,9 +99,20 @@ export function filterTasks(
     priority?: TaskPriority | 'all';
     department?: string;
     searchQuery?: string;
+    urgentOnly?: boolean;
+    priorityFlaggedOnly?: boolean;
   }
 ): UniversityTask[] {
   return tasks.filter((task) => {
+    if (filters.urgentOnly) {
+      const isUrgent = task.priority === 'urgent' || task.priority === 'high' || !!task.isPriorityFlagged;
+      if (!isUrgent) {
+        return false;
+      }
+    }
+    if (filters.priorityFlaggedOnly && !task.isPriorityFlagged) {
+      return false;
+    }
     if (filters.status && filters.status !== 'all' && task.status !== filters.status) {
       return false;
     }

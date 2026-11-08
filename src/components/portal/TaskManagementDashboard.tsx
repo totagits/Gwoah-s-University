@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Kanban,
   Table as TableIcon,
+  Flag,
 } from 'lucide-react';
 import { UniversityTask, TaskStatus, TaskPriority, TaskCategory, UserProfile } from '../../types';
 import { api } from '../../services/api';
@@ -42,6 +43,8 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [urgentOnlyFilter, setUrgentOnlyFilter] = useState(false);
+  const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
 
   // Create Task Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -59,6 +62,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
     dueDate: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
     slaDays: 14,
     tags: 'NCHE, Compliance',
+    isPriorityFlagged: false,
   });
 
   const fetchTasks = async () => {
@@ -70,6 +74,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
         status: statusFilter,
         department: departmentFilter,
         search: searchQuery,
+        urgentOnly: urgentOnlyFilter,
       });
       if (res.tasks) {
         setTasks(res.tasks);
@@ -83,7 +88,34 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
 
   useEffect(() => {
     fetchTasks();
-  }, [categoryFilter, priorityFilter, statusFilter, departmentFilter, searchQuery]);
+  }, [categoryFilter, priorityFilter, statusFilter, departmentFilter, searchQuery, urgentOnlyFilter]);
+
+  // Priority Flag Handler allowing faculty/staff to toggle High Priority status
+  const handleTogglePriorityFlag = async (task: UniversityTask) => {
+    const newFlag = !task.isPriorityFlagged;
+    try {
+      const res = await api.updateTask(task.id, {
+        isPriorityFlagged: newFlag,
+        priority: newFlag ? (task.priority === 'urgent' ? 'urgent' : 'high') : task.priority,
+        priorityFlaggedBy: newFlag ? currentUser.name : undefined,
+        flaggedAt: newFlag ? new Date().toISOString() : undefined,
+      });
+      if (res.success && res.task) {
+        setTasks((prev) =>
+          prev.map((t) => (t.id === task.id ? { ...t, ...res.task } : t))
+        );
+        setNotificationMsg(
+          newFlag
+            ? `Priority Flag: "${task.title}" marked as HIGH PRIORITY institutional deliverable.`
+            : `Priority Flag removed from "${task.title}".`
+        );
+        setTimeout(() => setNotificationMsg(null), 4000);
+        if (onRefreshAnalytics) onRefreshAnalytics();
+      }
+    } catch (err) {
+      console.error('Failed to toggle priority flag:', err);
+    }
+  };
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
     try {
@@ -129,6 +161,9 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
         dueDate: new Date(newTaskData.dueDate).toISOString(),
         slaDays: Number(newTaskData.slaDays) || 14,
         tags: newTaskData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+        isPriorityFlagged: newTaskData.isPriorityFlagged,
+        priorityFlaggedBy: newTaskData.isPriorityFlagged ? currentUser.name : undefined,
+        flaggedAt: newTaskData.isPriorityFlagged ? new Date().toISOString() : undefined,
       };
 
       const res = await api.createTask(payload);
@@ -148,6 +183,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
           dueDate: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
           slaDays: 14,
           tags: 'NCHE, Compliance',
+          isPriorityFlagged: false,
         });
         if (onRefreshAnalytics) onRefreshAnalytics();
       }
@@ -166,17 +202,41 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
     { id: 'completed', label: 'Completed', color: 'emerald' },
   ];
 
-  const getPriorityBadge = (priority: TaskPriority) => {
-    switch (priority) {
-      case 'urgent':
-        return <span className="bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold px-2 py-0.5 rounded">Urgent</span>;
-      case 'high':
-        return <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded">High</span>;
-      case 'medium':
-        return <span className="bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-bold px-2 py-0.5 rounded">Medium</span>;
-      case 'low':
-        return <span className="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded">Low</span>;
-    }
+  const getPriorityBadge = (task: UniversityTask) => {
+    return (
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {task.priority === 'urgent' && (
+          <span className="bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+            <span>Urgent</span>
+          </span>
+        )}
+        {task.priority === 'high' && (
+          <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded">
+            High
+          </span>
+        )}
+        {task.priority === 'medium' && (
+          <span className="bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-bold px-2 py-0.5 rounded">
+            Medium
+          </span>
+        )}
+        {task.priority === 'low' && (
+          <span className="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded">
+            Low
+          </span>
+        )}
+        {task.isPriorityFlagged && (
+          <span
+            className="bg-[#4A1249] text-[#C39A53] border border-[#C39A53]/60 text-[9px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm"
+            title={`High Priority Flag by ${task.priorityFlaggedBy || 'Faculty'}`}
+          >
+            <Flag className="w-2.5 h-2.5 fill-[#C39A53] text-[#C39A53]" />
+            <span>PRIORITY FLAG</span>
+          </span>
+        )}
+      </div>
+    );
   };
 
   const getCategoryLabel = (cat: TaskCategory) => {
@@ -195,6 +255,8 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
         return 'IT & Connectivity';
       case 'curriculum':
         return 'Curriculum Development';
+      case 'facilities_maintenance':
+        return 'Facilities & Maintenance';
       default:
         return cat;
     }
@@ -214,7 +276,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Track accreditation deliverables, exam moderation, admissions verification, and departmental SLAs across Gwoah's University.
+            Track accreditation deliverables, exam moderation, admissions verification, and departmental SLAs across Harvest Intercontinental American University (HIAU).
           </p>
         </div>
 
@@ -262,6 +324,61 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
         </div>
       </div>
 
+      {/* Notification Toast for Priority Flagging */}
+      {notificationMsg && (
+        <div className="p-3.5 rounded-xl bg-[#4A1249]/40 border border-[#C39A53]/60 text-amber-200 text-xs flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-2.5">
+            <Flag className="w-4 h-4 text-[#C39A53] fill-[#C39A53] shrink-0" />
+            <span className="font-semibold">{notificationMsg}</span>
+          </div>
+          <button
+            onClick={() => setNotificationMsg(null)}
+            className="text-xs text-[#C39A53] font-bold hover:underline cursor-pointer ml-3"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Staff Urgent Institutional Tasks Filter Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3.5 rounded-xl text-xs">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="text-slate-400 font-semibold flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-[#C39A53]" />
+            <span>Quick Staff Filter:</span>
+          </span>
+
+          <button
+            onClick={() => setUrgentOnlyFilter(!urgentOnlyFilter)}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+              urgentOnlyFilter
+                ? 'bg-rose-500/20 text-rose-300 border-rose-500/60 shadow-md shadow-rose-500/10'
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white hover:border-slate-600'
+            }`}
+            title="Filter to view only urgent and high-priority institutional tasks"
+          >
+            <AlertCircle className={`w-3.5 h-3.5 ${urgentOnlyFilter ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
+            <span>Urgent Institutional Tasks Only</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              urgentOnlyFilter ? 'bg-rose-500 text-white' : 'bg-slate-700 text-slate-300'
+            }`}>
+              {tasks.filter((t) => t.priority === 'urgent' || t.priority === 'high' || t.isPriorityFlagged).length}
+            </span>
+          </button>
+
+          {urgentOnlyFilter && (
+            <span className="text-[11px] text-amber-400 font-medium flex items-center gap-1 bg-amber-400/10 px-2.5 py-0.5 rounded border border-amber-400/20">
+              <CheckCircle2 className="w-3 h-3 text-amber-400" />
+              <span>Viewing Urgent & Flagged Institutional Tasks</span>
+            </span>
+          )}
+        </div>
+
+        <div className="text-[11px] text-slate-400">
+          Showing <strong className="text-white">{tasks.length}</strong> tasks across departments
+        </div>
+      </div>
+
       {/* Filter and Search Toolbar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs">
         {/* Search */}
@@ -290,6 +407,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
             <option value="finance">Finance / Bursar</option>
             <option value="student_support">DEI & Student Support</option>
             <option value="it_infrastructure">IT Infrastructure</option>
+            <option value="facilities_maintenance">Facilities & Maintenance (Repairs)</option>
           </select>
         </div>
 
@@ -390,12 +508,32 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
                         key={task.id}
                         className="bg-slate-850 border border-slate-800 hover:border-amber-500/40 rounded-xl p-3.5 shadow transition-all space-y-2.5 text-xs group"
                       >
-                        {/* Priority and Category */}
+                        {/* Priority, Flag & Category */}
                         <div className="flex items-center justify-between gap-1">
-                          {getPriorityBadge(task.priority)}
-                          <span className="text-[10px] text-slate-400 font-medium truncate max-w-[120px]">
-                            {getCategoryLabel(task.category)}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {getPriorityBadge(task)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleTogglePriorityFlag(task)}
+                              className={`p-1 rounded-md transition-all cursor-pointer ${
+                                task.isPriorityFlagged
+                                  ? 'text-[#C39A53] bg-[#C39A53]/20 border border-[#C39A53]/50 shadow-sm'
+                                  : 'text-slate-500 hover:text-[#C39A53] hover:bg-slate-800'
+                              }`}
+                              title={
+                                task.isPriorityFlagged
+                                  ? `High Priority Flagged by ${task.priorityFlaggedBy || 'Faculty'} (Click to Unflag)`
+                                  : 'Mark as High Priority Flag'
+                              }
+                              aria-label={`Toggle high priority flag for ${task.title}`}
+                            >
+                              <Flag className={`w-3.5 h-3.5 ${task.isPriorityFlagged ? 'fill-[#C39A53] text-[#C39A53]' : ''}`} />
+                            </button>
+                            <span className="text-[10px] text-slate-400 font-medium truncate max-w-[95px]">
+                              {getCategoryLabel(task.category)}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Title */}
@@ -495,7 +633,27 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
                       <div className="font-semibold text-slate-200">{task.assigneeName}</div>
                       <div className="text-[10px] text-slate-500">{task.assigneeRole}</div>
                     </td>
-                    <td className="px-4 py-3">{getPriorityBadge(task.priority)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {getPriorityBadge(task)}
+                        <button
+                          onClick={() => handleTogglePriorityFlag(task)}
+                          className={`p-1 rounded-md transition-all cursor-pointer ${
+                            task.isPriorityFlagged
+                              ? 'text-[#C39A53] bg-[#C39A53]/20 border border-[#C39A53]/50 shadow-sm'
+                              : 'text-slate-500 hover:text-[#C39A53] hover:bg-slate-800'
+                          }`}
+                          title={
+                            task.isPriorityFlagged
+                              ? `High Priority Flagged by ${task.priorityFlaggedBy || 'Faculty'} (Click to Unflag)`
+                              : 'Mark as High Priority Flag'
+                          }
+                          aria-label={`Toggle high priority flag for ${task.title}`}
+                        >
+                          <Flag className={`w-3.5 h-3.5 ${task.isPriorityFlagged ? 'fill-[#C39A53] text-[#C39A53]' : ''}`} />
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="font-mono text-slate-200">
                         {new Date(task.dueDate).toLocaleDateString()}
@@ -582,6 +740,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
                     <option value="student_support">DEI & Student Support</option>
                     <option value="it_infrastructure">IT Infrastructure</option>
                     <option value="curriculum">Curriculum Development</option>
+                    <option value="facilities_maintenance">Facilities & Maintenance (Repairs)</option>
                   </select>
                 </div>
 
@@ -644,6 +803,30 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
+              </div>
+
+              {/* Priority Flag Checkbox */}
+              <div className="flex items-center gap-3 p-3 bg-[#4A1249]/20 border border-[#C39A53]/40 rounded-xl">
+                <input
+                  type="checkbox"
+                  id="taskPriorityFlagCheck"
+                  checked={newTaskData.isPriorityFlagged}
+                  onChange={(e) =>
+                    setNewTaskData({
+                      ...newTaskData,
+                      isPriorityFlagged: e.target.checked,
+                      priority: e.target.checked ? 'high' : newTaskData.priority,
+                    })
+                  }
+                  className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 bg-slate-800 border-slate-700 cursor-pointer"
+                />
+                <label
+                  htmlFor="taskPriorityFlagCheck"
+                  className="text-xs font-bold text-amber-200 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Flag className="w-3.5 h-3.5 fill-[#C39A53] text-[#C39A53]" />
+                  <span>Flag as High Priority Institutional Task (Urgent Escalation)</span>
+                </label>
               </div>
 
               <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">

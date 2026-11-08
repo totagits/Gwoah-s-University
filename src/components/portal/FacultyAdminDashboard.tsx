@@ -360,14 +360,14 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                           <td className="px-4 py-3 font-mono">{item.credits} Cr</td>
                           <td className="px-4 py-3 font-mono text-emerald-400">{item.attendanceRate}%</td>
                           <td className="px-4 py-3">
-                            {isEditing ? (
+                            {isEditing && editingScore ? (
                               <input
                                 type="number"
                                 min="0"
                                 max="100"
                                 value={editingScore.score}
                                 onChange={(e) =>
-                                  setEditingScore({ ...editingScore, score: Number(e.target.value) })
+                                  setEditingScore({ registrationId: item.registrationId, score: Number(e.target.value) })
                                 }
                                 className="w-20 px-2 py-1 bg-slate-800 border border-amber-500 rounded text-xs text-white font-mono font-bold"
                               />
@@ -379,11 +379,11 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                           </td>
                           <td className="px-4 py-3">
                             <span className="font-mono font-bold text-amber-400 bg-slate-800 px-2.5 py-1 rounded border border-slate-700">
-                              {isEditing ? scoreToLetterGrade(editingScore.score) : item.grade}
+                              {isEditing && editingScore ? scoreToLetterGrade(editingScore.score) : item.grade}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            {isEditing ? (
+                            {isEditing && editingScore ? (
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => handleSaveGrade(item.registrationId, editingScore.score)}

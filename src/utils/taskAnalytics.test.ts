@@ -86,3 +86,44 @@ test('filterTasks correctly filters by status, priority, and search query', () =
   assert.equal(searched.length, 1);
   assert.equal(searched[0].id, 't-3');
 });
+
+test('filterTasks correctly filters with urgentOnly and priorityFlaggedOnly options', () => {
+  const tasksWithFlags: UniversityTask[] = [
+    { ...mockTasks[0], isPriorityFlagged: true }, // urgent + flagged
+    { ...mockTasks[1], priority: 'high', isPriorityFlagged: false }, // high
+    { ...mockTasks[2], priority: 'low', isPriorityFlagged: true }, // low + flagged
+    {
+      id: 't-4',
+      title: 'Routine IT Backup',
+      description: 'Weekly backup',
+      category: 'it_infrastructure',
+      priority: 'low',
+      status: 'todo',
+      assigneeName: 'IT Staff',
+      assigneeRole: 'super_admin',
+      assigneeEmail: 'it@hiau.edu.lr',
+      dueDate: '2026-11-20T00:00:00Z',
+      createdAt: '2026-10-01T00:00:00Z',
+      updatedAt: '2026-10-01T00:00:00Z',
+      tags: ['IT'],
+      department: 'IT',
+      slaDays: 14,
+      isPriorityFlagged: false,
+    },
+  ];
+
+  // Urgent only includes urgent, high, or isPriorityFlagged
+  const urgentOnlyResults = filterTasks(tasksWithFlags, { urgentOnly: true });
+  assert.equal(urgentOnlyResults.length, 3);
+  assert.deepEqual(urgentOnlyResults.map((t) => t.id), ['t-1', 't-2', 't-3']);
+
+  // Flagged only includes only tasks where isPriorityFlagged is true
+  const flaggedOnlyResults = filterTasks(tasksWithFlags, { priorityFlaggedOnly: true });
+  assert.equal(flaggedOnlyResults.length, 2);
+  assert.deepEqual(flaggedOnlyResults.map((t) => t.id), ['t-1', 't-3']);
+
+  // Analytics flagged count
+  const analytics = computeTaskAnalytics(tasksWithFlags);
+  assert.equal(analytics.flaggedCount, 2);
+});
+

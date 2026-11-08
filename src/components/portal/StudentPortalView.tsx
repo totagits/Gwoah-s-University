@@ -23,6 +23,10 @@ import {
   Landmark,
   Scale,
   Bookmark,
+  Wrench,
+  Video,
+  History,
+  Users,
 } from 'lucide-react';
 import {
   StudentProfileData,
@@ -36,17 +40,30 @@ import { api } from '../../services/api';
 import { calculateDegreeProgress } from '../../utils/academicRules';
 import { SharedResourceLibrary } from './SharedResourceLibrary';
 import { AcademicCalendarView } from './AcademicCalendarView';
+import { CampusFacilitiesFeedback } from './CampusFacilitiesFeedback';
+import { VirtualClassroomCollab } from './VirtualClassroomCollab';
+import { StudentUnifiedSearchFilter } from './StudentUnifiedSearchFilter';
+import { StudentActivityTimeline } from './StudentActivityTimeline';
+import { AcademicPeerMessagingModal } from './AcademicPeerMessagingModal';
 
 interface StudentPortalViewProps {
   currentUser: UserProfile;
   onOpenPrintModal: (docType: 'transcript' | 'financial_statement') => void;
+  initialTab?: 'grades' | 'materials' | 'calendar' | 'library' | 'messages' | 'facilities' | 'classroom' | 'activity';
 }
 
 export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
   currentUser,
   onOpenPrintModal,
+  initialTab = 'grades',
 }) => {
-  const [activeTab, setActiveTab] = useState<'grades' | 'materials' | 'calendar' | 'library' | 'messages'>('grades');
+  const [activeTab, setActiveTab] = useState<'grades' | 'materials' | 'calendar' | 'library' | 'messages' | 'facilities' | 'classroom' | 'activity'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [student, setStudent] = useState<StudentProfileData | null>(null);
   const [registrations, setRegistrations] = useState<StudentRegistrationItem[]>([]);
   const [financialAccount, setFinancialAccount] = useState<FinancialAccount | null>(null);
@@ -65,6 +82,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
   const [messageContent, setMessageContent] = useState('');
   const [sendingMsg, setSendingMsg] = useState(false);
   const [msgNotification, setMsgNotification] = useState<string | null>(null);
+  const [activePeerMaterial, setActivePeerMaterial] = useState<CourseMaterial | null>(null);
 
   const studentId = currentUser.role === 'student' ? currentUser.id : 'u-student';
 
@@ -232,11 +250,22 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
         </div>
       )}
 
-      {/* Tabs: Grades, Syllabi & Notes, Messages */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+      {/* Real-Time Search Filter across Digital Course Materials, Library Resources, and Exam Dates */}
+      <StudentUnifiedSearchFilter
+        enrolledCourseCodes={registrations.map((r) => r.courseCode)}
+        onOpenResource={() => setActiveTab('library')}
+        onOpenMaterial={(mat) => {
+          setActiveTab('materials');
+          if (mat) setActivePeerMaterial(mat);
+        }}
+        onNavigateToCalendar={() => setActiveTab('calendar')}
+      />
+
+      {/* Tabs: Grades, Syllabi & Notes, Messages, Activity */}
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('grades')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'grades'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-300 hover:text-white hover:bg-slate-900'
@@ -247,8 +276,23 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
         </button>
 
         <button
+          onClick={() => setActiveTab('activity')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'activity'
+              ? 'bg-[#4A1249] text-white shadow-md border border-[#C39A53]/50'
+              : 'text-slate-300 hover:text-white hover:bg-slate-900'
+          }`}
+        >
+          <History className="w-4 h-4 text-[#C39A53]" />
+          <span>Recent Activity & Progress</span>
+          <span className="text-[10px] px-1.5 py-0.5 bg-[#C39A53]/20 text-[#C39A53] rounded font-bold border border-[#C39A53]/30">
+            Live
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('materials')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'materials'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-300 hover:text-white hover:bg-slate-900'
@@ -260,7 +304,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
 
         <button
           onClick={() => setActiveTab('library')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'library'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-300 hover:text-white hover:bg-slate-900'
@@ -275,7 +319,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
 
         <button
           onClick={() => setActiveTab('calendar')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'calendar'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-300 hover:text-white hover:bg-slate-900'
@@ -290,7 +334,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
 
         <button
           onClick={() => setActiveTab('messages')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'messages'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-300 hover:text-white hover:bg-slate-900'
@@ -298,6 +342,36 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
         >
           <MessageSquare className="w-4 h-4" />
           <span>Messages & Professor Communication ({messages.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('facilities')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'facilities'
+              ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+              : 'text-slate-300 hover:text-white hover:bg-slate-900'
+          }`}
+        >
+          <Wrench className="w-4 h-4" />
+          <span>Campus Facilities & Work Orders</span>
+          <span className="text-[10px] px-1.5 py-0.5 bg-[#4A1249] text-[#C39A53] rounded font-bold border border-[#C39A53]/40">
+            Fix Tickets
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('classroom')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'classroom'
+              ? 'bg-[#4A1249] text-white font-black shadow-md border border-[#C39A53]/50'
+              : 'text-slate-300 hover:text-white hover:bg-slate-900'
+          }`}
+        >
+          <Video className="w-4 h-4 text-[#C39A53]" />
+          <span>Online Classroom & Studio</span>
+          <span className="text-[10px] px-1.5 py-0.5 bg-[#C39A53] text-[#2A082C] rounded font-bold">
+            Live Collab
+          </span>
         </button>
       </div>
 
@@ -390,6 +464,11 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
               </table>
             </div>
           </div>
+
+          {/* Dynamic Recent Academic Activity Timeline in Gradebook */}
+          <div className="pt-2">
+            <StudentActivityTimeline />
+          </div>
         </div>
       )}
 
@@ -454,23 +533,34 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      const sampleContent = `# ${mat.title}\nCourse: ${mat.courseCode}\nAuthor: ${mat.facultyAuthor}\nType: ${mat.type}\nWeek: ${mat.weekNumber}\n\n${mat.description}\n\nGwoah's University Academic Intranet Repository`;
-                      const fileName = `${mat.courseCode}_${mat.type}_Wk${mat.weekNumber}.md`;
-                      const blob = new Blob([sampleContent], { type: 'text/markdown;charset=utf-8;' });
-                      const link = document.createElement('a');
-                      link.href = URL.createObjectURL(blob);
-                      link.download = fileName;
-                      link.click();
-                      setMsgNotification(`Downloaded "${mat.title}" for offline study.`);
-                      setTimeout(() => setMsgNotification(null), 4000);
-                    }}
-                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActivePeerMaterial(mat)}
+                      className="px-3 py-1.5 bg-[#4A1249] hover:bg-[#5e185d] text-[#C39A53] border border-[#C39A53]/50 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow transition-all cursor-pointer"
+                      title={`Open collaborative peer discussion thread for ${mat.title}`}
+                    >
+                      <Users className="w-3.5 h-3.5 text-[#C39A53]" />
+                      <span>Peer Discussion</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const sampleContent = `# ${mat.title}\nCourse: ${mat.courseCode}\nAuthor: ${mat.facultyAuthor}\nType: ${mat.type}\nWeek: ${mat.weekNumber}\n\n${mat.description}\n\nHarvest Intercontinental American University (HIAU) Academic Intranet Repository`;
+                        const fileName = `${mat.courseCode}_${mat.type}_Wk${mat.weekNumber}.md`;
+                        const blob = new Blob([sampleContent], { type: 'text/markdown;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = fileName;
+                        link.click();
+                        setMsgNotification(`Downloaded "${mat.title}" for offline study.`);
+                        setTimeout(() => setMsgNotification(null), 4000);
+                      }}
+                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -560,6 +650,21 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
         </div>
       )}
 
+      {/* 6. CAMPUS FACILITIES & MAINTENANCE TICKETS TAB */}
+      {activeTab === 'facilities' && (
+        <CampusFacilitiesFeedback currentUser={currentUser} />
+      )}
+
+      {/* 7. ONLINE CLASSROOM & VISUAL COLLABORATION STUDIO TAB */}
+      {activeTab === 'classroom' && (
+        <VirtualClassroomCollab currentUser={currentUser} />
+      )}
+
+      {/* 8. RECENT ACADEMIC ACTIVITY TIMELINE TAB */}
+      {activeTab === 'activity' && (
+        <StudentActivityTimeline />
+      )}
+
       {/* COMPOSE MESSAGE TO PROFESSOR MODAL */}
       {isMessageModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
@@ -640,6 +745,16 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
             </form>
           </div>
         </div>
+      )}
+
+      {/* ACADEMIC PEER MESSAGING MODAL */}
+      {activePeerMaterial && (
+        <AcademicPeerMessagingModal
+          material={activePeerMaterial}
+          currentUser={currentUser}
+          isOpen={!!activePeerMaterial}
+          onClose={() => setActivePeerMaterial(null)}
+        />
       )}
     </div>
   );

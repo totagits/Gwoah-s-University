@@ -73,9 +73,9 @@ export const AcademicCalendarView: React.FC<AcademicCalendarViewProps> = ({ curr
   const handleExportAll = () => {
     const icsContent = generateIcsCalendar(
       events,
-      "Gwoah's University Senate Academic Calendar 2026-2027"
+      "Harvest Intercontinental American University Senate Academic Calendar 2026-2027"
     );
-    const success = downloadIcsFile('gwoahs_university_academic_calendar.ics', icsContent);
+    const success = downloadIcsFile('hiau_academic_calendar.ics', icsContent);
     if (success) {
       showToast('Downloaded full academic calendar (.ics) for Apple Calendar / Outlook / Android.');
     }
@@ -86,9 +86,9 @@ export const AcademicCalendarView: React.FC<AcademicCalendarViewProps> = ({ curr
     const examEvents = events.filter((e) => e.eventType === 'exam');
     const icsContent = generateIcsCalendar(
       examEvents,
-      "Gwoah's University Final & Midterm Examination Schedule"
+      "Harvest Intercontinental American University Final & Midterm Examination Schedule"
     );
-    const success = downloadIcsFile('gwoahs_university_exam_schedule.ics', icsContent);
+    const success = downloadIcsFile('hiau_exam_schedule.ics', icsContent);
     if (success) {
       showToast(`Exported ${examEvents.length} exam dates to .ics file.`);
     }

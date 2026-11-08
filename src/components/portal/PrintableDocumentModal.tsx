@@ -69,21 +69,23 @@ export const PrintableDocumentModal: React.FC<PrintableDocumentModalProps> = ({
           {/* Institutional Crest & Header */}
           <div className="text-center border-b-2 border-slate-900 pb-5 space-y-1">
             <div className="flex justify-center mb-2">
-              <div className="w-16 h-16 rounded-2xl bg-slate-900 text-amber-500 flex items-center justify-center font-bold text-2xl shadow">
-                <GraduationCap className="w-10 h-10" />
-              </div>
+              <img
+                src="/assets/aistudio/image_bfcc4a11.png"
+                alt="Harvest Intercontinental American University Seal"
+                className="w-16 h-16 object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-wider text-slate-950 font-serif">
-              Gwoah's University
+            <h1 className="text-2xl font-black uppercase tracking-wider text-[#4A1249] font-serif">
+              Harvest Intercontinental American University
             </h1>
             <p className="text-[11px] font-semibold text-slate-700 tracking-wide">
               REPUBLIC OF LIBERIA • CHARTERED BY THE NATIONAL COMMISSION ON HIGHER EDUCATION (NCHE)
             </p>
             <p className="text-[10px] text-slate-500 font-serif italic">
-              "Knowledge • Integrity • National Service" — Monrovia & Fendall Campuses
+              "Cura Personalis • Knowledge • Integrity • National Service" — Monrovia & Fendall Campuses
             </p>
 
-            <div className="pt-2 text-sm font-extrabold uppercase tracking-widest text-amber-800 underline">
+            <div className="pt-2 text-sm font-extrabold uppercase tracking-widest text-[#A17A32] underline">
               {documentType === 'registration_plan' && 'OFFICIAL SEMESTER REGISTRATION PLAN'}
               {documentType === 'transcript' && 'OFFICIAL CERTIFIED ACADEMIC TRANSCRIPT'}
               {documentType === 'financial_statement' && 'OFFICIAL STUDENT STATEMENT OF ACCOUNT'}

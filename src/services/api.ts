@@ -9,6 +9,9 @@ import {
   UserProfile,
   LibraryResource,
   AcademicCalendarEvent,
+  PortalNotification,
+  PeerDiscussionThread,
+  PeerDiscussionMessage,
 } from '../types';
 
 
@@ -84,11 +87,15 @@ export const api = {
     status?: string;
     department?: string;
     search?: string;
+    urgentOnly?: boolean;
+    priorityFlagged?: boolean;
   }): Promise<{ tasks: UniversityTask[] }> {
     const query = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, val]) => {
-        if (val && val !== 'all') query.append(key, val);
+        if (val !== undefined && val !== null && val !== 'all') {
+          query.append(key, String(val));
+        }
       });
     }
     const res = await fetch(`${API_BASE}/tasks?${query.toString()}`);
@@ -350,6 +357,122 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  // Notifications
+  async getNotifications(params?: { category?: string; unreadOnly?: boolean }): Promise<{
+    success: boolean;
+    count: number;
+    unreadCount: number;
+    notifications: PortalNotification[];
+  }> {
+    const query = new URLSearchParams();
+    if (params?.category && params.category !== 'all') query.append('category', params.category);
+    if (params?.unreadOnly) query.append('unreadOnly', 'true');
+    const res = await fetch(`${API_BASE}/notifications?${query.toString()}`);
+    return res.json();
+  },
+
+  async markNotificationRead(id: string): Promise<{ success: boolean; notification: PortalNotification; unreadCount: number }> {
+    const res = await fetch(`${API_BASE}/notifications/${encodeURIComponent(id)}/read`, {
+      method: 'PATCH',
+    });
+    return res.json();
+  },
+
+  async markAllNotificationsRead(): Promise<{ success: boolean; unreadCount: number }> {
+    const res = await fetch(`${API_BASE}/notifications/mark-all-read`, {
+      method: 'POST',
+    });
+    return res.json();
+  },
+
+  async createNotification(payload: Partial<PortalNotification>): Promise<{
+    success: boolean;
+    notification: PortalNotification;
+    unreadCount: number;
+  }> {
+    const res = await fetch(`${API_BASE}/notifications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  // Academic Peer Messaging & Group Threads
+  async getPeerThreads(params?: {
+    materialId?: string;
+    courseCode?: string;
+    search?: string;
+  }): Promise<{ success: boolean; threads: PeerDiscussionThread[] }> {
+    const query = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, val]) => {
+        if (val && val !== 'all') query.append(key, val);
+      });
+    }
+    const res = await fetch(`${API_BASE}/peer-discussions/threads?${query.toString()}`);
+    return res.json();
+  },
+
+  async createPeerThread(payload: {
+    materialId: string;
+    courseCode: string;
+    materialTitle: string;
+    title: string;
+    description?: string;
+    creatorId?: string;
+    creatorName?: string;
+    initialMessage?: string;
+    tag?: string;
+  }): Promise<{ success: boolean; thread: PeerDiscussionThread }> {
+    const res = await fetch(`${API_BASE}/peer-discussions/threads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async getPeerMessages(params?: {
+    threadId?: string;
+    materialId?: string;
+  }): Promise<{ success: boolean; messages: PeerDiscussionMessage[] }> {
+    const query = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, val]) => {
+        if (val) query.append(key, val);
+      });
+    }
+    const res = await fetch(`${API_BASE}/peer-discussions/messages?${query.toString()}`);
+    return res.json();
+  },
+
+  async sendPeerMessage(payload: {
+    threadId: string;
+    materialId?: string;
+    authorId?: string;
+    authorName?: string;
+    authorRole?: string;
+    content: string;
+    tag?: string;
+  }): Promise<{ success: boolean; message: PeerDiscussionMessage }> {
+    const res = await fetch(`${API_BASE}/peer-discussions/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async likePeerMessage(messageId: string, studentId?: string): Promise<{ success: boolean; likes: number; isLiked: boolean }> {
+    const res = await fetch(`${API_BASE}/peer-discussions/messages/${encodeURIComponent(messageId)}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId }),
     });
     return res.json();
   },

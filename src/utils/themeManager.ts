@@ -1,12 +1,12 @@
 export type ThemeMode = 'dark' | 'light';
 
-export const THEME_STORAGE_KEY = 'gwoah_erp_theme_preference';
+export const THEME_STORAGE_KEY = 'hiau_erp_theme_preference';
 
 /**
  * Resolves active theme preference with the following priority:
  * 1. User profile preference in ERP database
  * 2. Cached preference in browser localStorage
- * 3. Default to 'dark'
+ * 3. Default to 'light' (Academic Ivory White & Navy)
  */
 export function resolveUserTheme(
   userPref?: 'dark' | 'light' | null,
@@ -18,14 +18,14 @@ export function resolveUserTheme(
   if (localPref === 'dark' || localPref === 'light') {
     return localPref;
   }
-  return 'dark';
+  return 'light';
 }
 
 /**
- * Toggles theme between 'dark' and 'light'.
+ * Toggles theme between 'light' and 'dark'.
  */
 export function toggleTheme(current: ThemeMode): ThemeMode {
-  return current === 'dark' ? 'light' : 'dark';
+  return current === 'light' ? 'dark' : 'light';
 }
 
 /**
@@ -59,20 +59,20 @@ export function getThemeAccessibilityDetails(theme: ThemeMode): {
   if (theme === 'light') {
     return {
       mode: 'light',
-      name: 'High-Contrast Light Mode',
+      name: 'HIAU Purple, Gold & White Standard',
       contrastRatio: '14.8:1',
       wcagLevel: 'AAA',
-      description: 'Maximum legibility with deep slate text on clean white backgrounds and sharp high-contrast structural borders.',
-      idealFor: 'Daylight studying, outdoor campus use, visual impairments, and low-glare reading.',
+      description: 'Clean White (#FFFFFF / #FAF8FB) background with authoritative HIAU Imperial Purple (#4A1249) and Heritage Gold (#C39A53) institutional branding.',
+      idealFor: 'Daylight campus administration, faculty grading, lecture hall presentations, and reading academic papers.',
     };
   }
 
   return {
     mode: 'dark',
-    name: 'Gwoah Slate Dark Mode',
-    contrastRatio: '9.2:1',
+    name: 'Academic Midnight Purple Mode',
+    contrastRatio: '9.5:1',
     wcagLevel: 'AAA',
-    description: 'Deep navy-slate palette engineered to reduce eye strain during extended night research and coding sessions.',
-    idealFor: 'Low-light environments, late-night studying, and battery conservation on OLED displays.',
+    description: 'Deep Midnight Imperial Purple (#1F0620 / #2D0A31) with radiant Heritage Gold (#C39A53) and crisp white contrasts.',
+    idealFor: 'Late-night study sessions, low-light research labs, and OLED battery efficiency.',
   };
 }

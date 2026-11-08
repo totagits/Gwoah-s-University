@@ -1,24 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  GraduationCap,
-  BookOpen,
-  Calendar,
-  Users,
-  ShieldCheck,
   ChevronDown,
   Lock,
   Layers,
   ArrowRight,
-  Wifi,
+  Building,
+  Users,
+  Compass,
+  Search,
+  BookOpen,
+  Calendar,
+  X,
+  GraduationCap,
+  FileText,
+  Clock,
+  Download,
+  ShieldCheck,
+  Laptop,
+  CheckCircle,
+  Wrench,
+  HelpCircle,
+  Award,
   Sparkles,
 } from 'lucide-react';
 import { UserProfile } from '../../types';
 
 interface PublicNavbarProps {
-  onOpenPortal: () => void;
+  onOpenPortal: (tab?: string) => void;
   currentUser: UserProfile | null;
   onNavigateSection: (sectionId: string) => void;
   activeSection: string;
+  onOpenApplicationModal?: () => void;
+  onOpenProfile?: (profileId: string) => void;
+}
+
+interface SubmenuItem {
+  label: string;
+  desc: string;
+  icon: React.ReactNode;
+  action: () => void;
+  badge?: string;
 }
 
 export const PublicNavbar: React.FC<PublicNavbarProps> = ({
@@ -26,144 +47,617 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   currentUser,
   onNavigateSection,
   activeSection,
+  onOpenApplicationModal,
+  onOpenProfile,
 }) => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [nestedHopOpen, setNestedHopOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = (menuId: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setActiveDropdown(menuId);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  // Submenu configuration for all public navigation items
+  const submenus: Record<string, SubmenuItem[]> = {
+    about: [
+      {
+        label: 'Mission, Vision & Core Principles',
+        desc: '"A world where no one lives or dies without access to quality education"',
+        icon: <Building className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('about'),
+      },
+      {
+        label: 'Founder & Chancellor: Bishop Dr. Darlingston G. Johnson',
+        desc: 'Presiding Bishop of HIM-U & Visionary Founder of HIAU',
+        icon: <Award className="w-4 h-4 text-[#4A1249]" />,
+        action: () => (onOpenProfile ? onOpenProfile('chancellor') : onNavigateSection('about')),
+        badge: 'Official Profile',
+      },
+      {
+        label: 'President: Asst. Professor Mamawa M. Freeman-Moore',
+        desc: 'Founding President message, philosophy of education & leadership',
+        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
+        action: () => (onOpenProfile ? onOpenProfile('president') : onNavigateSection('about')),
+        badge: 'President Page',
+      },
+      {
+        label: 'Deputy Chancellor: Dr. Kona-Facia Freeman-Nepay',
+        desc: 'Executive academic direction & 2020 task force leadership',
+        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
+        action: () => (onOpenProfile ? onOpenProfile('deputy_chancellor') : onNavigateSection('about')),
+        badge: 'Deputy Chancellor',
+      },
+      {
+        label: 'Board of Trustees (Dr. Jonathan C. Taylor, Chair)',
+        desc: 'Fiduciary governance, statutory oversight & university council',
+        icon: <Users className="w-4 h-4 text-[#4A1249]" />,
+        action: () => (onOpenProfile ? onOpenProfile('board_chair') : onNavigateSection('about')),
+        badge: 'Board Chair',
+      },
+      {
+        label: 'Global & National Board Head: Stanton B. Johnson',
+        desc: 'International executive leadership & strategic partnerships',
+        icon: <Users className="w-4 h-4 text-[#C39A53]" />,
+        action: () => (onOpenProfile ? onOpenProfile('board_head') : onNavigateSection('about')),
+        badge: 'Board Head',
+      },
+      {
+        label: 'Main Academic Campus — Old Road, Chugbor',
+        desc: 'Administrative headquarters, lecture halls, and lab in Monrovia',
+        icon: <Building className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('about'),
+      },
+      {
+        label: 'NCHE Licensure & Oral Roberts University Partner',
+        desc: 'Chartered in Liberia with global academic collaboration in Tulsa, USA',
+        icon: <ShieldCheck className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('about'),
+        badge: 'Chartered',
+      },
+    ],
+    tour: [
+      {
+        label: 'Campus & Classroom Continuous Video Tour',
+        desc: 'Watch real campus facilities, grounds & laptop lab',
+        icon: <Compass className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('tour'),
+        badge: 'Video Tour',
+      },
+      {
+        label: 'Interactive Computer Lab',
+        desc: 'Dedicated student carrels, laptops & multimedia projection',
+        icon: <Laptop className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('tour'),
+      },
+      {
+        label: 'Central Library & Reading Commons',
+        desc: 'Polished mahogany study tables & 2.5M+ digital catalog access',
+        icon: <BookOpen className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('tour'),
+      },
+      {
+        label: 'Campus Facilities Feedback & Repairs',
+        desc: 'Submit maintenance work orders for rooms and equipment',
+        icon: <Wrench className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onOpenPortal('facilities'),
+        badge: 'ERP Live',
+      },
+    ],
+    colleges: [
+      {
+        label: 'The BLEST College Framework',
+        desc: 'Business, Liberal Arts, Education, Science/Tech & Theology',
+        icon: <GraduationCap className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('colleges'),
+        badge: 'BLEST',
+      },
+      {
+        label: 'B — Business & Entrepreneurship',
+        desc: 'Accounting & practical startup business incubation',
+        icon: <Users className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('colleges'),
+      },
+      {
+        label: 'S — Science, Technology & Allied Health',
+        desc: 'B.S. in IT, Science & Tech, Nursing BSN & Lab Science',
+        icon: <Laptop className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('colleges'),
+        badge: 'STEM & Health',
+      },
+      {
+        label: 'E — College of Education',
+        desc: 'Early Childhood, Elementary & Secondary STEM/English',
+        icon: <GraduationCap className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('colleges'),
+      },
+      {
+        label: 'T — College of Theology & Ministry',
+        desc: 'Christian Education, Christian Counseling & Global Missions',
+        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('colleges'),
+      },
+      {
+        label: 'TVET Vocational Certificate Tracks',
+        desc: 'Cosmetology, Catering & Pastry, Tailoring, and Carpentry',
+        icon: <Sparkles className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('colleges'),
+        badge: 'TVET',
+      },
+    ],
+    admissions: [
+      {
+        label: 'Start Online Application',
+        desc: 'Apply for Semester I 2026/2027 ($10 placement assessment fee)',
+        icon: <ArrowRight className="w-4 h-4 text-[#C39A53]" />,
+        action: () => {
+          if (onOpenApplicationModal) onOpenApplicationModal();
+          else onNavigateSection('admissions');
+        },
+        badge: 'Open Now',
+      },
+      {
+        label: '5-Step Admission Requirements',
+        desc: 'Application, WASSCE/WAEC transcripts, photos, exam, interview',
+        icon: <CheckCircle className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('admissions'),
+      },
+      {
+        label: 'HIAU Scholarship Committee',
+        desc: 'Need-based and merit-based tuition financial aid',
+        icon: <FileText className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('admissions'),
+        badge: 'Aid',
+      },
+      {
+        label: 'Admissions Officer Review Desk',
+        desc: 'Evaluate applicant transcripts and manage acceptances',
+        icon: <Users className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onOpenPortal('admissions'),
+        badge: 'ERP Staff',
+      },
+    ],
+    calendar: [
+      {
+        label: '2026/2027 Senate Academic Calendar',
+        desc: 'Official semester registration, instruction & exam dates',
+        icon: <Calendar className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('calendar'),
+        badge: 'Official',
+      },
+      {
+        label: 'Mid-Term & Final Examination Schedules',
+        desc: 'Comprehensive timetables, room assignments & rules',
+        icon: <Clock className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('calendar'),
+      },
+      {
+        label: 'Export Official Calendar (.ICS)',
+        desc: 'Sync directly to Apple Calendar, Google Calendar, or Outlook',
+        icon: <Download className="w-4 h-4 text-[#C39A53]" />,
+        action: () => {
+          window.location.href = '/api/calendar/export.ics';
+        },
+        badge: '.ICS Sync',
+      },
+      {
+        label: 'Commencement & Matriculation',
+        desc: 'Annual convocation milestones and graduation ceremonies',
+        icon: <Award className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('calendar'),
+      },
+    ],
+    dei: [
+      {
+        label: 'Student Life & Spiritual Fellowship',
+        desc: 'Chapel, student ministries, clubs, and sports',
+        icon: <Users className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('dei'),
+      },
+      {
+        label: 'DEI & Non-Discrimination Charter',
+        desc: 'Accessible education, Section 504 / ADA accommodations',
+        icon: <ShieldCheck className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onNavigateSection('dei'),
+        badge: 'Charter',
+      },
+      {
+        label: 'Shared Resource Library (ERP)',
+        desc: 'Document versioning, syllabi, study guides & past papers',
+        icon: <BookOpen className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onOpenPortal('library'),
+        badge: 'Versioned',
+      },
+      {
+        label: 'Campus Facilities Feedback',
+        desc: 'Report repair, plumbing, or classroom issues directly to staff',
+        icon: <Wrench className="w-4 h-4 text-[#4A1249]" />,
+        action: () => onOpenPortal('facilities'),
+        badge: 'Repair Log',
+      },
+    ],
+  };
 
   const navLinks = [
-    { id: 'about', label: 'About & Campuses' },
-    { id: 'colleges', label: 'Colleges & Programs' },
-    { id: 'admissions', label: 'Admissions' },
-    { id: 'calendar', label: 'Academic Calendar' },
-    { id: 'dei', label: 'DEI & Accessibility' },
+    { id: 'hero', label: 'Home', hasDropdown: false },
+    { id: 'about', label: 'About', hasDropdown: true },
+    { id: 'tour', label: 'Campus Tour', hasDropdown: true },
+    { id: 'colleges', label: 'Academics', hasDropdown: true },
+    { id: 'admissions', label: 'Admissions', hasDropdown: true },
+    { id: 'calendar', label: 'Current Events', hasDropdown: true },
+    { id: 'dei', label: 'Student Experience', hasDropdown: true },
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
-      {/* Top institutional strip */}
-      <div className="bg-amber-600 text-slate-950 text-xs py-1.5 px-4 font-medium">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
-          <div className="flex items-center gap-3">
-            <span className="bg-slate-950 text-amber-400 font-bold px-2 py-0.5 rounded text-[10px] tracking-wider uppercase">
-              Republic of Liberia
-            </span>
-            <span className="hidden sm:inline text-slate-950 font-semibold">
-              Chartered by the National Commission on Higher Education (NCHE) • Accreditation Ref: NCHE/ACCR/2026-GU
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-[11px] font-semibold">
-            <span className="flex items-center gap-1">
-              <Wifi className="w-3.5 h-3.5 text-emerald-950" />
-              <span>Campus Starlink & Low-Bandwidth Mode Active</span>
-            </span>
-            <span className="hidden md:inline">Monrovia & Fendall Campuses</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main navigation bar */}
+    <header className="sticky top-0 z-40 bg-white border-b border-purple-200 text-[#2A082C] shadow-sm">
+      {/* HIAU Primary Institutional Header Row */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Brand Logo & Motto */}
+          {/* Brand Logo & Wordmark - HIAU Institutional Layout: [SEAL] [NAME] | [CAMPUS/SUBTITLE] */}
           <div
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-3.5 cursor-pointer group shrink-0"
             onClick={() => onNavigateSection('hero')}
+            role="button"
+            tabIndex={0}
+            aria-label="Harvest Intercontinental American University Homepage"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onNavigateSection('hero');
+            }}
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 p-0.5 shadow-lg group-hover:scale-105 transition-transform flex items-center justify-center">
-              <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                <GraduationCap className="w-7 h-7 text-amber-400" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors">
-                  Gwoah's University
-                </h1>
-                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-1.5 py-0.5 rounded">
-                  Liberia
+            <img
+              src="/assets/aistudio/image_bfcc4a11.png"
+              alt="Harvest Intercontinental American University Official Seal"
+              className="w-12 h-12 object-contain group-hover:scale-105 transition-transform"
+            />
+            <div className="flex items-center gap-3">
+              <div className="leading-tight">
+                <span className="text-xl sm:text-2xl font-collegiate font-black tracking-tight text-[#4A1249] block group-hover:text-[#661B69] transition-colors">
+                  HARVEST INTERCONTINENTAL
+                </span>
+                <span className="text-xs sm:text-sm font-collegiate font-bold tracking-wider text-[#C39A53] block uppercase">
+                  American University
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium">
-                Knowledge • Integrity • National Service
-              </p>
+              <div className="hidden sm:block h-8 w-[1.5px] bg-[#C39A53]/40 mx-1" />
+              <div className="hidden sm:block">
+                <span className="text-base font-collegiate font-bold text-[#2A082C] block">
+                  Liberia
+                </span>
+                <span className="text-[10px] text-slate-600 font-semibold block">
+                  Chartered by NCHE
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Desktop Links */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <button
-                key={link.id}
-                onClick={() => onNavigateSection(link.id)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeSection === link.id
-                    ? 'text-amber-400 bg-slate-800'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                }`}
-              >
-                {link.label}
-              </button>
-            ))}
+          {/* Right: Search & Direct ERP Gateway Button */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="p-2 text-slate-700 hover:text-[#4A1249] hover:bg-purple-50 transition-colors cursor-pointer flex items-center gap-1.5 rounded-sm"
+              aria-label="Toggle site search"
+              title="Search university programs, admissions, and faculties"
+            >
+              <Search className="w-5 h-5 text-[#4A1249]" />
+              <span className="hidden sm:inline text-xs font-bold text-slate-700">Search</span>
+            </button>
 
-            {/* NESTED NAVIGATION FOR PORTAL ACCESS (Prompt Section 0 Requirement) */}
-            <div className="relative ml-2">
+            {/* Authenticated Session Quick Link (Hidden for public visitors) */}
+            {currentUser && (
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                onBlur={() => setTimeout(() => setDropdownOpen(false), 250)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700"
-                aria-expanded={dropdownOpen}
+                onClick={() => onOpenPortal()}
+                className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#4A1249] hover:bg-[#661B69] text-white rounded-none text-xs font-collegiate font-bold uppercase tracking-wider transition-colors cursor-pointer border border-[#C39A53]/50 shadow-xs"
+              >
+                <div className="w-2 h-2 rounded-full bg-[#C39A53] animate-pulse" />
+                <span>ERP ({currentUser.role.replace('_', ' ')})</span>
+              </button>
+            )}
+
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-slate-700 hover:text-[#4A1249] hover:bg-purple-50 rounded-sm cursor-pointer"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6 text-[#4A1249]" />
+              ) : (
+                <svg className="w-6 h-6 text-[#4A1249]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Search Overlay Dropdown */}
+        {searchOpen && (
+          <div className="py-3 px-4 bg-purple-50/70 border-t border-purple-200 animate-in fade-in flex items-center gap-3">
+            <Search className="w-4 h-4 text-[#4A1249] shrink-0" />
+            <input
+              type="text"
+              placeholder="Search colleges, degrees, admissions, academic calendar, or facilities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white px-3 py-1.5 border border-purple-300 text-xs rounded-none focus:outline-none focus:border-[#4A1249] text-slate-900"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const q = searchQuery.toLowerCase();
+                  if (q.includes('admiss') || q.includes('apply')) {
+                    if (onOpenApplicationModal) onOpenApplicationModal();
+                    else onNavigateSection('admissions');
+                  } else if (q.includes('tour') || q.includes('camp') || q.includes('build')) {
+                    onNavigateSection('tour');
+                  } else if (q.includes('coll') || q.includes('deg') || q.includes('major')) {
+                    onNavigateSection('colleges');
+                  } else if (q.includes('cal') || q.includes('exam') || q.includes('date')) {
+                    onNavigateSection('calendar');
+                  } else if (q.includes('repair') || q.includes('facil') || q.includes('work')) {
+                    onOpenPortal('student_portal');
+                  } else {
+                    onNavigateSection('about');
+                  }
+                  setSearchOpen(false);
+                }
+              }}
+            />
+            <button
+              onClick={() => {
+                const q = searchQuery.toLowerCase();
+                if (q.includes('admiss') || q.includes('apply')) {
+                  if (onOpenApplicationModal) onOpenApplicationModal();
+                  else onNavigateSection('admissions');
+                } else if (q.includes('tour') || q.includes('camp') || q.includes('build')) {
+                  onNavigateSection('tour');
+                } else if (q.includes('coll') || q.includes('deg') || q.includes('major')) {
+                  onNavigateSection('colleges');
+                } else if (q.includes('cal') || q.includes('exam') || q.includes('date')) {
+                  onNavigateSection('calendar');
+                } else if (q.includes('repair') || q.includes('facil') || q.includes('work')) {
+                  onOpenPortal('student_portal');
+                } else {
+                  onNavigateSection('about');
+                }
+                setSearchOpen(false);
+              }}
+              className="px-4 py-1.5 bg-[#4A1249] hover:bg-[#661B69] text-white text-xs font-collegiate font-bold uppercase tracking-wider cursor-pointer transition-colors"
+            >
+              Search
+            </button>
+            <button
+              onClick={() => setSearchOpen(false)}
+              className="p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
+              aria-label="Close search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* HIAU Navigation Sub-Bar with horizontal items and interactive submenus */}
+        <div className="hidden lg:flex items-center justify-between border-t border-purple-100 py-2">
+          <nav className="flex items-center gap-6">
+            {navLinks.map((link) => {
+              const hasItems = link.hasDropdown && !!submenus[link.id];
+              const isCurrentOpen = activeDropdown === link.id;
+
+              return (
+                <div
+                  key={link.id}
+                  className="relative"
+                  onMouseEnter={() => hasItems && handleMouseEnter(link.id)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <button
+                    onClick={() => {
+                      if (hasItems) {
+                        setActiveDropdown(isCurrentOpen ? null : link.id);
+                      } else {
+                        onNavigateSection(link.id);
+                        setActiveDropdown(null);
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 text-sm font-semibold transition-colors cursor-pointer py-1.5 px-1 border-b-2 ${
+                      activeSection === link.id
+                        ? 'text-[#4A1249] font-black border-[#4A1249]'
+                        : isCurrentOpen
+                        ? 'text-[#4A1249] border-[#C39A53]'
+                        : 'text-slate-700 hover:text-[#4A1249] border-transparent'
+                    }`}
+                    aria-expanded={isCurrentOpen}
+                    aria-haspopup={hasItems}
+                  >
+                    <span>{link.label}</span>
+                    {hasItems && (
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
+                          isCurrentOpen ? 'rotate-180 text-[#4A1249]' : ''
+                        }`}
+                      />
+                    )}
+                  </button>
+
+                  {/* Rich Desktop Submenu Dropdown */}
+                  {hasItems && isCurrentOpen && (
+                    <div
+                      className="absolute left-0 mt-1 w-80 bg-white border-2 border-purple-200 rounded-none shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-1"
+                      onMouseEnter={() => handleMouseEnter(link.id)}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <div className="px-3 py-2 border-b border-purple-100 text-[11px] font-black text-[#4A1249] uppercase tracking-wider flex items-center justify-between">
+                        <span>{link.label} Directory</span>
+                        <span className="text-[10px] text-[#C39A53] font-semibold">HIAU Liberia</span>
+                      </div>
+                      <div className="py-1 space-y-1">
+                        {submenus[link.id].map((sub, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              sub.action();
+                              setActiveDropdown(null);
+                            }}
+                            className="w-full text-left p-2.5 rounded-sm hover:bg-purple-50 group flex items-start justify-between cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <div className="p-1.5 bg-purple-50 group-hover:bg-[#4A1249] group-hover:text-white rounded transition-colors shrink-0 mt-0.5">
+                                {sub.icon}
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-[#4A1249] flex items-center gap-1.5">
+                                  <span>{sub.label}</span>
+                                </div>
+                                <div className="text-[11px] text-slate-500 line-clamp-1">
+                                  {sub.desc}
+                                </div>
+                              </div>
+                            </div>
+                            {sub.badge && (
+                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-[#C39A53]/20 text-[#4A1249] border border-[#C39A53]/50 rounded shrink-0">
+                                {sub.badge}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* NESTED MULTI-HOP NAVIGATION FOR SECURE PORTAL ACCESS */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('services')}
+              onMouseLeave={handleMouseLeave}
+            >
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'services' ? null : 'services')}
+                className={`flex items-center gap-1.5 text-sm font-bold py-1.5 px-2 transition-colors cursor-pointer border-b-2 ${
+                  activeDropdown === 'services'
+                    ? 'text-[#4A1249] border-[#C39A53]'
+                    : 'text-[#4A1249] hover:text-[#661B69] border-transparent'
+                }`}
+                aria-expanded={activeDropdown === 'services'}
                 aria-haspopup="true"
               >
-                <Layers className="w-4 h-4 text-amber-400" />
+                <Layers className="w-4 h-4 text-[#C39A53]" />
                 <span>University Services</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#4A1249] transition-transform duration-200 ${
+                    activeDropdown === 'services' ? 'rotate-180' : ''
+                  }`}
+                />
               </button>
 
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
-                  <div className="px-3 py-2 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                    Institutional Services Directory
+              {activeDropdown === 'services' && (
+                <div
+                  className="absolute left-0 mt-1 w-88 bg-white border-2 border-purple-200 rounded-none shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-1"
+                  onMouseEnter={() => handleMouseEnter('services')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <div className="px-3 py-2 border-b border-purple-100 text-[11px] font-extrabold text-[#4A1249] uppercase tracking-wider flex items-center justify-between">
+                    <span>Institutional Services Directory</span>
+                    <span className="text-[10px] text-[#C39A53]">Single Sign-On</span>
                   </div>
-                  <div className="py-1">
+                  <div className="py-1 space-y-1">
                     <button
-                      onClick={() => onNavigateSection('about')}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-md flex items-center justify-between"
+                      onClick={() => {
+                        onOpenPortal('student_portal');
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
                     >
-                      <span className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-slate-400" />
-                        Academic Affairs
+                      <span className="flex items-center gap-2.5">
+                        <Users className="w-4 h-4 text-[#C39A53]" />
+                        <span>Student Portal & Grades</span>
                       </span>
-                    </button>
-                    <button
-                      onClick={() => onNavigateSection('dei')}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-md flex items-center justify-between"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-slate-400" />
-                        Student Affairs & DEI
-                      </span>
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Student</span>
                     </button>
 
-                    {/* Multi-Hop Navigation: Academic Services -> Student Services -> University Portal */}
-                    <div className="mt-1 pt-1 border-t border-slate-800">
-                      <div className="px-3 py-1 text-[11px] text-amber-400 font-medium">
-                        Nested Portal Access:
+                    <button
+                      onClick={() => {
+                        onOpenPortal('academics');
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <GraduationCap className="w-4 h-4 text-[#4A1249]" />
+                        <span>Registrar & Academic Audit</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">Registrar</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onOpenPortal('finance');
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <FileText className="w-4 h-4 text-[#C39A53]" />
+                        <span>Bursar & Tuition Accounts</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">Bursar</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onOpenPortal('faculty_admin');
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Users className="w-4 h-4 text-[#4A1249]" />
+                        <span>Faculty & Dean Administration</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-indigo-800 bg-indigo-100 px-1.5 py-0.5 rounded">Faculty</span>
+                    </button>
+
+                    {/* Multi-Step Gateway Progression */}
+                    <div className="mt-2 pt-2 border-t border-purple-100">
+                      <div className="px-3 py-1 text-[11px] text-[#C39A53] font-black flex items-center gap-1 uppercase tracking-wider">
+                        <Lock className="w-3.5 h-3.5 text-[#C39A53]" />
+                        <span>Secure Multi-Step ERP Gateway</span>
                       </div>
-                      <div className="p-2 bg-slate-950/70 rounded-lg border border-slate-800/80 mt-1">
-                        <div className="text-[11px] text-slate-400 mb-1 flex items-center gap-1">
+                      <div className="p-3 bg-[#FAF4FB] border border-purple-200 mt-1">
+                        <div className="text-[11px] text-slate-600 mb-2 flex items-center gap-1.5 font-mono">
                           <span>Home</span>
                           <span>→</span>
                           <span>Services</span>
                           <span>→</span>
-                          <span className="text-amber-400 font-semibold">ERP Portal</span>
+                          <span className="text-[#4A1249] font-black">ERP Portal</span>
                         </div>
                         <button
-                          onClick={onOpenPortal}
-                          className="w-full mt-1.5 flex items-center justify-center gap-2 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-md shadow transition-all"
+                          onClick={() => {
+                            onOpenPortal();
+                            setActiveDropdown(null);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#4A1249] hover:bg-[#661B69] text-white font-black text-xs uppercase tracking-wider shadow-sm transition-all cursor-pointer border border-[#C39A53]/50"
                         >
-                          <Lock className="w-3.5 h-3.5" />
-                          <span>Enter University ERP Portal</span>
+                          <Lock className="w-3.5 h-3.5 text-[#C39A53]" />
+                          <span>Enter University ERP</span>
                         </button>
                       </div>
                     </div>
@@ -173,74 +667,175 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             </div>
           </nav>
 
-          {/* Right Action: Direct ERP Entry or Active Session Indicator */}
-          <div className="hidden sm:flex items-center gap-3">
-            {currentUser ? (
-              <button
-                onClick={onOpenPortal}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-lg text-sm font-semibold shadow transition-colors"
-              >
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>ERP Portal ({currentUser.role.replace('_', ' ')})</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={onOpenPortal}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition-all"
-              >
-                <Lock className="w-4 h-4" />
-                <span>University ERP Portal</span>
-              </button>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* Right: Solid Rectangular APPLY NOW button in HIAU Imperial Purple */}
+          <div className="flex items-center gap-3">
             <button
-              onClick={onOpenPortal}
-              className="px-3 py-1.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-md"
+              onClick={() => {
+                if (onOpenApplicationModal) onOpenApplicationModal();
+                else onNavigateSection('admissions');
+              }}
+              className="px-6 py-2.5 bg-[#4A1249] hover:bg-[#661B69] text-white font-collegiate font-black text-sm uppercase tracking-wider rounded-none transition-all flex items-center gap-3 shadow-sm cursor-pointer border border-[#C39A53]/60 active:scale-98"
             >
-              ERP Portal
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-400 hover:text-white"
-              aria-label="Toggle navigation menu"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <span>APPLY NOW</span>
+              <ArrowRight className="w-4 h-4 text-[#C39A53]" />
             </button>
           </div>
         </div>
 
-        {/* Mobile dropdown */}
+        {/* Mobile menu dropdown with full accordion submenus */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-slate-800 space-y-2">
-            {navLinks.map((link) => (
+          <div className="lg:hidden py-4 border-t border-purple-200 space-y-2 bg-white max-h-[75vh] overflow-y-auto">
+            {navLinks.map((link) => {
+              const hasSub = link.hasDropdown && !!submenus[link.id];
+              const isExpanded = mobileExpandedSection === link.id;
+
+              return (
+                <div key={link.id} className="border-b border-purple-50 last:border-0 pb-1">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <button
+                      onClick={() => {
+                        onNavigateSection(link.id);
+                        if (!hasSub) setMobileMenuOpen(false);
+                      }}
+                      className="text-left text-sm font-bold text-slate-800 hover:text-[#4A1249]"
+                    >
+                      {link.label}
+                    </button>
+                    {hasSub && (
+                      <button
+                        onClick={() => setMobileExpandedSection(isExpanded ? null : link.id)}
+                        className="p-1 text-[#4A1249] hover:bg-purple-50 rounded"
+                        aria-label={`Expand ${link.label} submenu`}
+                      >
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        />
+                      </button>
+                    )}
+                  </div>
+
+                  {hasSub && isExpanded && (
+                    <div className="pl-6 pr-3 py-1 space-y-1 bg-purple-50/50">
+                      {submenus[link.id].map((sub, sidx) => (
+                        <button
+                          key={sidx}
+                          onClick={() => {
+                            sub.action();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full text-left py-2 px-2 text-xs font-semibold text-slate-700 hover:text-[#4A1249] flex items-center justify-between border-b border-purple-100 last:border-0"
+                        >
+                          <span className="flex items-center gap-2">
+                            {sub.icon}
+                            <span>{sub.label}</span>
+                          </span>
+                          {sub.badge && (
+                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 bg-[#C39A53]/20 text-[#4A1249] rounded">
+                              {sub.badge}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Mobile University Services Accordion */}
+            <div className="border-b border-purple-50 pb-1">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-left text-sm font-bold text-[#4A1249] flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-[#C39A53]" />
+                  University Services
+                </span>
+                <button
+                  onClick={() =>
+                    setMobileExpandedSection(
+                      mobileExpandedSection === 'services' ? null : 'services'
+                    )
+                  }
+                  className="p-1 text-[#4A1249] hover:bg-purple-50 rounded"
+                >
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${
+                      mobileExpandedSection === 'services' ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {mobileExpandedSection === 'services' && (
+                <div className="pl-6 pr-3 py-2 space-y-1.5 bg-purple-50/50">
+                  <button
+                    onClick={() => {
+                      onOpenPortal('student_portal');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
+                  >
+                    <span>Student Portal & Grades</span>
+                    <span className="text-[10px] text-purple-700 font-bold">Student</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onOpenPortal('academics');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
+                  >
+                    <span>Registrar & Academic Audit</span>
+                    <span className="text-[10px] text-amber-700 font-bold">Registrar</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onOpenPortal('finance');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
+                  >
+                    <span>Bursar Tuition Accounts</span>
+                    <span className="text-[10px] text-emerald-700 font-bold">Bursar</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onOpenPortal('faculty_admin');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
+                  >
+                    <span>Faculty & Dean Admin</span>
+                    <span className="text-[10px] text-indigo-700 font-bold">Faculty</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Actions: Apply Now & ERP Access */}
+            <div className="pt-2 px-3 flex flex-col gap-2">
               <button
-                key={link.id}
                 onClick={() => {
-                  onNavigateSection(link.id);
+                  if (onOpenApplicationModal) onOpenApplicationModal();
+                  else onNavigateSection('admissions');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-amber-400 hover:bg-slate-800 rounded-md font-medium"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#4A1249] text-white font-collegiate font-bold text-sm uppercase rounded-none cursor-pointer border border-[#C39A53]/50"
               >
-                {link.label}
+                <span>APPLY NOW</span>
+                <ArrowRight className="w-4 h-4 text-[#C39A53]" />
               </button>
-            ))}
-            <div className="pt-2 border-t border-slate-800">
-              <button
-                onClick={() => {
-                  onOpenPortal();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-500 text-slate-950 font-bold text-sm rounded-lg"
-              >
-                <Lock className="w-4 h-4" />
-                <span>Access University ERP & Tasks</span>
-              </button>
+              {currentUser && (
+                <button
+                  onClick={() => {
+                    onOpenPortal();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-bold text-xs uppercase rounded-none cursor-pointer shadow-sm"
+                >
+                  <Lock className="w-4 h-4 text-[#2A082C]" />
+                  <span>Return to ERP ({currentUser.role})</span>
+                </button>
+              )}
             </div>
           </div>
         )}

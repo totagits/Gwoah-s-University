@@ -30,8 +30,12 @@ import {
   GraduationCap,
   HardDrive,
   Wifi,
+  History,
+  RotateCcw,
+  UploadCloud,
+  Tag,
 } from 'lucide-react';
-import { LibraryResource, ResourceCategory } from '../../types';
+import { LibraryResource, ResourceCategory, ResourceVersion } from '../../types';
 import { INITIAL_LIBRARY_RESOURCES } from '../../data/libraryResourcesData';
 import {
   filterLibraryResources,
@@ -69,6 +73,96 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
   // Feedback notifications
   const [notification, setNotification] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Document Versioning State
+  const [showVersionPanel, setShowVersionPanel] = useState<boolean>(false);
+  const [isUploadVersionOpen, setIsUploadVersionOpen] = useState<boolean>(false);
+  const [newVersionInput, setNewVersionInput] = useState({
+    versionLabel: '',
+    changeSummary: '',
+    uploadedBy: '',
+  });
+
+  // Get or construct realistic version history for any resource
+  const getResourceVersionHistory = (res: LibraryResource): ResourceVersion[] => {
+    if (res.versionHistory && res.versionHistory.length > 0) {
+      return res.versionHistory;
+    }
+    const currentVer = res.version || 'v1.0';
+    return [
+      {
+        version: currentVer,
+        uploadedAt: res.publishedDate,
+        uploadedBy: res.authorOrAuthority,
+        changeSummary: 'Senate-verified current official academic version.',
+        fileSizeKB: res.fileSizeKB,
+        isActive: true,
+      },
+      {
+        version: currentVer.startsWith('v') ? `v${(parseFloat(currentVer.slice(1)) - 0.5 > 0 ? (parseFloat(currentVer.slice(1)) - 0.5).toFixed(1) : '1.0')}` : 'v1.0 (Initial Draft)',
+        uploadedAt: '2026-05-15',
+        uploadedBy: 'Curriculum Working Committee',
+        changeSummary: 'Preliminary draft circulated for departmental moderation and review.',
+        fileSizeKB: Math.max(120, res.fileSizeKB - 35),
+        isActive: false,
+      },
+    ];
+  };
+
+  const handleRevertVersion = (targetVersion: ResourceVersion) => {
+    if (!activeResource) return;
+    const history = getResourceVersionHistory(activeResource);
+    const updatedHistory = history.map((v) => ({
+      ...v,
+      isActive: v.version === targetVersion.version,
+    }));
+
+    const updatedResource: LibraryResource = {
+      ...activeResource,
+      version: targetVersion.version,
+      publishedDate: targetVersion.uploadedAt,
+      versionHistory: updatedHistory,
+    };
+
+    setActiveResource(updatedResource);
+    setResources((prev) => prev.map((r) => (r.id === activeResource.id ? updatedResource : r)));
+    setNotification(`Successfully reverted document to ${targetVersion.version} (${targetVersion.changeSummary})`);
+    setTimeout(() => setNotification(null), 5000);
+  };
+
+  const handlePublishNewVersion = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeResource || !newVersionInput.versionLabel.trim()) return;
+
+    const history = getResourceVersionHistory(activeResource);
+    const newVer: ResourceVersion = {
+      version: newVersionInput.versionLabel.trim(),
+      uploadedAt: new Date().toISOString().split('T')[0],
+      uploadedBy: newVersionInput.uploadedBy.trim() || 'Senate Academic Board',
+      changeSummary: newVersionInput.changeSummary.trim() || 'Uploaded updated syllabus and compliance revisions.',
+      fileSizeKB: activeResource.fileSizeKB + 15,
+      isActive: true,
+    };
+
+    const updatedHistory: ResourceVersion[] = [
+      newVer,
+      ...history.map((v) => ({ ...v, isActive: false })),
+    ];
+
+    const updatedResource: LibraryResource = {
+      ...activeResource,
+      version: newVer.version,
+      publishedDate: newVer.uploadedAt,
+      versionHistory: updatedHistory,
+    };
+
+    setActiveResource(updatedResource);
+    setResources((prev) => prev.map((r) => (r.id === activeResource.id ? updatedResource : r)));
+    setIsUploadVersionOpen(false);
+    setNewVersionInput({ versionLabel: '', changeSummary: '', uploadedBy: '' });
+    setNotification(`Published new revision ${newVer.version} successfully.`);
+    setTimeout(() => setNotification(null), 5000);
+  };
 
   // Fetch resources from API (with fallback to INITIAL_LIBRARY_RESOURCES)
   useEffect(() => {
@@ -773,17 +867,189 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
                 </div>
               </div>
 
-              <button
-                onClick={() => setActiveResource(null)}
-                className="text-slate-400 hover:text-white p-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer shrink-0"
-                aria-label="Close document reader"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowVersionPanel(!showVersionPanel)}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1.5 shadow-xs ${
+                    showVersionPanel
+                      ? 'bg-[#C39A53] text-[#2A082C] border-[#C39A53]'
+                      : 'bg-[#4A1249] border-[#C39A53]/50 text-[#C39A53] hover:bg-[#661B69]'
+                  }`}
+                  title="View revision history, previous uploads, and reversion controls"
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span>{activeResource.version}</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded font-sans font-bold bg-[#2A082C] text-white">
+                    {getResourceVersionHistory(activeResource).length} Versions
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveResource(null);
+                    setShowVersionPanel(false);
+                    setIsUploadVersionOpen(false);
+                  }}
+                  className="text-slate-400 hover:text-white p-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer shrink-0"
+                  aria-label="Close document reader"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body / Reader View */}
             <div className="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs text-slate-300">
+              {/* Revision History & Version Control Panel */}
+              {showVersionPanel && (
+                <div className="bg-[#1A051C] border-2 border-[#C39A53]/60 rounded-2xl p-5 text-white shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-purple-800/60">
+                    <div className="flex items-center gap-2">
+                      <History className="w-5 h-5 text-[#C39A53]" />
+                      <div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-wide">
+                          Document Version History & Revision Control
+                        </h4>
+                        <p className="text-[11px] text-purple-200">
+                          Track changes, revert to prior uploads, and label revisions (e.g., v1.0, v1.1, v2.0).
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsUploadVersionOpen(!isUploadVersionOpen)}
+                      className="px-3 py-1.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-bold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5 text-[#2A082C]" />
+                      <span>{isUploadVersionOpen ? 'Close Form' : 'Upload New Version'}</span>
+                    </button>
+                  </div>
+
+                  {/* Upload New Version Form */}
+                  {isUploadVersionOpen && (
+                    <form onSubmit={handlePublishNewVersion} className="bg-[#2A082C] border border-[#C39A53]/40 p-4 rounded-xl space-y-3">
+                      <div className="text-xs font-bold text-[#C39A53] uppercase tracking-wider">
+                        Publish New Revision for this Document
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-purple-200 mb-1">
+                            Version Label * (e.g. v1.1, v2.0, v2.5)
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g., v2.5 (Senate Accredited)"
+                            value={newVersionInput.versionLabel}
+                            onChange={(e) => setNewVersionInput({ ...newVersionInput, versionLabel: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-[#C39A53]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-purple-200 mb-1">
+                            Reviewer / Approving Authority
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g., Prof. Joseph Flomo / Senate Committee"
+                            value={newVersionInput.uploadedBy}
+                            onChange={(e) => setNewVersionInput({ ...newVersionInput, uploadedBy: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-[#C39A53]"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-purple-200 mb-1">
+                          Summary of Changes / Revision Notes *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g., Updated Module 3 reading assignments and NCHE laboratory rubric."
+                          value={newVersionInput.changeSummary}
+                          onChange={(e) => setNewVersionInput({ ...newVersionInput, changeSummary: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-[#C39A53]"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2 border-t border-purple-800/40">
+                        <button
+                          type="button"
+                          onClick={() => setIsUploadVersionOpen(false)}
+                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-bold rounded-lg text-xs uppercase tracking-wider"
+                        >
+                          Publish Revision
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Versions Timeline List */}
+                  <div className="space-y-2">
+                    {getResourceVersionHistory(activeResource).map((ver, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all ${
+                          ver.isActive
+                            ? 'bg-purple-950/70 border-[#C39A53] shadow-md ring-1 ring-[#C39A53]/40'
+                            : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-xs text-[#C39A53] bg-[#2A082C] px-2 py-0.5 rounded border border-[#C39A53]/30">
+                              {ver.version}
+                            </span>
+                            {ver.isActive ? (
+                              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                Current Active Version
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-medium uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                                Archived Revision
+                              </span>
+                            )}
+                            <span className="text-[11px] text-slate-400 font-mono">
+                              {ver.uploadedAt} • {ver.fileSizeKB} KB
+                            </span>
+                          </div>
+
+                          <div className="text-xs text-slate-300">
+                            {ver.changeSummary}
+                          </div>
+                          <div className="text-[11px] text-slate-400 font-mono">
+                            Editor: {ver.uploadedBy}
+                          </div>
+                        </div>
+
+                        {!ver.isActive && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevertVersion(ver)}
+                            className="px-3 py-1.5 bg-slate-800 hover:bg-[#4A1249] text-purple-200 hover:text-white border border-slate-700 hover:border-[#C39A53] rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                            title={`Revert document to ${ver.version}`}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 text-[#C39A53]" />
+                            <span>Revert to {ver.version}</span>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Statutory callout if any */}
               {activeResource.statutoryReference && (
                 <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 flex items-start gap-2.5">

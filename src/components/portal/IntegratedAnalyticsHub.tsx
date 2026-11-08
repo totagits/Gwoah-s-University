@@ -48,7 +48,7 @@ export const IntegratedAnalyticsHub: React.FC = () => {
   const handleExportCSV = () => {
     if (!analytics) return;
     const csvContent = generateAnalyticsCSV(analytics);
-    const fileName = `Gwoahs_University_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    const fileName = `HIAU_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`;
     downloadCSV(csvContent, fileName);
     setCsvNotification(`Metrics exported successfully to ${fileName} for offline reporting.`);
     setTimeout(() => setCsvNotification(null), 6000);
@@ -353,7 +353,7 @@ export const IntegratedAnalyticsHub: React.FC = () => {
 
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>File: <code className="text-amber-300 font-mono">Gwoahs_University_Analytics_Report_{new Date().toISOString().split('T')[0]}.csv</code></span>
+                <span>File: <code className="text-amber-300 font-mono">HIAU_Analytics_Report_{new Date().toISOString().split('T')[0]}.csv</code></span>
                 <span className="text-slate-500">{currentCsvText.split('\n').length} lines • UTF-8 CSV</span>
               </div>
 
@@ -439,8 +439,8 @@ export const IntegratedAnalyticsHub: React.FC = () => {
               </p>
 
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px] text-emerald-300 overflow-x-auto">
-                <pre>{`Institution_Code: LR-GU-084
-Institution_Name: Gwoah's University
+                <pre>{`Institution_Code: LR-HIAU-084
+Institution_Name: Harvest Intercontinental American University (HIAU)
 Reporting_Period: Academic Year 2026/2027
 Accreditation_Body: National Commission on Higher Education (NCHE)
 Total_Enrolment: 1,850
@@ -470,10 +470,10 @@ EMIS_Sync_Status: VERIFIED_READY`}</pre>
               </button>
               <button
                 onClick={() => {
-                  const emisText = `Institution_Code,LR-GU-084\nInstitution_Name,Gwoah's University\nReporting_Period,2026/2027\nTotal_Enrolment,1850\nFemale_Enrolment,885\nMale_Enrolment,965\nSTEM_Enrolment_Share,64.2%\nDisabled_Students_Accommodated,42\nEMIS_Status,VERIFIED_READY`;
-                  downloadCSV(emisText, `MoE_EMIS_Tertiary_LR-GU-084_2026.csv`);
+                  const emisText = `Institution_Code,LR-HIAU-084\nInstitution_Name,Harvest Intercontinental American University (HIAU)\nReporting_Period,2026/2027\nTotal_Enrolment,1850\nFemale_Enrolment,885\nMale_Enrolment,965\nSTEM_Enrolment_Share,64.2%\nDisabled_Students_Accommodated,42\nEMIS_Status,VERIFIED_READY`;
+                  downloadCSV(emisText, `MoE_EMIS_Tertiary_LR-HIAU-084_2026.csv`);
                   setEmisExportModal(false);
-                  setCsvNotification(`MoE EMIS Data package downloaded successfully (MoE_EMIS_Tertiary_LR-GU-084_2026.csv).`);
+                  setCsvNotification(`MoE EMIS Data package downloaded successfully (MoE_EMIS_Tertiary_LR-HIAU-084_2026.csv).`);
                   setTimeout(() => setCsvNotification(null), 6000);
                 }}
                 className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer"

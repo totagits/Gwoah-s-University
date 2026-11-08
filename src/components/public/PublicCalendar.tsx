@@ -1,10 +1,10 @@
 import React from 'react';
-import { Calendar as CalendarIcon, Clock, CheckCircle2, AlertTriangle, FileSpreadsheet } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, CheckCircle2 } from 'lucide-react';
 
 export const PublicCalendar: React.FC = () => {
   const semesters = [
     {
-      name: 'Semester I (Fall 2026)',
+      name: 'SEMESTER I (FALL 2026)',
       status: 'Current Active Term',
       isCurrent: true,
       events: [
@@ -17,7 +17,7 @@ export const PublicCalendar: React.FC = () => {
       ],
     },
     {
-      name: 'Semester II (Spring 2027)',
+      name: 'SEMESTER II (SPRING 2027)',
       status: 'Upcoming Session',
       isCurrent: false,
       events: [
@@ -31,17 +31,17 @@ export const PublicCalendar: React.FC = () => {
   ];
 
   return (
-    <section id="calendar" className="py-16 bg-slate-950 text-white border-b border-slate-800">
+    <section id="calendar" className="py-16 bg-[#FAF8FB] text-[#2E0F34] border-b border-purple-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-bold tracking-widest uppercase text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#C39A53] bg-[#4A1249] px-3.5 py-1.5 rounded-full border border-[#C39A53]/30 shadow-xs">
             Senate Approved
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold mt-3 tracking-tight">
-            Official Academic Calendar 2026/2027
+          <h2 className="text-4xl sm:text-5xl font-collegiate font-black mt-3 tracking-tight text-[#4A1249]">
+            OFFICIAL ACADEMIC CALENDAR 2026/2027
           </h2>
-          <p className="text-slate-400 mt-2 text-base">
-            Structured in compliance with National Commission on Higher Education guidelines, featuring clearly bounded Add/Drop and examination windows.
+          <p className="text-slate-600 mt-2 text-base leading-relaxed">
+            Harvest Intercontinental American University academic schedule approved by the University Senate in alignment with NCHE guidelines.
           </p>
         </div>
 
@@ -49,47 +49,47 @@ export const PublicCalendar: React.FC = () => {
           {semesters.map((sem, idx) => (
             <div
               key={idx}
-              className={`rounded-2xl p-6 sm:p-8 border shadow-xl ${
+              className={`rounded-xl p-6 sm:p-8 border shadow-sm transition-all ${
                 sem.isCurrent
-                  ? 'bg-slate-900 border-amber-500/40 relative'
-                  : 'bg-slate-900/60 border-slate-800'
+                  ? 'bg-white border-2 border-[#4A1249] border-t-4 border-t-[#C39A53] relative shadow-md'
+                  : 'bg-white border border-purple-200/80'
               }`}
             >
               {sem.isCurrent && (
-                <div className="absolute -top-3 right-6 bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow">
-                  Current Semester
+                <div className="absolute -top-3 right-6 bg-[#4A1249] text-[#C39A53] text-xs font-bold px-3 py-1 rounded shadow border border-[#C39A53]/40 uppercase tracking-wider">
+                  Current Active Term
                 </div>
               )}
 
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
-                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
+              <div className="flex items-center gap-3.5 mb-6 pb-4 border-b border-purple-100">
+                <div className="p-2.5 rounded bg-[#4A1249] text-[#C39A53]">
                   <CalendarIcon className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">{sem.name}</h3>
-                  <span className="text-xs text-slate-400">{sem.status}</span>
+                  <h3 className="text-xl font-collegiate font-bold text-[#4A1249] tracking-tight">{sem.name}</h3>
+                  <span className="text-xs text-[#C39A53] font-bold uppercase tracking-wider">{sem.status}</span>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {sem.events.map((ev, eIdx) => (
                   <div
                     key={eIdx}
-                    className="flex items-start gap-4 p-3 rounded-xl bg-slate-850/80 border border-slate-800/80 hover:border-slate-700 transition-colors"
+                    className="flex items-start gap-4 p-3.5 rounded bg-[#FAF8FB] border border-purple-200/60 hover:border-[#C39A53]/60 transition-colors"
                   >
-                    <div className="shrink-0 w-28 text-xs font-semibold text-amber-400/90 pt-0.5">
+                    <div className="shrink-0 w-28 text-xs font-bold text-[#4A1249] pt-0.5 font-mono">
                       {ev.date}
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold text-slate-200">{ev.title}</div>
+                      <div className="text-sm font-semibold text-[#2E0F34]">{ev.title}</div>
                       <div className="flex items-center gap-2 mt-1">
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                             ev.status === 'Active Now'
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+                              ? 'bg-[#4A1249] text-[#C39A53] border border-[#C39A53]/30'
                               : ev.status === 'Completed'
-                              ? 'bg-slate-800 text-slate-400'
-                              : 'bg-blue-500/20 text-blue-300'
+                              ? 'bg-slate-200 text-slate-700'
+                              : 'bg-[#FAF4E8] text-[#A17A32] border border-[#E7D5B5]'
                           }`}
                         >
                           {ev.status}

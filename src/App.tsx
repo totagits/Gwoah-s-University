@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
+import { PublicVirtualTour } from './components/public/PublicVirtualTour';
 import { PublicColleges } from './components/public/PublicColleges';
 import { PublicAdmissions } from './components/public/PublicAdmissions';
 import { PublicCalendar } from './components/public/PublicCalendar';
 import { PublicDEI } from './components/public/PublicDEI';
 import { PublicFooter } from './components/public/PublicFooter';
+import { PublicLeaderProfile } from './components/public/PublicLeaderProfile';
+import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
 import { PortalLoginModal } from './components/portal/PortalLoginModal';
@@ -20,6 +23,8 @@ import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';
 import { PrintableDocumentModal } from './components/portal/PrintableDocumentModal';
 import { PortalThemeSettingsModal } from './components/portal/PortalThemeSettingsModal';
+import { PortalQuickActionsMenu } from './components/portal/PortalQuickActionsMenu';
+import { VirtualClassroomCollab } from './components/portal/VirtualClassroomCollab';
 
 import { UserProfile, UserRole, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
 import { api } from './services/api';
@@ -36,6 +41,7 @@ export default function App() {
   // Current view mode: 'public' or 'portal'
   const [viewMode, setViewMode] = useState<'public' | 'portal'>('public');
   const [activePublicSection, setActivePublicSection] = useState('hero');
+  const [activeLeaderProfileId, setActiveLeaderProfileId] = useState<string | null>(null);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
@@ -103,15 +109,52 @@ export default function App() {
   };
 
 
-  // Auto-switch to portal if autostart query param is present
+  // Auto-switch to portal or leader profile if URL params or hash are present (enabling unique, linkable page views)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('autostart') === '1' || params.get('portal') === '1') {
-      setViewMode('portal');
-      if (params.get('tab')) {
-        setActivePortalTab(params.get('tab')!);
+    const handleUrlRouting = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('autostart') === '1' || params.get('portal') === '1') {
+        setViewMode('portal');
+        if (params.get('tab')) {
+          setActivePortalTab(params.get('tab')!);
+        }
+        return;
       }
-    }
+
+      // Check query params: ?leader=chancellor or ?profile=president
+      const queryLeader = params.get('leader') || params.get('profile');
+      if (queryLeader) {
+        const found = resolveLeaderProfile(queryLeader);
+        if (found) {
+          setActiveLeaderProfileId(found.id);
+          setViewMode('public');
+          return;
+        }
+      }
+
+      // Check URL hash: #leader=chancellor or #profile=...
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash.startsWith('leader=') || hash.startsWith('profile=')) {
+        const leaderKey = hash.split('=')[1];
+        if (leaderKey) {
+          const found = resolveLeaderProfile(leaderKey);
+          if (found) {
+            setActiveLeaderProfileId(found.id);
+            setViewMode('public');
+            return;
+          }
+        }
+      }
+    };
+
+    handleUrlRouting();
+    window.addEventListener('hashchange', handleUrlRouting);
+    window.addEventListener('popstate', handleUrlRouting);
+
+    return () => {
+      window.removeEventListener('hashchange', handleUrlRouting);
+      window.removeEventListener('popstate', handleUrlRouting);
+    };
   }, []);
 
   // Fetch updated student and finance data for print documents
@@ -126,7 +169,27 @@ export default function App() {
     }
   };
 
-  const handleOpenPortal = () => {
+  const [pendingPortalTab, setPendingPortalTab] = useState<string | null>(null);
+  const [studentSubTab, setStudentSubTab] = useState<'grades' | 'materials' | 'calendar' | 'library' | 'messages' | 'facilities' | 'classroom'>('grades');
+
+  const handleSelectTabWithSubAction = (tabId: string, subAction?: string) => {
+    setActivePortalTab(tabId);
+    if (tabId === 'student_portal' && subAction) {
+      if (['grades', 'materials', 'calendar', 'library', 'messages', 'facilities', 'classroom'].includes(subAction)) {
+        setStudentSubTab(subAction as any);
+      }
+    }
+  };
+
+  const handleOpenPortal = (preferredTab?: string) => {
+    if (preferredTab === 'facilities' || preferredTab === 'library' || preferredTab === 'classroom') {
+      setActivePortalTab('student_portal');
+      setStudentSubTab(preferredTab);
+      setPendingPortalTab('student_portal');
+    } else if (preferredTab) {
+      setActivePortalTab(preferredTab);
+      setPendingPortalTab(preferredTab);
+    }
     if (currentUser) {
       setViewMode('portal');
     } else {
@@ -138,6 +201,10 @@ export default function App() {
     setCurrentUser(user);
     setIsLoginModalOpen(false);
     setViewMode('portal');
+    if (pendingPortalTab) {
+      setActivePortalTab(pendingPortalTab);
+      setPendingPortalTab(null);
+    }
   };
 
   const handleSwitchRole = (role: UserRole) => {
@@ -162,12 +229,36 @@ export default function App() {
     setViewMode('public');
   };
 
+  const handleOpenProfile = (profileId: string) => {
+    const found = resolveLeaderProfile(profileId);
+    const validId = found ? found.id : profileId;
+    setActiveLeaderProfileId(validId);
+    setViewMode('public');
+    if (window.location.hash !== `#leader=${validId}`) {
+      window.history.pushState(null, '', `#leader=${validId}`);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCloseProfile = () => {
+    setActiveLeaderProfileId(null);
+    if (window.location.hash.startsWith('#leader=') || window.location.hash.startsWith('#profile=')) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
+    }
+  };
+
   const handleNavigateSection = (sectionId: string) => {
+    setActiveLeaderProfileId(null);
     setActivePublicSection(sectionId);
     setViewMode('public');
+    if (window.location.hash.startsWith('#leader=') || window.location.hash.startsWith('#profile=')) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
+    }
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -177,54 +268,72 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#FAF8FB] text-[#2E0F34] font-sans selection:bg-[#C39A53]/30 selection:text-[#4A1249]">
       {/* RENDER PUBLIC WEBSITE VIEW */}
       {viewMode === 'public' && (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
           <PublicNavbar
             onOpenPortal={handleOpenPortal}
             currentUser={currentUser}
             onNavigateSection={handleNavigateSection}
             activeSection={activePublicSection}
+            onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
+            onOpenProfile={handleOpenProfile}
           />
 
-          <main className="flex-1">
-            <PublicHero
-              onOpenPortal={handleOpenPortal}
+          {activeLeaderProfileId ? (
+            <PublicLeaderProfile
+              profileId={activeLeaderProfileId}
+              onClose={handleCloseProfile}
+              onSelectProfile={handleOpenProfile}
               onNavigateSection={handleNavigateSection}
               onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
             />
-            <PublicAbout />
-            <PublicColleges />
-            <PublicAdmissions
-              isModalOpen={isApplicationModalOpen}
-              onCloseModal={() => setIsApplicationModalOpen(false)}
-              onOpenModal={() => setIsApplicationModalOpen(true)}
-            />
-            <PublicCalendar />
-            <PublicDEI />
-          </main>
+          ) : (
+            <main className="flex-1">
+              <PublicHero
+                onOpenPortal={handleOpenPortal}
+                onNavigateSection={handleNavigateSection}
+                onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
+              />
+              <PublicAbout onOpenProfile={handleOpenProfile} />
+              <PublicVirtualTour
+                onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
+                onOpenPortal={handleOpenPortal}
+              />
+              <PublicColleges />
+              <PublicAdmissions
+                isModalOpen={isApplicationModalOpen}
+                onCloseModal={() => setIsApplicationModalOpen(false)}
+                onOpenModal={() => setIsApplicationModalOpen(true)}
+              />
+              <PublicCalendar />
+              <PublicDEI />
+            </main>
+          )}
 
           <PublicFooter
             onOpenPortal={handleOpenPortal}
             onNavigateSection={handleNavigateSection}
+            onOpenProfile={handleOpenProfile}
           />
         </div>
       )}
 
       {/* RENDER PROTECTED ERP SUBSYSTEM VIEW */}
       {viewMode === 'portal' && currentUser && (
-        <div className="flex flex-col min-h-screen bg-slate-950">
+        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
           <PortalHeader
             currentUser={currentUser}
             activeTab={activePortalTab}
-            onSelectTab={setActivePortalTab}
+            onSelectTab={handleSelectTabWithSubAction}
             onSwitchRole={handleSwitchRole}
             onLogout={handleLogout}
             onBackToPublic={() => setViewMode('public')}
             currentTheme={theme}
             onToggleTheme={handleToggleTheme}
             onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
+            onOpenPrintModal={handleOpenPrintModal}
           />
 
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -251,7 +360,12 @@ export default function App() {
               <StudentPortalView
                 currentUser={currentUser}
                 onOpenPrintModal={handleOpenPrintModal}
+                initialTab={studentSubTab}
               />
+            )}
+
+            {activePortalTab === 'classroom' && (
+              <VirtualClassroomCollab currentUser={currentUser} />
             )}
 
             {activePortalTab === 'admissions' && (
@@ -267,8 +381,19 @@ export default function App() {
             )}
           </main>
 
-          <footer className="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-            Gwoah's University ERP Subsystem • Republic of Liberia • NCHE Reference: NCHE/ACCR/2026-GU • All transactions encrypted & audited
+          {/* Quick Actions Floating Action Menu */}
+          <PortalQuickActionsMenu
+            currentUser={currentUser}
+            onNavigateTab={handleSelectTabWithSubAction}
+            onOpenPrintModal={handleOpenPrintModal}
+          />
+
+          <footer className="bg-[#4A1249] text-purple-100 border-t border-[#C39A53]/40 py-5 text-center text-xs">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <span className="text-[#C39A53] font-semibold">Harvest Intercontinental American University ERP Subsystem • Republic of Liberia</span>
+              <span className="text-purple-200">NCHE Statutory Accreditation: NCHE/ACCR/2026-HIAU</span>
+              <span className="text-amber-200 font-mono text-[11px]">ISO 27001 & EMIS Encrypted</span>
+            </div>
           </footer>
         </div>
       )}

@@ -33,7 +33,8 @@ export type TaskCategory =
   | 'finance' 
   | 'student_support' 
   | 'it_infrastructure'
-  | 'curriculum';
+  | 'curriculum'
+  | 'facilities_maintenance';
 
 export interface UniversityTask {
   id: string;
@@ -53,6 +54,9 @@ export interface UniversityTask {
   tags: string[];
   department: string;
   slaDays: number;
+  isPriorityFlagged?: boolean;
+  priorityFlaggedBy?: string;
+  flaggedAt?: string;
 }
 
 export interface Course {
@@ -218,6 +222,16 @@ export interface AuditLogEntry {
 
 export type ResourceCategory = 'course_material' | 'nche_guideline' | 'institutional_handbook';
 
+export interface ResourceVersion {
+  version: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  changeSummary: string;
+  fileSizeKB: number;
+  contentSummary?: string;
+  isActive: boolean;
+}
+
 export interface LibraryResource {
   id: string;
   title: string;
@@ -236,6 +250,30 @@ export interface LibraryResource {
   keyHighlights: string[];
   isPinned?: boolean;
   tags: string[];
+  versionHistory?: ResourceVersion[];
+}
+
+export interface FacilityTicket {
+  id: string;
+  ticketNumber: string;
+  buildingId: string;
+  buildingName: string;
+  campusName: string;
+  locationDetails: string; // e.g. Room 204, East Wing Restroom
+  category: 'sanitation' | 'electrical' | 'connectivity' | 'ventilation_ac' | 'furniture_structural' | 'plumbing';
+  priority: 'urgent' | 'high' | 'medium' | 'low';
+  title: string;
+  description: string;
+  reporterName: string;
+  reporterEmail: string;
+  reporterPhone?: string;
+  reporterRole: string;
+  status: 'reported' | 'investigating' | 'dispatched' | 'resolved';
+  createdAt: string;
+  updatedAt: string;
+  assignedStaff?: string;
+  resolutionNotes?: string;
+  taskId?: string; // Linked task in TaskManagementDashboard
 }
 
 export type CalendarEventType = 'registration' | 'exam' | 'senate' | 'holiday' | 'financial';
@@ -252,4 +290,52 @@ export interface AcademicCalendarEvent {
   isMandatory: boolean;
   statutoryRef?: string;
   term: string;
+}
+
+export type NotificationCategory = 'academic' | 'task' | 'alert' | 'finance' | 'facility';
+export type NotificationPriority = 'critical' | 'high' | 'normal' | 'info';
+
+export interface PortalNotification {
+  id: string;
+  category: NotificationCategory;
+  priority: NotificationPriority;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  targetTab?: string;
+  targetAction?: string;
+  badge?: string;
+  entityId?: string;
+}
+
+export interface PeerDiscussionMessage {
+  id: string;
+  materialId: string;
+  threadId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: string; // e.g. 'Student', 'Study Group Lead', 'Course Rep'
+  authorAvatar?: string;
+  timestamp: string;
+  content: string;
+  tag?: 'question' | 'solution_tip' | 'resource' | 'announcement';
+  likes: number;
+  likedBy?: string[];
+}
+
+export interface PeerDiscussionThread {
+  id: string;
+  materialId: string;
+  courseCode: string;
+  materialTitle: string;
+  title: string;
+  description?: string;
+  createdAt: string;
+  creatorId: string;
+  creatorName: string;
+  messagesCount: number;
+  participants: string[];
+  lastActivity: string;
+  isPinned?: boolean;
 }

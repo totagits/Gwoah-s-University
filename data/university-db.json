@@ -470,7 +470,7 @@
     "academicStanding": "Dean's List",
     "totalCreditsEarned": 68,
     "targetDegreeCredits": 128,
-    "cgpa": 3.86,
+    "cgpa": 3.68,
     "accommodationsNeeded": "None reported",
     "financialHold": false,
     "advisorName": "Dr. Moses S. Doe"
@@ -484,8 +484,8 @@
       "courseTitle": "Data Structures and Algorithms Analysis",
       "credits": 4,
       "status": "registered",
-      "score": 95,
-      "grade": "A",
+      "score": 88,
+      "grade": "B+",
       "registeredDate": "2026-10-02T10:00:00Z"
     },
     {
@@ -767,80 +767,6 @@
       "responsibleOffice": "Chief Information Officer (CIO) & Internal Auditor"
     }
   ],
-  "auditLogs": [
-    {
-      "id": "audit-1792899008083-310",
-      "timestamp": "2026-10-25T03:30:08.083Z",
-      "userId": "u-registrar",
-      "userName": "Mrs. Patricia Tweh",
-      "userRole": "registrar",
-      "action": "USER_LOGIN_SUCCESS",
-      "entityType": "Session",
-      "entityId": "u-registrar",
-      "details": "Signed in as Chief University Registrar (registrar)",
-      "ipAddress": "143.105.145.175, 169.254.169.126"
-    },
-    {
-      "id": "audit-1792898314011-14",
-      "timestamp": "2026-10-25T03:18:34.011Z",
-      "userId": "anonymous",
-      "userName": "Dr. Gabriel M. Gwoah",
-      "userRole": "lecturer",
-      "action": "GRADE_AMENDED",
-      "entityType": "StudentRegistrationItem",
-      "entityId": "reg-01",
-      "details": "Updated final score to 95% (A) for course CSC 301. New CGPA: 3.86",
-      "ipAddress": "127.0.0.1"
-    },
-    {
-      "id": "audit-001",
-      "timestamp": "2026-10-24T18:30:15Z",
-      "userId": "u-admin",
-      "userName": "Dr. Gabriel M. Gwoah",
-      "userRole": "super_admin",
-      "action": "SYSTEM_POLICY_SYNC",
-      "entityType": "PolicyRegistry",
-      "entityId": "pol-02",
-      "details": "Verified institutional compliance indicators for Liberia DEI Policy in Higher Education.",
-      "ipAddress": "197.231.14.92"
-    },
-    {
-      "id": "audit-002",
-      "timestamp": "2026-10-24T15:12:00Z",
-      "userId": "u-bursar",
-      "userName": "Mr. Samuel Barclay",
-      "userRole": "bursar",
-      "action": "PAYMENT_RECEIPT_POSTED",
-      "entityType": "FinancialTransaction",
-      "entityId": "tx-004",
-      "details": "Posted EcoBank validated deposit slip $175.00 for Student GU-2024-04821; cleared registration hold.",
-      "ipAddress": "197.231.14.105"
-    },
-    {
-      "id": "audit-003",
-      "timestamp": "2026-10-23T14:40:22Z",
-      "userId": "u-admissions",
-      "userName": "Ms. Helena Kollie",
-      "userRole": "admissions_officer",
-      "action": "APPLICATION_ADMITTED",
-      "entityType": "ApplicationRecord",
-      "entityId": "app-901",
-      "details": "Admitted Fatu K. Kromah into B.Sc. Nursing after WAEC transcript validation.",
-      "ipAddress": "197.231.14.98"
-    },
-    {
-      "id": "audit-004",
-      "timestamp": "2026-10-22T17:00:10Z",
-      "userId": "u-lecturer",
-      "userName": "Dr. Moses S. Doe",
-      "userRole": "lecturer",
-      "action": "TASK_COMPLETED",
-      "entityType": "UniversityTask",
-      "entityId": "task-106",
-      "details": "Completed exam questions moderation for CSC 301 Data Structures and submitted rubric to Dean.",
-      "ipAddress": "197.231.15.22"
-    }
-  ],
   "materials": [
     {
       "id": "mat-csc301-syl",
@@ -942,6 +868,787 @@
       "content": "Dear Dr. Doe, please submit your midterm question paper and answer key for peer moderation by Friday so the Registry can archive accredited copies.",
       "timestamp": "2026-10-24T09:00:00Z",
       "read": false
+    }
+  ],
+  "resources": [
+    {
+      "id": "res-course-csc301-syl",
+      "title": "CSC 301 Data Structures & Algorithms: Official Senate Syllabus & Lab Rubrics",
+      "category": "course_material",
+      "subcategory": "Course Syllabus",
+      "courseCode": "CSC 301",
+      "authorOrAuthority": "Dr. Moses S. Doe (Department of Computer Science)",
+      "publishedDate": "2026-10-02",
+      "academicYear": "2026/2027",
+      "version": "v2.4 (Senate Accredited)",
+      "fileFormat": "PDF",
+      "fileSizeKB": 245,
+      "statutoryReference": "NCHE-ENG-CSC-2024 Standards",
+      "description": "Comprehensive curriculum specification for advanced data structures, asymptotic notation, balanced search trees, graph theory, and laboratory assignments aligned with NCHE computer science standards.",
+      "contentSummary": "COURSE OVERVIEW:\nCSC 301 provides in-depth exposure to data representation, complexity analysis, and tree/graph structures for mission-critical software systems.\n\nKEY MODULES COVERED:\n1. Module 1: Asymptotic Complexity (Big-O, Big-Omega, Big-Theta, Master Theorem, recursion trees).\n2. Module 2: Self-Balancing Trees (AVL node rotations, Red-Black color invariants, B-trees for disk blocks).\n3. Module 3: Priority Queues & Heaps (Binary heaps, Fibonacci heaps, Dijkstra's algorithm optimization).\n4. Module 4: Graph Algorithms (Breadth-First Search, Depth-First Search, Minimum Spanning Trees, Topological Sorting).\n5. Module 5: Hash Tables & Dynamic Programming (Collision resolution strategies, memoization vs tabulation).\n\nASSESSMENT BREAKDOWN:\n- Weekly Laboratory Implementations: 25%\n- Midterm Senate Moderated Exam: 25%\n- Term Project (Low-Bandwidth Mobile Offline Cache Algorithm): 20%\n- Final University Comprehensive Examination: 30%",
+      "keyHighlights": [
+        "Senate Exam Board verified for Academic Year 2026/2027",
+        "Mandatory 3 hours lecture + 2 hours supervised lab per week (3 Credits)",
+        "Includes complete rubrics for Python and C++ assignments"
+      ],
+      "isPinned": true,
+      "tags": [
+        "CSC 301",
+        "algorithms",
+        "data structures",
+        "syllabus",
+        "computer science"
+      ]
+    },
+    {
+      "id": "res-course-csc301-wk1",
+      "title": "CSC 301 Week 1: Asymptotic Complexity & Master Theorem Study Notes",
+      "category": "course_material",
+      "subcategory": "Lecture Notes & Slides",
+      "courseCode": "CSC 301",
+      "authorOrAuthority": "Dr. Moses S. Doe (Department of Computer Science)",
+      "publishedDate": "2026-10-05",
+      "academicYear": "2026/2027",
+      "version": "1.0",
+      "fileFormat": "PDF",
+      "fileSizeKB": 380,
+      "description": "Digitized lecture notes on time-space complexity, formal mathematical limit proofs, recurrence relations, and algorithm performance in resource-constrained infrastructure.",
+      "contentSummary": "LECTURE SUMMARY - WEEK 1:\nIn this lecture, students examine formal definitions of computational complexity and worst-case runtime bounds.\n\nCORE CONCEPTS:\n- Asymptotic Notations: f(n) = O(g(n)) implies existence of constants c > 0 and n0 >= 0 such that 0 <= f(n) <= c * g(n) for all n >= n0.\n- Master Theorem: T(n) = aT(n/b) + f(n). Analysis of Cases 1, 2, and 3 with divide-and-conquer recurrences.\n- Low-Resource Optimization: Why O(n log n) sorting is essential over slow cellular networks and low-RAM devices in rural university labs.\n- Problem Set 1: 8 proof problems with step-by-step solutions for practice.",
+      "keyHighlights": [
+        "Full mathematical proofs with step-by-step limit derivations",
+        "Worked examples for Merge Sort, Binary Search, and Strassen matrix multiplication",
+        "Includes 10 self-assessment review questions"
+      ],
+      "isPinned": false,
+      "tags": [
+        "CSC 301",
+        "complexity",
+        "asymptotic notation",
+        "lecture notes"
+      ]
+    },
+    {
+      "id": "res-course-csc301-wk2",
+      "title": "CSC 301 Week 2: AVL Tree Rotations & Balanced Search Structures",
+      "category": "course_material",
+      "subcategory": "Lecture Notes & Slides",
+      "courseCode": "CSC 301",
+      "authorOrAuthority": "Dr. Moses S. Doe (Department of Computer Science)",
+      "publishedDate": "2026-10-12",
+      "academicYear": "2026/2027",
+      "version": "1.1",
+      "fileFormat": "PDF",
+      "fileSizeKB": 460,
+      "description": "Detailed analysis of self-balancing binary search trees, balance factor calculations, single and double rotations (LL, RR, LR, RL), and deletion rebalancing.",
+      "contentSummary": "LECTURE SUMMARY - WEEK 2:\nAVL trees guarantee logarithmic height O(log n) for all search, insert, and delete operations by maintaining a strict balance factor difference of at most 1.\n\nROTATION ALGORITHMS:\n- Left-Left Case (LL): Right rotation around node k2.\n- Right-Right Case (RR): Left rotation around node k1.\n- Left-Right Case (LR): Left rotation on left child followed by right rotation on parent.\n- Right-Left Case (RL): Right rotation on right child followed by left rotation on parent.\n- Balance Factor calculation: BF = Height(LeftSubtree) - Height(RightSubtree) in {-1, 0, 1}.",
+      "keyHighlights": [
+        "Includes rotation visual state diagrams",
+        "Complete Python and Java implementation code snippets",
+        "Proof of AVL height upper bound: H < 1.4404 log2(N + 2) - 0.328"
+      ],
+      "isPinned": false,
+      "tags": [
+        "CSC 301",
+        "trees",
+        "AVL",
+        "rotations",
+        "lecture notes"
+      ]
+    },
+    {
+      "id": "res-course-csc301-lab",
+      "title": "CSC 301 Laboratory Manual: Low-Bandwidth Data Structures Benchmarking",
+      "category": "course_material",
+      "subcategory": "Laboratory Manual",
+      "courseCode": "CSC 301",
+      "authorOrAuthority": "Department of Computer Science & ICT Services",
+      "publishedDate": "2026-10-04",
+      "academicYear": "2026/2027",
+      "version": "2.0",
+      "fileFormat": "PDF",
+      "fileSizeKB": 320,
+      "description": "Practical lab instructions for building, profiling, and benchmarking data structures in Unix terminal environments with memory footprint analysis.",
+      "contentSummary": "LAB MANUAL INSTRUCTIONS:\nLab 1: Memory alignment and cache locality of C-style contiguous arrays vs linked lists.\nLab 2: Implementing an AVL Tree from scratch without standard template libraries.\nLab 3: Benchmarking search latency with 100,000 student index records under limited RAM conditions.\nLab 4: Building a graph traversal engine for Liberian county transportation route planning.",
+      "keyHighlights": [
+        "Command-line profiling instructions using Linux tools (valgrind, gprof)",
+        "Automated grading test harnesses provided on campus git server",
+        "Compliant with NCHE 2-hour weekly laboratory contact requirement"
+      ],
+      "isPinned": false,
+      "tags": [
+        "CSC 301",
+        "lab manual",
+        "terminal",
+        "profiling"
+      ]
+    },
+    {
+      "id": "res-course-csc201-syl",
+      "title": "CSC 201 Object-Oriented Software Engineering: Course Syllabus & Design Patterns",
+      "category": "course_material",
+      "subcategory": "Course Syllabus",
+      "courseCode": "CSC 201",
+      "authorOrAuthority": "Dr. Moses S. Doe & Prof. Joseph Flomo",
+      "publishedDate": "2026-10-03",
+      "academicYear": "2026/2027",
+      "version": "3.0",
+      "fileFormat": "PDF",
+      "fileSizeKB": 290,
+      "statutoryReference": "NCHE Curricular Framework for Computing",
+      "description": "Foundational object-oriented design principles (SOLID), UML class modeling, GoF design patterns, unit testing frameworks, and multi-tier architectural patterns.",
+      "contentSummary": "COURSE OVERVIEW:\nCSC 201 prepares students for professional software engineering practices through hands-on architecture, code refactoring, and test-driven development.\n\nMODULES:\n- Object-Oriented Principles: Encapsulation, inheritance, polymorphism, and interface abstraction.\n- SOLID Architecture: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.\n- Gang of Four Patterns: Factory, Singleton, Observer, Strategy, Adapter, and Decorator.\n- Automated Testing: Writing testable code with JUnit/PyTest and measuring branch code coverage.",
+      "keyHighlights": [
+        "Senate approved 3-credit curriculum for sophomore software engineering students",
+        "Term project includes building a multi-tier records management prototype",
+        "Covers Git version control workflow and pull request review protocols"
+      ],
+      "isPinned": false,
+      "tags": [
+        "CSC 201",
+        "OOP",
+        "software engineering",
+        "design patterns",
+        "syllabus"
+      ]
+    },
+    {
+      "id": "res-course-mat201-notes",
+      "title": "MAT 201 Discrete Mathematical Structures: Induction, Logic & Graph Theory",
+      "category": "course_material",
+      "subcategory": "Lecture Notes & Slides",
+      "courseCode": "MAT 201",
+      "authorOrAuthority": "Prof. Joseph Flomo (Department of Mathematics)",
+      "publishedDate": "2026-10-08",
+      "academicYear": "2026/2027",
+      "version": "1.2",
+      "fileFormat": "PDF",
+      "fileSizeKB": 410,
+      "description": "Comprehensive study packet on propositional calculus, predicate logic, mathematical induction, set theory, combinatorics, and discrete probability.",
+      "contentSummary": "DIGITIZED LECTURE PACKET:\nChapter 1: Logic, propositions, connectives, truth tables, and equivalence laws.\nChapter 2: Methods of proof: direct proof, proof by contraposition, proof by contradiction.\nChapter 3: Principle of Mathematical Induction (weak and strong forms) with algorithmic verification proofs.\nChapter 4: Relations and Functions: equivalence relations, partial orderings, and Hasse diagrams.\nChapter 5: Graph Theory Fundamentals: Euler paths, Hamiltonian circuits, planar graphs, and graph coloring.",
+      "keyHighlights": [
+        "Standard reference text for all computing, mathematics, and engineering majors",
+        "Contains 60 solved proof exercises and practice exam questions",
+        "Directly links formal logic to hardware circuit synthesis and boolean algebra"
+      ],
+      "isPinned": false,
+      "tags": [
+        "MAT 201",
+        "discrete mathematics",
+        "logic",
+        "induction",
+        "proofs"
+      ]
+    },
+    {
+      "id": "res-course-eng101-guide",
+      "title": "ENG 101 Advanced Academic Writing & Research Communication Guide",
+      "category": "course_material",
+      "subcategory": "Reference Reading",
+      "courseCode": "ENG 101",
+      "authorOrAuthority": "Department of Languages & General Studies",
+      "publishedDate": "2026-10-02",
+      "academicYear": "2026/2027",
+      "version": "4.1",
+      "fileFormat": "PDF",
+      "fileSizeKB": 340,
+      "statutoryReference": "NCHE Baccalaureate Core General Education Requirement",
+      "description": "Guidelines on scholarly rhetoric, peer-reviewed literature reviews, APA 7th edition citation standards, plagiarism prevention, and thesis statement formulation.",
+      "contentSummary": "INSTRUCTIONAL HANDBOOK:\nSection 1: Structuring Baccalaureate Research Papers (Abstract, Introduction, Literature Review, Methodology, Analysis, Discussion).\nSection 2: Citations and Bibliography: APA 7th Edition rules for journals, government gazettes, and digital repositories.\nSection 3: Academic Honesty: University Senate plagiarism detection thresholds, proper paraphrasing versus verbatim quotation.",
+      "keyHighlights": [
+        "Mandatory general education text for all freshmen and transfer students",
+        "Detailed citation formatting examples for Liberian statutory and historical sources",
+        "Includes academic paper template conforming to university guidelines"
+      ],
+      "isPinned": false,
+      "tags": [
+        "ENG 101",
+        "academic writing",
+        "APA style",
+        "research",
+        "general education"
+      ]
+    },
+    {
+      "id": "res-nche-accreditation-manual",
+      "title": "NCHE Institutional Accreditation & Program Recognition Manual",
+      "category": "nche_guideline",
+      "subcategory": "Statutory Accreditation Standard",
+      "authorOrAuthority": "National Commission on Higher Education (NCHE), Republic of Liberia",
+      "publishedDate": "2026-08-15",
+      "academicYear": "2026/2027",
+      "version": "Official Gazette 2026 Revised Standard",
+      "fileFormat": "PDF",
+      "fileSizeKB": 820,
+      "statutoryReference": "NCHE Act of 1989 (Amended) & Curricular Regulations",
+      "description": "The statutory higher education standard defining licensing criteria, degree credit ceilings, institutional governance, faculty credentials, and physical infrastructure requirements in the Republic of Liberia.",
+      "contentSummary": "REPUBLIC OF LIBERIA - NATIONAL COMMISSION ON HIGHER EDUCATION (NCHE)\nMANDATORY STATUTORY STANDARDS SUMMARY:\n\n1. BACCALAUREATE DEGREE REQUIREMENTS:\nAll accredited 4-year undergraduate degree programs must mandate between 120 and 132 credit hours of Senate-approved coursework. General education must comprise at least 30-36 credits.\n\n2. SEMESTER CREDIT LOAD REGULATIONS:\n- Full-time student status: Minimum 12 credits per semester.\n- Standard academic load: 15-18 credits per semester.\n- Maximum allowable load: 21 credits per semester. Any overload beyond 18 credits requires a 3.50+ CGPA and formal Senate Academic Board waiver.\n\n3. FACULTY CREDENTIALS AND TERMINAL DEGREES:\n- At least 30% of permanent full-time faculty in degree-granting colleges must possess terminal doctoral degrees (Ph.D., D.Sc., or M.D.).\n- Master's degree holders may instruct undergraduate courses up to 300-level under departmental supervision.\n\n4. ACCREDITATION REVIEW CYCLE:\nInstitutions undergo statutory quinquennial (5-year) comprehensive audits and annual data compliance synchronization via the MoE EMIS tertiary portal.",
+      "keyHighlights": [
+        "Governing authority for all degrees conferred by Gwoah's University",
+        "Mandates 120-132 credits graduation threshold and 12-credit full-time enrollment floor",
+        "Sets standards for faculty-to-student ratios (maximum 1:35 in classroom, 1:20 in laboratories)"
+      ],
+      "isPinned": true,
+      "tags": [
+        "NCHE",
+        "accreditation",
+        "standards",
+        "credit hours",
+        "degree audit",
+        "Liberia"
+      ]
+    },
+    {
+      "id": "res-nche-grading-scale",
+      "title": "NCHE Standard Grading Scale & Quality Point Assessment Directives",
+      "category": "nche_guideline",
+      "subcategory": "Academic Assessment Directive",
+      "authorOrAuthority": "National Commission on Higher Education (NCHE)",
+      "publishedDate": "2026-07-20",
+      "academicYear": "2026/2027",
+      "version": "Circular NCHE/REG/2026-04",
+      "fileFormat": "PDF",
+      "fileSizeKB": 290,
+      "statutoryReference": "NCHE Academic Standards Circular 2026",
+      "description": "Official Liberian university 4.0 grading scale, numerical score conversion bands, quality point multipliers, grade appeal mechanisms, and academic probation thresholds.",
+      "contentSummary": "NCHE UNIFIED GRADING SCALE DIRECTIVE:\nGrade A: 90 - 100% | Quality Points: 4.00 | Excellent Distinction\nGrade B+: 85 - 89% | Quality Points: 3.50 | Very Good\nGrade B: 80 - 84% | Quality Points: 3.00 | Good / Above Average\nGrade C+: 75 - 79% | Quality Points: 2.50 | Satisfactory / Average\nGrade C: 70 - 74% | Quality Points: 2.00 | Fair / Minimum Pass for Major Course\nGrade D: 60 - 69% | Quality Points: 1.00 | Conditional Pass / Electives Only\nGrade F: 0 - 59% | Quality Points: 0.00 | Fail / Mandatory Retake\n\nACADEMIC STANDING DIRECTIVES:\n- Dean's List Honor: Semester GPA of 3.50 or higher with zero grades below B.\n- Good Standing: Cumulative GPA (CGPA) of 2.00 or higher.\n- Academic Probation: CGPA below 2.00 triggers a restricted 12-credit registration limit and mandatory academic counseling.\n- Academic Dismissal: Failure to elevate CGPA above 2.00 after two consecutive probationary semesters.",
+      "keyHighlights": [
+        "Prescribes the exact 4.0 scale implemented in Gwoah's University grade engine",
+        "Defines prerequisite grade C floor required for all major and concentration courses",
+        "Provides statutory timetable for grade appeal petitions (within 14 working days of publishing)"
+      ],
+      "isPinned": true,
+      "tags": [
+        "NCHE",
+        "grading scale",
+        "quality points",
+        "GPA",
+        "probation",
+        "dean list"
+      ]
+    },
+    {
+      "id": "res-nche-heqaf-qa",
+      "title": "Liberia Higher Education Quality Assurance Framework (HEQAF)",
+      "category": "nche_guideline",
+      "subcategory": "Quality Assurance Protocol",
+      "authorOrAuthority": "NCHE Quality Assurance Directorate",
+      "publishedDate": "2026-05-18",
+      "academicYear": "2026/2027",
+      "version": "HEQAF Framework 2026",
+      "fileFormat": "PDF",
+      "fileSizeKB": 610,
+      "statutoryReference": "HEQAF Pillar II: Institutional Assessment & Exam Security",
+      "description": "Guidelines on external examiner moderation of semester final examinations, student course evaluations, library holdings verification, and ICT lab certifications.",
+      "contentSummary": "HEQAF PROTOCOLS:\n1. Examination Moderation: All final examination questions and marking schemes must undergo independent departmental peer review and external moderation by appointed senior scholars.\n2. Examination Integrity: Question papers must be deposited in encrypted university safes 72 hours prior to examination dates.\n3. Student Feedback Mechanisms: At the conclusion of Week 14, every enrolled student completes an anonymous course and lecturer evaluation rubric.\n4. Laboratory and Library Minimums: 1 workstation per 4 computer science scholars, access to licensed digital scholarly databases, and backup electrical generation for uninterrupted study.",
+      "keyHighlights": [
+        "Establishes internal audit procedures for semester examinations",
+        "Enforces anonymous student course evaluation procedures",
+        "Mandates digital cataloging of all university academic materials"
+      ],
+      "isPinned": false,
+      "tags": [
+        "NCHE",
+        "quality assurance",
+        "HEQAF",
+        "audit",
+        "exam moderation"
+      ]
+    },
+    {
+      "id": "res-nche-moe-dei-policy",
+      "title": "Liberia’s Diversity, Equity, and Inclusion (DEI) Policy in Higher Education",
+      "category": "nche_guideline",
+      "subcategory": "National Policy Directive",
+      "authorOrAuthority": "Ministry of Education (MoE), Republic of Liberia",
+      "publishedDate": "2024-10-31",
+      "academicYear": "2026/2027",
+      "version": "MoE DEI Directive (Oct 2024)",
+      "fileFormat": "PDF",
+      "fileSizeKB": 520,
+      "statutoryReference": "MoE DEI Higher Ed Policy 2024 (Section 3: Universal Accessibility)",
+      "description": "National higher education directive mandating non-discriminatory access, gender-sensitive learning accommodations, physical and digital accessibility aids for disabled scholars, and transparent grievance channels.",
+      "contentSummary": "MINISTRY OF EDUCATION DEI MANDATE:\nPromulgated 31 October 2024 to guarantee equitable access across all tertiary learning institutions in the Republic of Liberia.\n\nSTATUTORY ARTICLES:\n- Article 3.1: Non-Discrimination on basis of ethnicity, gender, disability, county of origin, or economic status.\n- Article 3.2: Universal Learning Accessibility: Digital portals and lecture materials must conform to modern accessibility standards (WCAG 2.2 AA) with text-to-speech compatibility and offline-first download capabilities.\n- Article 3.3: Gender Parity in STEM: Institutional incentives and grants for female enrollment in Computer Science, Engineering, and Health Sciences.\n- Article 3.4: Accommodations for Disabled Scholars: Accessible campus ramps, exam time extensions (1.5x) for certified visual or motor impairments, and assistive reader hardware.",
+      "keyHighlights": [
+        "National policy enacted on 31 October 2024",
+        "Gwoah's University ERP accessibility features comply directly with Section 3.2",
+        "Governs the 42 currently accommodated students with documented accessibility profiles"
+      ],
+      "isPinned": false,
+      "tags": [
+        "Ministry of Education",
+        "DEI",
+        "equity",
+        "accessibility",
+        "diversity",
+        "Liberia"
+      ]
+    },
+    {
+      "id": "res-nche-emis-standards",
+      "title": "National EMIS Tertiary Data Exchange Standards & Harmonization Directives",
+      "category": "nche_guideline",
+      "subcategory": "Data Exchange Protocol",
+      "authorOrAuthority": "Ministry of Education (MoE) & NCHE EMIS Taskforce",
+      "publishedDate": "2026-09-29",
+      "academicYear": "2026/2027",
+      "version": "EMIS-TERTIARY-2026-V1",
+      "fileFormat": "PDF",
+      "fileSizeKB": 480,
+      "statutoryReference": "Liberia Education Sector Plan 2022/23–2026/27 (Pillar III)",
+      "description": "Technical standard governing annual reporting schema for student enrollment by county, faculty, gender parity indices, and institutional compliance.",
+      "contentSummary": "EMIS TERTIARY DATA HARMONIZATION DIRECTIVE:\nDirects all higher education institutions to maintain synchronized data exchange pipelines with the Ministry of Education EMIS central database.\n\nREPORTING FIELDS:\n1. Institution Identifier: LR-GU-084 (Gwoah's University)\n2. Total Enrollment by Gender and 15 Liberian Counties of origin\n3. STEM Enrollment Share and Graduation Projection Indices\n4. Teacher-Scholar Ratios and Certified Laboratories\n5. One-Click Verified CSV / JSON Export Schema specifications",
+      "keyHighlights": [
+        "Validated during the National Education Consultation on 28-29 September 2026",
+        "Directly links to the ERP's Integrated Analytics Hub MoE EMIS Export feature",
+        "Ensures institution eligibility for national higher education research grants"
+      ],
+      "isPinned": false,
+      "tags": [
+        "EMIS",
+        "Ministry of Education",
+        "reporting",
+        "data standard",
+        "education sector plan"
+      ]
+    },
+    {
+      "id": "res-handbook-student-official",
+      "title": "Gwoah's University Undergraduate Student Handbook (2026/2027 Official Edition)",
+      "category": "institutional_handbook",
+      "subcategory": "Institutional Student Handbook",
+      "authorOrAuthority": "Office of the Dean of Students & University Senate",
+      "publishedDate": "2026-09-01",
+      "academicYear": "2026/2027",
+      "version": "2026/2027 Official Senate Edition",
+      "fileFormat": "PDF",
+      "fileSizeKB": 750,
+      "statutoryReference": "GU Senate Resolution SR-2026-004",
+      "description": "The definitive guide for all undergraduate scholars covering academic integrity, honor code, exam hall regulations, grade appeals, student governance, campus housing, and convocation requirements.",
+      "contentSummary": "GWOAH'S UNIVERSITY UNDERGRADUATE STUDENT HANDBOOK\nACADEMIC YEAR 2026/2027\n\nTABLE OF CONTENTS:\nChapter 1: History, Mission, and Core Values of Gwoah's University.\nChapter 2: Academic Regulations (Add/Drop deadlines, withdrawal, prerequisite sequences, degree audit verification).\nChapter 3: The Student Honor Code & Academic Integrity (Definitions of plagiarism, unauthorized collaboration, disciplinary sanctions).\nChapter 4: Grading System, Transcripts, and Degree Conferral (Official 4.0 scale, Dean's List, Cum Laude, Magna Cum Laude, Summa Cum Laude).\nChapter 5: Student Rights, Welfare & Support Services (Health Clinic, Mental Health Counseling, DEI Accommodations).\nChapter 6: Campus Facilities, ICT Commons & Low-Bandwidth Learning Mirrors.\nChapter 7: Student Organizations, Senate Representation & Extracurricular Activities.\n\nSENATE MANDATE ON ACADEMIC HONESTY:\n\"Scholars of Gwoah's University commit to upholding uncompromised truth in research and scholarship. Plagiarism or fraudulent exam conduct shall result in disciplinary referral, grade forfeiture, or suspension.\"",
+      "keyHighlights": [
+        "Essential reference guide distributed to every matriculating scholar",
+        "Outlines step-by-step grade dispute procedure through Departmental Review Panels",
+        "Details convocation requirements (minimum 126 credits, 2.00 CGPA, clearance of bursar accounts)"
+      ],
+      "isPinned": true,
+      "tags": [
+        "handbook",
+        "regulations",
+        "honor code",
+        "student life",
+        "convocation",
+        "senate"
+      ]
+    },
+    {
+      "id": "res-handbook-student-rights-dei",
+      "title": "Campus Code of Conduct, Student Rights & Anti-Harassment Charter",
+      "category": "institutional_handbook",
+      "subcategory": "Rights & Conduct Charter",
+      "authorOrAuthority": "Office of Student Welfare & Legal Affairs Directorate",
+      "publishedDate": "2026-09-10",
+      "academicYear": "2026/2027",
+      "version": "Charter Rev 2026",
+      "fileFormat": "PDF",
+      "fileSizeKB": 390,
+      "statutoryReference": "GU Disciplinary Bylaws & Liberia MoE DEI Policy 2024",
+      "description": "University policies guaranteeing student safety, freedom of inquiry, zero tolerance for harassment or hazing, confidential reporting channels, and disciplinary tribunal proceedings.",
+      "contentSummary": "STUDENT RIGHTS CHARTER:\nEvery student at Gwoah's University possesses fundamental rights to a safe, respectful, and academically supportive campus environment.\n\nKEY ARTICLES:\n- Freedom from Harassment: Strict prohibition of quid pro quo sexual harassment, cyber-bullying, or physical intimidation.\n- Confidential Reporting Hotline: 24/7 reporting via portal or campus welfare officer with whistleblower protection.\n- Due Process: Any scholar summoned before the University Disciplinary Committee is entitled to written notice of charges, representation, and right of appeal to the President.\n- Accessible Campus Guarantee: Priority scheduling and accommodations for students with documented mobility or sensory impairments.",
+      "keyHighlights": [
+        "Zero-tolerance policy for academic coercion and sexual harassment",
+        "Confidential reporting and protective measures for student complainants",
+        "Defines the student disciplinary appellate procedure"
+      ],
+      "isPinned": false,
+      "tags": [
+        "rights",
+        "code of conduct",
+        "harassment prevention",
+        "welfare",
+        "safety"
+      ]
+    },
+    {
+      "id": "res-handbook-bursar-fees",
+      "title": "Bursar Fee Schedule, Refund Policies & Digital Payment Guide",
+      "category": "institutional_handbook",
+      "subcategory": "Financial & Bursar Guide",
+      "authorOrAuthority": "Office of the University Bursar & Financial Aid Directorate",
+      "publishedDate": "2026-09-15",
+      "academicYear": "2026/2027",
+      "version": "Bursar Guide 2026/27",
+      "fileFormat": "PDF",
+      "fileSizeKB": 310,
+      "statutoryReference": "GU Board of Trustees Financial Resolution 2026",
+      "description": "Comprehensive schedule of undergraduate tuition rates per credit, laboratory fees, Add/Drop refund schedules (100% week 1-2, 50% week 3-4), and mobile money deposit procedures.",
+      "contentSummary": "BURSAR FINANCIAL REGULATIONS:\n1. TUITION & REGISTRATION FEES:\n- Undergraduate Credit Rate: $45.00 USD per credit hour.\n- Semester Registration Fee: $50.00 USD.\n- Laboratory & Science Fee (STEM majors): $45.00 USD per semester.\n- ICT & Digital Commons Connectivity Fee: $25.00 USD.\n\n2. OFFICIAL PAYMENT METHODS:\n- Lonestar MTN Mobile Money: Merchant Code 883921 (Instant portal ledger clearance)\n- Orange Money: Merchant Code 774102\n- Bank Deposit Slip: EcoBank Liberia & United Bank for Africa (UBA)\n\n3. ADD/DROP REFUND SCHEDULE:\n- Week 1 - 2: 100% refund of dropped course tuition.\n- Week 3 - 4: 50% partial credit toward subsequent semester tuition.\n- After Week 4: 0% refund (Course recorded as Withdrawn 'W').",
+      "keyHighlights": [
+        "Details official mobile money payment numbers to prevent cashier fraud",
+        "Outlines financial clearance requirements for midterm and final examination admission",
+        "Explains Ministry of Education STEM subsidy application steps"
+      ],
+      "isPinned": false,
+      "tags": [
+        "bursar",
+        "tuition",
+        "fees",
+        "refund policy",
+        "mobile money",
+        "financial aid"
+      ]
+    },
+    {
+      "id": "res-handbook-advising-manual",
+      "title": "Academic Advising & Course Add/Drop Procedural Manual",
+      "category": "institutional_handbook",
+      "subcategory": "Academic Advising Manual",
+      "authorOrAuthority": "Office of the Registrar & Academic Advising Council",
+      "publishedDate": "2026-09-20",
+      "academicYear": "2026/2027",
+      "version": "Advising Manual v3.2",
+      "fileFormat": "PDF",
+      "fileSizeKB": 360,
+      "statutoryReference": "Senate Academic Regulations Sec. 12",
+      "description": "Operational manual detailing course prerequisite chains, academic advisor sign-off workflows, full-time credit boundaries (12 to 21 credits), and withdrawal protocols.",
+      "contentSummary": "ACADEMIC ADVISING WORKFLOW:\n1. Mandatory Advising Conference: Every scholar meets with their assigned departmental faculty advisor prior to semester registration.\n2. Degree Audit Review: Advisor and scholar verify completed credits against NCHE 120-132 requirement.\n3. Prerequisite Enforcement: Automated system checks prevent registration into advanced courses without completing required foundational courses with a grade of C or better.\n4. Add/Drop Window: Commences the first day of class and concludes at the end of Week 2. Any drop requiring reduction below 12 credits must receive Dean's clearance.",
+      "keyHighlights": [
+        "Step-by-step guide on how to register and drop courses via the student portal",
+        "Explains prerequisite waiver procedure and academic advisor approval stages",
+        "Includes 4-year recommended curriculum plans for all five colleges"
+      ],
+      "isPinned": false,
+      "tags": [
+        "academic advising",
+        "add/drop",
+        "prerequisites",
+        "registrar",
+        "curriculum"
+      ]
+    },
+    {
+      "id": "res-handbook-library-guide",
+      "title": "University Digital Commons & Campus Library Guide",
+      "category": "institutional_handbook",
+      "subcategory": "Library & Learning Commons Guide",
+      "authorOrAuthority": "University Librarian & ICT Directorate",
+      "publishedDate": "2026-09-05",
+      "academicYear": "2026/2027",
+      "version": "2026 Edition",
+      "fileFormat": "PDF",
+      "fileSizeKB": 280,
+      "statutoryReference": "NCHE Institutional Resource Standards",
+      "description": "User guide for accessing physical and digital library collections at Monrovia and Fendall campuses, low-bandwidth offline digital caches, e-journal access, and quiet study room reservations.",
+      "contentSummary": "LIBRARY & DIGITAL COMMONS SERVICES:\n1. Physical Libraries:\n- Monrovia Main Campus: 8:00 AM - 9:00 PM (Monday - Saturday)\n- Fendall Science & Technology Center: 8:00 AM - 8:00 PM\n2. Digital Repositories:\n- Local Campus Mirror: Offline intranet cache containing 50,000+ open-access textbooks, IEEE articles, and digitized lecture notes accessible even during national internet disruptions.\n- Inter-Library Loan: Agreements with regional universities across West Africa (WAUA consortium).\n3. Laptop Loan Program: 48-hour emergency laptop lending for registered low-income scholars.",
+      "keyHighlights": [
+        "Covers both Monrovia and Fendall campus library facilities",
+        "Explains how to connect to the local low-bandwidth offline digital cache on campus Wi-Fi",
+        "Instructions for borrowing physical reserve texts and group study rooms"
+      ],
+      "isPinned": false,
+      "tags": [
+        "library",
+        "digital commons",
+        "offline repository",
+        "textbooks",
+        "Fendall",
+        "Monrovia"
+      ]
+    }
+  ],
+  "calendarEvents": [
+    {
+      "id": "cal-reg-close",
+      "title": "Senate Add/Drop & Course Registration Closure",
+      "description": "Final deadline for all undergraduate and graduate course additions, drops, and section changes. Late registration fee penalty of $50 applies thereafter per Senate Resolution SR-2026-08.",
+      "eventType": "registration",
+      "startDate": "2026-10-30T17:00:00",
+      "endDate": "2026-10-30T23:59:59",
+      "location": "Office of the Registrar / ERP Online Portal",
+      "isMandatory": true,
+      "statutoryRef": "NCHE Standard 4.2 / Senate Stat. 2026-04",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-fin-clearance",
+      "title": "Midterm Examination Financial Clearance Deadline",
+      "description": "All enrolled students must achieve at least 50% tuition and fee clearance with the Bursar office to be issued examination sitting clearance tokens.",
+      "eventType": "financial",
+      "startDate": "2026-11-15T16:00:00",
+      "endDate": "2026-11-15T18:00:00",
+      "location": "Bursar Counter & Mobile Money Gateway",
+      "isMandatory": true,
+      "statutoryRef": "GU Finance Policy 2026-B",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-midterm-week",
+      "title": "Midterm Continuous Assessment & Moderation Week",
+      "description": "Mandatory midterm examinations and peer moderation across all colleges (Engineering, Business, Health Sciences, Education).",
+      "eventType": "exam",
+      "startDate": "2026-11-23T08:00:00",
+      "endDate": "2026-11-28T18:00:00",
+      "location": "University Main Hall & Department Exam Rooms",
+      "isMandatory": true,
+      "statutoryRef": "Senate Academic Calendar 2026/2027",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-midterm-csc301",
+      "title": "CSC 301 Midterm Examination: Distributed Systems Architecture",
+      "description": "Formal 2-hour seated exam covering RPC protocols, consensus models (Raft/Paxos), and cloud virtualization principles. Bring approved scientific calculator.",
+      "eventType": "exam",
+      "startDate": "2026-11-25T10:00:00",
+      "endDate": "2026-11-25T12:00:00",
+      "location": "Engineering Lab B-204 & Science Auditorium",
+      "courseCode": "CSC 301",
+      "isMandatory": true,
+      "statutoryRef": "HEQAF Computing Curriculum Guidelines",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-midterm-mat201",
+      "title": "MAT 201 Midterm Examination: Linear Algebra & Vector Spaces",
+      "description": "Midterm paper covering matrix decompositions, eigenspaces, and linear transformations.",
+      "eventType": "exam",
+      "startDate": "2026-11-26T14:00:00",
+      "endDate": "2026-11-26T16:00:00",
+      "location": "Lecture Hall 101, College of Science",
+      "courseCode": "MAT 201",
+      "isMandatory": true,
+      "statutoryRef": "Senate Academic Calendar 2026/2027",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-winter-recess",
+      "title": "Senate Winter Recess & Campus Administrative Break",
+      "description": "University closed for Christmas and New Year holidays. Library digital repository remains accessible online via ERP.",
+      "eventType": "holiday",
+      "startDate": "2026-12-18T17:00:00",
+      "endDate": "2027-01-03T23:59:59",
+      "location": "All Campuses (Monrovia & Gbarnga)",
+      "isMandatory": false,
+      "statutoryRef": "Public Holidays Act & Senate Charter",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-exam-clearance-final",
+      "title": "Final Examination Docket Issuance & Clearance Audit",
+      "description": "Deadline to print verified examination dockets with QR authentication. Students with financial or prerequisite holds will be blocked from exam halls.",
+      "eventType": "registration",
+      "startDate": "2027-01-12T09:00:00",
+      "endDate": "2027-01-15T17:00:00",
+      "location": "Registrar Examination Division",
+      "isMandatory": true,
+      "statutoryRef": "NCHE Examination Integrity Mandate 2025",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-final-csc301",
+      "title": "CSC 301 Final Baccalaureate Examination (NCHE Moderated)",
+      "description": "Comprehensive 3-hour invigilated examination in Distributed Systems. Supervised by external examiner from University of Liberia / NCHE.",
+      "eventType": "exam",
+      "startDate": "2027-01-19T09:00:00",
+      "endDate": "2027-01-19T12:00:00",
+      "location": "Main University Examination Gymnasium - Section 3",
+      "courseCode": "CSC 301",
+      "isMandatory": true,
+      "statutoryRef": "NCHE Standard 5.3 External Moderation",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-final-mat201",
+      "title": "MAT 201 Final Examination: Advanced Mathematics for Engineers",
+      "description": "Comprehensive 3-hour written examination covering differential equations, vector calculus, and Fourier transforms.",
+      "eventType": "exam",
+      "startDate": "2027-01-22T13:30:00",
+      "endDate": "2027-01-22T16:30:00",
+      "location": "Main University Examination Gymnasium - Section 1",
+      "courseCode": "MAT 201",
+      "isMandatory": true,
+      "statutoryRef": "Senate Academic Calendar 2026/2027",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-final-een205",
+      "title": "EEN 205 Final Examination: Circuit Analysis & Digital Logic",
+      "description": "Written and practical examination on circuit theorems, AC analysis, and logic design.",
+      "eventType": "exam",
+      "startDate": "2027-01-25T09:00:00",
+      "endDate": "2027-01-25T12:00:00",
+      "location": "Engineering Complex Lab 3",
+      "courseCode": "EEN 205",
+      "isMandatory": true,
+      "statutoryRef": "Senate Academic Calendar 2026/2027",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-final-exams-period",
+      "title": "Official Semester I Final Examination Period",
+      "description": "University-wide final examination period for all faculties. Strict academic integrity rules in effect under NCHE HEQAF oversight.",
+      "eventType": "exam",
+      "startDate": "2027-01-18T08:00:00",
+      "endDate": "2027-01-30T18:00:00",
+      "location": "All Campus Examination Centers",
+      "isMandatory": true,
+      "statutoryRef": "NCHE Academic Calendar Charter",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-senate-grades",
+      "title": "University Senate Grade Moderation & Approval Board",
+      "description": "Faculty board of examiners meets with external moderators to review grade distributions, student appeals, and honor roll qualifications.",
+      "eventType": "senate",
+      "startDate": "2027-02-08T10:00:00",
+      "endDate": "2027-02-08T17:00:00",
+      "location": "Senate Chambers, Administration Building",
+      "isMandatory": false,
+      "statutoryRef": "Senate Governance Charter Art. 12",
+      "term": "Semester I 2026/2027"
+    },
+    {
+      "id": "cal-grade-release",
+      "title": "Official Semester I Grade Transcript & GPA Publishing",
+      "description": "Official release of Semester I academic transcripts, Dean’s List honors, and academic standing notices on the ERP portal.",
+      "eventType": "registration",
+      "startDate": "2027-02-12T09:00:00",
+      "endDate": "2027-02-12T17:00:00",
+      "location": "ERP Student Portal & Office of Registrar",
+      "isMandatory": true,
+      "statutoryRef": "NCHE Standard 4.4 Record Publishing",
+      "term": "Semester I 2026/2027"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "audit-1793657521468-570",
+      "timestamp": "2026-11-02T22:12:01.468Z",
+      "userId": "anonymous",
+      "userName": "System Admin",
+      "userRole": "super_admin",
+      "action": "DEMO_DATA_RESET",
+      "entityType": "AppDatabase",
+      "entityId": "all",
+      "details": "Reset all university ERP demonstration records to initial state",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "audit-001",
+      "timestamp": "2026-10-24T18:30:15Z",
+      "userId": "u-admin",
+      "userName": "Dr. Gabriel M. Gwoah",
+      "userRole": "super_admin",
+      "action": "SYSTEM_POLICY_SYNC",
+      "entityType": "PolicyRegistry",
+      "entityId": "pol-02",
+      "details": "Verified institutional compliance indicators for Liberia DEI Policy in Higher Education.",
+      "ipAddress": "197.231.14.92"
+    },
+    {
+      "id": "audit-002",
+      "timestamp": "2026-10-24T15:12:00Z",
+      "userId": "u-bursar",
+      "userName": "Mr. Samuel Barclay",
+      "userRole": "bursar",
+      "action": "PAYMENT_RECEIPT_POSTED",
+      "entityType": "FinancialTransaction",
+      "entityId": "tx-004",
+      "details": "Posted EcoBank validated deposit slip $175.00 for Student GU-2024-04821; cleared registration hold.",
+      "ipAddress": "197.231.14.105"
+    },
+    {
+      "id": "audit-003",
+      "timestamp": "2026-10-23T14:40:22Z",
+      "userId": "u-admissions",
+      "userName": "Ms. Helena Kollie",
+      "userRole": "admissions_officer",
+      "action": "APPLICATION_ADMITTED",
+      "entityType": "ApplicationRecord",
+      "entityId": "app-901",
+      "details": "Admitted Fatu K. Kromah into B.Sc. Nursing after WAEC transcript validation.",
+      "ipAddress": "197.231.14.98"
+    },
+    {
+      "id": "audit-004",
+      "timestamp": "2026-10-22T17:00:10Z",
+      "userId": "u-lecturer",
+      "userName": "Dr. Moses S. Doe",
+      "userRole": "lecturer",
+      "action": "TASK_COMPLETED",
+      "entityType": "UniversityTask",
+      "entityId": "task-106",
+      "details": "Completed exam questions moderation for CSC 301 Data Structures and submitted rubric to Dean.",
+      "ipAddress": "197.231.15.22"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "category": "academic",
+      "priority": "high",
+      "title": "Add/Drop Deadline Approaching",
+      "message": "Semester I 2026/2027 Course Add/Drop closes in 3 business days. Finalize your schedule to avoid late fees.",
+      "timestamp": "2026-11-02T13:30:00Z",
+      "read": false,
+      "targetTab": "academics",
+      "badge": "Urgent"
+    },
+    {
+      "id": "notif-2",
+      "category": "task",
+      "priority": "critical",
+      "title": "SLA Alert: Laptop Lab Starlink Terminal Rack",
+      "message": "Urgent work order #HIAU-FAC-2026-101 requires Physical Plant inspection within 4 hours.",
+      "timestamp": "2026-11-02T12:45:00Z",
+      "read": false,
+      "targetTab": "tasks",
+      "targetAction": "task-001",
+      "badge": "Critical SLA"
+    },
+    {
+      "id": "notif-3",
+      "category": "academic",
+      "priority": "normal",
+      "title": "CSC 301: Advanced Lecture Notes Uploaded",
+      "message": "Dr. Moses S. Doe published Lecture 4 notes & code samples in the Shared Resource Library.",
+      "timestamp": "2026-11-02T11:15:00Z",
+      "read": false,
+      "targetTab": "student_portal",
+      "targetAction": "library",
+      "badge": "Library"
+    },
+    {
+      "id": "notif-4",
+      "category": "finance",
+      "priority": "normal",
+      "title": "Tuition Payment Verification Cleared",
+      "message": "Bursar verified installment payment of $450.00 USD via EcoBank. Official financial statement updated.",
+      "timestamp": "2026-11-02T09:20:00Z",
+      "read": true,
+      "targetTab": "finance",
+      "badge": "Bursar"
+    },
+    {
+      "id": "notif-5",
+      "category": "alert",
+      "priority": "high",
+      "title": "NCHE Statutory Institutional Self-Study Audit",
+      "message": "Registrar and Deans are requested to review Criterion 4 (Curriculum & Lab Equipment) by Friday.",
+      "timestamp": "2026-11-01T16:00:00Z",
+      "read": true,
+      "targetTab": "compliance",
+      "badge": "Accreditation"
+    },
+    {
+      "id": "notif-6",
+      "category": "facility",
+      "priority": "normal",
+      "title": "Campus Facility Work Order Dispatched",
+      "message": "Maintenance crew dispatched to Central Library Study Commons for daylight fixture servicing.",
+      "timestamp": "2026-11-01T14:10:00Z",
+      "read": true,
+      "targetTab": "student_portal",
+      "targetAction": "facilities",
+      "badge": "Facilities"
     }
   ]
 }

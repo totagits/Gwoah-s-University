@@ -18,6 +18,8 @@ import {
 } from './src/data/seedData';
 import { INITIAL_LIBRARY_RESOURCES } from './src/data/libraryResourcesData';
 import { INITIAL_CALENDAR_EVENTS } from './src/data/calendarData';
+import { INITIAL_NOTIFICATIONS } from './src/data/notificationData';
+import { INITIAL_PEER_THREADS, INITIAL_PEER_MESSAGES } from './src/data/peerDiscussionData';
 import {
   UniversityTask,
   StudentRegistrationItem,
@@ -29,6 +31,9 @@ import {
   DirectMessage,
   LibraryResource,
   AcademicCalendarEvent,
+  PortalNotification,
+  PeerDiscussionThread,
+  PeerDiscussionMessage,
 } from './src/types';
 import { generateIcsCalendar, filterCalendarEvents } from './src/utils/calendarSync';
 import { computeTaskAnalytics } from './src/utils/taskAnalytics';
@@ -62,6 +67,23 @@ interface AppDatabase {
   resources: LibraryResource[];
   calendarEvents: AcademicCalendarEvent[];
   auditLogs: AuditLogEntry[];
+  notifications: PortalNotification[];
+  peerThreads: PeerDiscussionThread[];
+  peerMessages: PeerDiscussionMessage[];
+}
+
+// Active Server-Sent Events subscribers for real-time notification push
+const sseClients = new Set<Response>();
+
+function broadcastNotification(notification: PortalNotification) {
+  const data = JSON.stringify(notification);
+  for (const client of sseClients) {
+    try {
+      client.write(`event: notification\ndata: ${data}\n\n`);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
 }
 
 function loadDatabase(): AppDatabase {
@@ -76,6 +98,15 @@ function loadDatabase(): AppDatabase {
       }
       if (!parsed.calendarEvents || parsed.calendarEvents.length === 0) {
         parsed.calendarEvents = INITIAL_CALENDAR_EVENTS;
+      }
+      if (!parsed.notifications || parsed.notifications.length === 0) {
+        parsed.notifications = INITIAL_NOTIFICATIONS;
+      }
+      if (!parsed.peerThreads || parsed.peerThreads.length === 0) {
+        parsed.peerThreads = INITIAL_PEER_THREADS;
+      }
+      if (!parsed.peerMessages || parsed.peerMessages.length === 0) {
+        parsed.peerMessages = INITIAL_PEER_MESSAGES;
       }
       return parsed;
     }
@@ -98,6 +129,9 @@ function loadDatabase(): AppDatabase {
     resources: INITIAL_LIBRARY_RESOURCES,
     calendarEvents: INITIAL_CALENDAR_EVENTS,
     auditLogs: INITIAL_AUDIT_LOGS,
+    notifications: INITIAL_NOTIFICATIONS,
+    peerThreads: INITIAL_PEER_THREADS,
+    peerMessages: INITIAL_PEER_MESSAGES,
   };
 
   saveDatabase(initialDb);
@@ -299,22 +333,125 @@ app.get('/api/calendar/export.ics', (req: Request, res: Response) => {
     courseCode: typeof courseCode === 'string' ? courseCode : undefined,
   });
 
-  const icsData = generateIcsCalendar(filtered, "Gwoah's University Senate Calendar");
+  const icsData = generateIcsCalendar(filtered, "Harvest Intercontinental American University Senate Calendar");
 
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="gwoahs-university-academic-calendar.ics"');
+  res.setHeader('Content-Disposition', 'attachment; filename="hiau-academic-calendar-2026-2027.ics"');
   return res.send(icsData);
 });
 
 
 /* ==========================================================================
+   PORTAL NOTIFICATIONS & REAL-TIME STREAM (SSE)
+   ========================================================================== */
+app.get('/api/notifications', (req: Request, res: Response) => {
+  const { category, unreadOnly } = req.query;
+  let list = [...db.notifications];
+
+  if (category && category !== 'all') {
+    list = list.filter((n) => n.category === category);
+  }
+  if (unreadOnly === 'true') {
+    list = list.filter((n) => !n.read);
+  }
+
+  list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return res.json({
+    success: true,
+    count: list.length,
+    unreadCount: db.notifications.filter((n) => !n.read).length,
+    notifications: list,
+  });
+});
+
+app.patch('/api/notifications/:id/read', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const target = db.notifications.find((n) => n.id === id);
+  if (!target) {
+    return res.status(404).json({ error: 'Notification not found' });
+  }
+  target.read = true;
+  saveDatabase(db);
+  return res.json({
+    success: true,
+    notification: target,
+    unreadCount: db.notifications.filter((n) => !n.read).length,
+  });
+});
+
+app.post('/api/notifications/mark-all-read', (_req: Request, res: Response) => {
+  db.notifications.forEach((n) => {
+    n.read = true;
+  });
+  saveDatabase(db);
+  return res.json({ success: true, unreadCount: 0 });
+});
+
+app.post('/api/notifications', (req: Request, res: Response) => {
+  const { title, message, category, priority, targetTab, targetAction, badge } = req.body;
+  if (!title || !message) {
+    return res.status(400).json({ error: 'Title and message are required' });
+  }
+
+  const newNotif: PortalNotification = {
+    id: `notif-${Date.now()}`,
+    title,
+    message,
+    category: category || 'alert',
+    priority: priority || 'normal',
+    timestamp: new Date().toISOString(),
+    read: false,
+    targetTab,
+    targetAction,
+    badge,
+  };
+
+  db.notifications.unshift(newNotif);
+  saveDatabase(db);
+  broadcastNotification(newNotif);
+
+  return res.status(201).json({
+    success: true,
+    notification: newNotif,
+    unreadCount: db.notifications.filter((n) => !n.read).length,
+  });
+});
+
+// SSE endpoint for real-time notification push
+app.get('/api/notifications/stream', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  sseClients.add(res);
+
+  res.write(
+    `event: connected\ndata: ${JSON.stringify({
+      status: 'connected',
+      unreadCount: db.notifications.filter((n) => !n.read).length,
+    })}\n\n`
+  );
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
+/* ==========================================================================
    TASK MANAGEMENT DASHBOARD & ANALYTICS ENDPOINTS
    ========================================================================== */
 app.get('/api/tasks', (req: Request, res: Response) => {
-  const { category, priority, status, department, search } = req.query;
+  const { category, priority, status, department, search, urgentOnly, priorityFlagged } = req.query;
 
   let results = [...db.tasks];
 
+  if (urgentOnly === 'true') {
+    results = results.filter((t) => t.priority === 'urgent' || t.priority === 'high' || !!t.isPriorityFlagged);
+  }
+  if (priorityFlagged === 'true') {
+    results = results.filter((t) => !!t.isPriorityFlagged);
+  }
   if (category && category !== 'all') {
     results = results.filter((t) => t.category === category);
   }
@@ -385,6 +522,22 @@ app.post('/api/tasks', (req: Request, res: Response) => {
   };
 
   db.tasks.unshift(newTask);
+
+  const taskNotif: PortalNotification = {
+    id: `notif-${Date.now()}`,
+    title: newTask.category === 'facilities_maintenance' ? `Facility Repair Ticket Logged` : `New Task Assigned: ${newTask.title}`,
+    message: `${newTask.assigneeName} (${newTask.department}) • Priority: ${newTask.priority.toUpperCase()}`,
+    category: newTask.category === 'facilities_maintenance' ? 'facility' : 'task',
+    priority: newTask.priority === 'urgent' ? 'critical' : newTask.priority === 'high' ? 'high' : 'normal',
+    timestamp: new Date().toISOString(),
+    read: false,
+    targetTab: 'tasks',
+    targetAction: newTask.id,
+    badge: newTask.category === 'facilities_maintenance' ? 'Work Order' : 'Task',
+  };
+  db.notifications.unshift(taskNotif);
+  broadcastNotification(taskNotif);
+
   saveDatabase(db);
 
   recordAudit(
@@ -418,15 +571,33 @@ app.patch('/api/tasks/:id', (req: Request, res: Response) => {
     updated.actualHours = updated.actualHours || updated.estimatedHours || 6;
   }
 
+  // If newly flagged as High Priority, broadcast urgent alert
+  if (req.body.isPriorityFlagged && !existing.isPriorityFlagged) {
+    const flagNotif: PortalNotification = {
+      id: `notif-${Date.now()}`,
+      title: `High Priority Flag: ${updated.title}`,
+      message: `${updated.department} • Flagged by ${updated.priorityFlaggedBy || 'Faculty'} (SLA: ${updated.slaDays}d)`,
+      category: 'task',
+      priority: 'high',
+      timestamp: new Date().toISOString(),
+      read: false,
+      targetTab: 'tasks',
+      targetAction: updated.id,
+      badge: 'Urgent Flag',
+    };
+    db.notifications.unshift(flagNotif);
+    broadcastNotification(flagNotif);
+  }
+
   db.tasks[index] = updated;
   saveDatabase(db);
 
   recordAudit(
     { name: updated.assigneeName, role: updated.assigneeRole },
-    'TASK_STATUS_UPDATED',
+    req.body.isPriorityFlagged !== undefined ? 'TASK_PRIORITY_FLAGGED' : 'TASK_STATUS_UPDATED',
     'UniversityTask',
     updated.id,
-    `Updated task "${updated.title}" status to "${updated.status}"`,
+    `Updated task "${updated.title}" [Priority: ${updated.priority}, Flagged: ${!!updated.isPriorityFlagged}]`,
     req
   );
 
@@ -947,6 +1118,181 @@ app.post('/api/materials', (req: Request, res: Response) => {
 });
 
 /* ==========================================================================
+   ACADEMIC PEER MESSAGING & STUDY GROUP THREADS ENDPOINTS
+   ========================================================================== */
+app.get('/api/peer-discussions/threads', (req: Request, res: Response) => {
+  const { materialId, courseCode, search } = req.query;
+  let threads = db.peerThreads || INITIAL_PEER_THREADS;
+
+  if (materialId && typeof materialId === 'string' && materialId !== 'all') {
+    threads = threads.filter((t) => t.materialId === materialId);
+  }
+  if (courseCode && typeof courseCode === 'string' && courseCode !== 'all') {
+    threads = threads.filter((t) => t.courseCode.toLowerCase() === courseCode.toLowerCase());
+  }
+  if (search && typeof search === 'string' && search.trim() !== '') {
+    const q = search.toLowerCase();
+    threads = threads.filter(
+      (t) => t.title.toLowerCase().includes(q) || (t.description && t.description.toLowerCase().includes(q))
+    );
+  }
+
+  // Sort pinned first, then by lastActivity descending
+  threads.sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime();
+  });
+
+  return res.json({ success: true, threads });
+});
+
+app.post('/api/peer-discussions/threads', (req: Request, res: Response) => {
+  const { materialId, courseCode, materialTitle, title, description, creatorId, creatorName } = req.body;
+
+  if (!materialId || !courseCode || !title) {
+    return res.status(400).json({ error: 'materialId, courseCode, and title are required' });
+  }
+
+  const newThread: PeerDiscussionThread = {
+    id: `thread-${Date.now()}`,
+    materialId,
+    courseCode,
+    materialTitle: materialTitle || 'Course Material',
+    title,
+    description: description || '',
+    createdAt: new Date().toISOString(),
+    creatorId: creatorId || db.student.id,
+    creatorName: creatorName || db.student.fullName,
+    messagesCount: 1,
+    participants: [creatorName || db.student.fullName],
+    lastActivity: new Date().toISOString(),
+    isPinned: false,
+  };
+
+  if (!db.peerThreads) db.peerThreads = [];
+  db.peerThreads.unshift(newThread);
+
+  // If initial message provided, save it
+  if (req.body.initialMessage) {
+    const initMsg: PeerDiscussionMessage = {
+      id: `msg-p-${Date.now()}`,
+      materialId,
+      threadId: newThread.id,
+      authorId: creatorId || db.student.id,
+      authorName: creatorName || db.student.fullName,
+      authorRole: 'Peer Student',
+      authorAvatar: (creatorName || db.student.fullName).split(' ').map((n: string) => n[0]).join('').slice(0, 2),
+      timestamp: new Date().toISOString(),
+      content: req.body.initialMessage,
+      tag: req.body.tag || 'question',
+      likes: 1,
+      likedBy: [creatorId || db.student.id],
+    };
+    if (!db.peerMessages) db.peerMessages = [];
+    db.peerMessages.push(initMsg);
+  }
+
+  // Notify classmates
+  const threadNotif: PortalNotification = {
+    id: `notif-${Date.now()}`,
+    title: `New Peer Discussion: ${newThread.title}`,
+    message: `${newThread.courseCode} • Started by ${newThread.creatorName}`,
+    category: 'academic',
+    priority: 'normal',
+    timestamp: new Date().toISOString(),
+    read: false,
+    targetTab: 'materials',
+    targetAction: newThread.id,
+    badge: 'Study Group',
+  };
+  db.notifications.unshift(threadNotif);
+  broadcastNotification(threadNotif);
+
+  saveDatabase(db);
+  return res.status(201).json({ success: true, thread: newThread });
+});
+
+app.get('/api/peer-discussions/messages', (req: Request, res: Response) => {
+  const { threadId, materialId } = req.query;
+  let messages = db.peerMessages || INITIAL_PEER_MESSAGES;
+
+  if (threadId && typeof threadId === 'string') {
+    messages = messages.filter((m) => m.threadId === threadId);
+  } else if (materialId && typeof materialId === 'string') {
+    messages = messages.filter((m) => m.materialId === materialId);
+  }
+
+  messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  return res.json({ success: true, messages });
+});
+
+app.post('/api/peer-discussions/messages', (req: Request, res: Response) => {
+  const { materialId, threadId, authorId, authorName, authorRole, content, tag } = req.body;
+
+  if (!threadId || !content || !content.trim()) {
+    return res.status(400).json({ error: 'threadId and content are required' });
+  }
+
+  const thread = (db.peerThreads || []).find((t) => t.id === threadId);
+  const resolvedAuthorName = authorName || db.student.fullName;
+
+  const newMsg: PeerDiscussionMessage = {
+    id: `msg-p-${Date.now()}`,
+    materialId: materialId || (thread ? thread.materialId : 'mat-csc301-wk2'),
+    threadId,
+    authorId: authorId || db.student.id,
+    authorName: resolvedAuthorName,
+    authorRole: authorRole || 'Peer Student',
+    authorAvatar: resolvedAuthorName.split(' ').map((n: string) => n[0]).join('').slice(0, 2),
+    timestamp: new Date().toISOString(),
+    content: content.trim(),
+    tag: tag || 'solution_tip',
+    likes: 0,
+    likedBy: [],
+  };
+
+  if (!db.peerMessages) db.peerMessages = [];
+  db.peerMessages.push(newMsg);
+
+  if (thread) {
+    thread.messagesCount = (thread.messagesCount || 0) + 1;
+    thread.lastActivity = new Date().toISOString();
+    if (!thread.participants.includes(resolvedAuthorName)) {
+      thread.participants.push(resolvedAuthorName);
+    }
+  }
+
+  saveDatabase(db);
+  return res.status(201).json({ success: true, message: newMsg });
+});
+
+app.post('/api/peer-discussions/messages/:id/like', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { studentId } = req.body;
+  const msg = (db.peerMessages || []).find((m) => m.id === id);
+
+  if (!msg) {
+    return res.status(404).json({ error: 'Message not found' });
+  }
+
+  const userId = studentId || db.student.id;
+  if (!msg.likedBy) msg.likedBy = [];
+
+  const alreadyLiked = msg.likedBy.includes(userId);
+  if (alreadyLiked) {
+    msg.likedBy = msg.likedBy.filter((uid) => uid !== userId);
+    msg.likes = Math.max(0, msg.likes - 1);
+  } else {
+    msg.likedBy.push(userId);
+    msg.likes = (msg.likes || 0) + 1;
+  }
+
+  saveDatabase(db);
+  return res.json({ success: true, likes: msg.likes, isLiked: !alreadyLiked });
+});
+
+/* ==========================================================================
    SHARED RESOURCE LIBRARY ENDPOINTS (Course Materials, NCHE, Handbooks)
    ========================================================================== */
 app.get('/api/resources', (req: Request, res: Response) => {
@@ -1186,6 +1532,9 @@ app.post('/api/reset-demo', (req: Request, res: Response) => {
     resources: INITIAL_LIBRARY_RESOURCES,
     calendarEvents: INITIAL_CALENDAR_EVENTS,
     auditLogs: INITIAL_AUDIT_LOGS,
+    notifications: INITIAL_NOTIFICATIONS,
+    peerThreads: INITIAL_PEER_THREADS,
+    peerMessages: INITIAL_PEER_MESSAGES,
   };
   saveDatabase(db);
 

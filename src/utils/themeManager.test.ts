@@ -12,13 +12,13 @@ test('resolveUserTheme prioritizes user profile preference over localStorage', (
 });
 
 test('resolveUserTheme falls back to localStorage if user profile has no preference', () => {
-  const theme = resolveUserTheme(undefined, 'light');
-  assert.equal(theme, 'light');
+  const theme = resolveUserTheme(undefined, 'dark');
+  assert.equal(theme, 'dark');
 });
 
-test('resolveUserTheme defaults to dark if neither preference is provided', () => {
+test('resolveUserTheme defaults to light (Academic Ivory standard) if neither preference is provided', () => {
   const theme = resolveUserTheme(undefined, null);
-  assert.equal(theme, 'dark');
+  assert.equal(theme, 'light');
 });
 
 test('toggleTheme alternates between dark and light correctly', () => {
@@ -35,5 +35,5 @@ test('getThemeAccessibilityDetails returns WCAG AAA metrics for both themes', ()
   const darkDetails = getThemeAccessibilityDetails('dark');
   assert.equal(darkDetails.wcagLevel, 'AAA');
   assert.equal(darkDetails.mode, 'dark');
-  assert.match(darkDetails.contrastRatio, /9\.2:1/);
+  assert.match(darkDetails.contrastRatio, /9\.5:1/);
 });

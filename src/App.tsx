@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { setSessionCsrf } from './services/session';
-import { useLocalization } from './i18n/Localization';
-import { AccountCenter, HistoricalPrediction } from './components/portal/AccountCenter';
 import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
+import { PublicVirtualTour } from './components/public/PublicVirtualTour';
 import { PublicColleges } from './components/public/PublicColleges';
 import { PublicAdmissions } from './components/public/PublicAdmissions';
 import { PublicCalendar } from './components/public/PublicCalendar';
 import { PublicDEI } from './components/public/PublicDEI';
 import { PublicFooter } from './components/public/PublicFooter';
+import { PublicLeaderProfile } from './components/public/PublicLeaderProfile';
+import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
-import { CampusProvider } from './components/portal/CampusContext';
-import { StudentServices, AlumniPortalView, CourseDependencyMapper } from './components/portal/CampusServices';
-import { LibraryTools, LearningStudio } from './components/portal/LearningStudio';
-import { FacultyTools, InstitutionalControls, SuccessPredictor, TuitionReminders, Proctoring, NcheComplianceMonitor } from './components/portal/InstitutionalTools';
 import { PortalLoginModal } from './components/portal/PortalLoginModal';
 import { TaskManagementDashboard } from './components/portal/TaskManagementDashboard';
 import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsHub';
@@ -27,10 +24,12 @@ import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';
 import { PrintableDocumentModal } from './components/portal/PrintableDocumentModal';
 import { PortalThemeSettingsModal } from './components/portal/PortalThemeSettingsModal';
+import { PortalQuickActionsMenu } from './components/portal/PortalQuickActionsMenu';
+import { VirtualClassroomCollab } from './components/portal/VirtualClassroomCollab';
 
-import { UserProfile, UserRole, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
+import { UserProfile, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
 import { api } from './services/api';
-import { DEMO_USERS, DEMO_STUDENT, DEMO_REGISTRATIONS, DEMO_FINANCIAL_ACCOUNT } from './data/seedData';
+import { DEMO_STUDENT, DEMO_REGISTRATIONS, DEMO_FINANCIAL_ACCOUNT } from './data/seedData';
 import {
   ThemeMode,
   resolveUserTheme,
@@ -40,10 +39,10 @@ import {
 } from './utils/themeManager';
 
 export default function App() {
-  useLocalization();
   // Current view mode: 'public' or 'portal'
   const [viewMode, setViewMode] = useState<'public' | 'portal'>('public');
   const [activePublicSection, setActivePublicSection] = useState('hero');
+  const [activeLeaderProfileId, setActiveLeaderProfileId] = useState<string | null>(null);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -52,7 +51,7 @@ export default function App() {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
 
   // Active ERP Tab
-  const [activePortalTab, setActivePortalTab] = useState<string>('campus');
+  const [activePortalTab, setActivePortalTab] = useState<string>('tasks');
 
   // Printable Document Modal State
   const [printDocType, setPrintDocType] = useState<'registration_plan' | 'transcript' | 'financial_statement' | null>(null);
@@ -104,15 +103,67 @@ export default function App() {
   };
 
 
+  // Auto-switch to portal or leader profile if URL params or hash are present (enabling unique, linkable page views)
+  useEffect(() => {
+    const handleUrlRouting = () => {
+      const params = new URLSearchParams(window.location.search);
+      // URL parameters never grant privileges.
+      if (params.has('portal') || params.has('activate')) setIsLoginModalOpen(true);
+
+      // Check query params: ?leader=chancellor or ?profile=president
+      const queryLeader = params.get('leader') || params.get('profile');
+      if (queryLeader) {
+        const found = resolveLeaderProfile(queryLeader);
+        if (found) {
+          setActiveLeaderProfileId(found.id);
+          setViewMode('public');
+          return;
+        }
+      }
+
+      // Check URL hash: #leader=chancellor or #profile=...
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash.startsWith('leader=') || hash.startsWith('profile=')) {
+        const leaderKey = hash.split('=')[1];
+        if (leaderKey) {
+          const found = resolveLeaderProfile(leaderKey);
+          if (found) {
+            setActiveLeaderProfileId(found.id);
+            setViewMode('public');
+            return;
+          }
+        }
+      }
+    };
+
+    handleUrlRouting();
+    window.addEventListener('hashchange', handleUrlRouting);
+    window.addEventListener('popstate', handleUrlRouting);
+
+    return () => {
+      window.removeEventListener('hashchange', handleUrlRouting);
+      window.removeEventListener('popstate', handleUrlRouting);
+    };
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    fetch('/api/auth/me').then(async response => {
-      if (response.ok) { const session = await response.json();setSessionCsrf(session.csrf);setCurrentUser(session.user);setActivePortalTab(session.user.role==='alumni'?'alumni':session.user.role==='bursar'?'finance':session.user.role==='admissions_officer'?'admissions':['lecturer','dean'].includes(session.user.role)?'faculty_admin':'campus'); if(params.has('portal'))setViewMode('portal'); }
-      else if(params.has('portal')||params.has('activate'))setIsLoginModalOpen(true);
-    }).catch(() => {if(params.has('portal')||params.has('activate'))setIsLoginModalOpen(true);});
-    const expired=()=>{setSessionCsrf('');setCurrentUser(null);setViewMode('public');setIsLoginModalOpen(true);};
-    window.addEventListener('gu:session-expired',expired);return()=>window.removeEventListener('gu:session-expired',expired);
+    let active = true;
+    fetch('/api/auth/me', { credentials: 'same-origin' }).then(async response => {
+      if (!response.ok) throw new Error('No active session');
+      const session = await response.json();
+      if (!active) return;
+      setSessionCsrf(session.csrf);
+      setCurrentUser(session.user);
+      if (params.has('portal')) setViewMode('portal');
+    }).catch(() => {
+      if (active && (params.has('portal') || params.has('activate'))) setIsLoginModalOpen(true);
+    });
+    const expire = () => { setSessionCsrf(''); setCurrentUser(null); setViewMode('public'); setIsLoginModalOpen(true); };
+    window.addEventListener('gu:session-expired', expire);
+    return () => { active = false; window.removeEventListener('gu:session-expired', expire); };
   }, []);
+
   // Fetch updated student and finance data for print documents
   const refreshStudentPrintData = async () => {
     try {
@@ -125,7 +176,27 @@ export default function App() {
     }
   };
 
-  const handleOpenPortal = () => {
+  const [pendingPortalTab, setPendingPortalTab] = useState<string | null>(null);
+  const [studentSubTab, setStudentSubTab] = useState<'grades' | 'materials' | 'calendar' | 'library' | 'messages' | 'facilities' | 'classroom'>('grades');
+
+  const handleSelectTabWithSubAction = (tabId: string, subAction?: string) => {
+    setActivePortalTab(tabId);
+    if (tabId === 'student_portal' && subAction) {
+      if (['grades', 'materials', 'calendar', 'library', 'messages', 'facilities', 'classroom'].includes(subAction)) {
+        setStudentSubTab(subAction as any);
+      }
+    }
+  };
+
+  const handleOpenPortal = (preferredTab?: string) => {
+    if (preferredTab === 'facilities' || preferredTab === 'library' || preferredTab === 'classroom') {
+      setActivePortalTab('student_portal');
+      setStudentSubTab(preferredTab);
+      setPendingPortalTab('student_portal');
+    } else if (preferredTab) {
+      setActivePortalTab(preferredTab);
+      setPendingPortalTab(preferredTab);
+    }
     if (currentUser) {
       setViewMode('portal');
     } else {
@@ -135,24 +206,51 @@ export default function App() {
 
   const handleLoginSuccess = (user: UserProfile, _token: string) => {
     setCurrentUser(user);
-    setActivePortalTab(user.role==='alumni'?'alumni':user.role==='bursar'?'finance':user.role==='admissions_officer'?'admissions':['lecturer','dean'].includes(user.role)?'faculty_admin':'campus');
     setIsLoginModalOpen(false);
     setViewMode('portal');
+    if (pendingPortalTab) {
+      setActivePortalTab(pendingPortalTab);
+      setPendingPortalTab(null);
+    }
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
     setSessionCsrf('');
     setCurrentUser(null);
     setViewMode('public');
   };
 
+  const handleOpenProfile = (profileId: string) => {
+    const found = resolveLeaderProfile(profileId);
+    const validId = found ? found.id : profileId;
+    setActiveLeaderProfileId(validId);
+    setViewMode('public');
+    if (window.location.hash !== `#leader=${validId}`) {
+      window.history.pushState(null, '', `#leader=${validId}`);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCloseProfile = () => {
+    setActiveLeaderProfileId(null);
+    if (window.location.hash.startsWith('#leader=') || window.location.hash.startsWith('#profile=')) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
+    }
+  };
+
   const handleNavigateSection = (sectionId: string) => {
+    setActiveLeaderProfileId(null);
     setActivePublicSection(sectionId);
     setViewMode('public');
+    if (window.location.hash.startsWith('#leader=') || window.location.hash.startsWith('#profile=')) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
+    }
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -162,50 +260,65 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#FAF8FB] text-[#2E0F34] font-sans selection:bg-[#C39A53]/30 selection:text-[#4A1249]">
       {/* RENDER PUBLIC WEBSITE VIEW */}
       {viewMode === 'public' && (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
           <PublicNavbar
             onOpenPortal={handleOpenPortal}
             currentUser={currentUser}
             onNavigateSection={handleNavigateSection}
             activeSection={activePublicSection}
+            onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
+            onOpenProfile={handleOpenProfile}
           />
 
-          <main className="flex-1">
-            <PublicHero
-              onOpenPortal={handleOpenPortal}
+          {activeLeaderProfileId ? (
+            <PublicLeaderProfile
+              profileId={activeLeaderProfileId}
+              onClose={handleCloseProfile}
+              onSelectProfile={handleOpenProfile}
               onNavigateSection={handleNavigateSection}
               onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
             />
-            <PublicAbout />
-            <PublicColleges />
-            <PublicAdmissions
-              isModalOpen={isApplicationModalOpen}
-              onCloseModal={() => setIsApplicationModalOpen(false)}
-              onOpenModal={() => setIsApplicationModalOpen(true)}
-            />
-            <PublicCalendar />
-            <PublicDEI />
-          </main>
+          ) : (
+            <main className="flex-1">
+              <PublicHero
+                onOpenPortal={handleOpenPortal}
+                onNavigateSection={handleNavigateSection}
+                onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
+              />
+              <PublicAbout onOpenProfile={handleOpenProfile} />
+              <PublicVirtualTour
+                onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
+                onOpenPortal={handleOpenPortal}
+              />
+              <PublicColleges />
+              <PublicAdmissions
+                isModalOpen={isApplicationModalOpen}
+                onCloseModal={() => setIsApplicationModalOpen(false)}
+                onOpenModal={() => setIsApplicationModalOpen(true)}
+              />
+              <PublicCalendar />
+              <PublicDEI />
+            </main>
+          )}
 
           <PublicFooter
             onOpenPortal={handleOpenPortal}
             onNavigateSection={handleNavigateSection}
+            onOpenProfile={handleOpenProfile}
           />
         </div>
       )}
 
       {/* RENDER PROTECTED ERP SUBSYSTEM VIEW */}
       {viewMode === 'portal' && currentUser && (
-        <CampusProvider user={currentUser.id}>
-        <div className="flex flex-col min-h-screen bg-slate-950">
+        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
           <PortalHeader
             currentUser={currentUser}
             activeTab={activePortalTab}
-            onSelectTab={setActivePortalTab}
-
+            onSelectTab={handleSelectTabWithSubAction}
             onLogout={handleLogout}
             onBackToPublic={() => setViewMode('public')}
             currentTheme={theme}
@@ -214,46 +327,34 @@ export default function App() {
           />
 
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <div className="campus-staging"><span>STAGING</span> Authenticated staging environment. Use fictional data during evaluation.</div>
-            {activePortalTab === 'account' && <AccountCenter user={currentUser} />}
-            {activePortalTab === 'campus' && <StudentServices />}
-            {activePortalTab === 'alumni' && <AlumniPortalView />}
-            {activePortalTab === 'faculty_tools' && <FacultyTools />}
-            {activePortalTab === 'library_tools' && <LibraryTools faculty={['super_admin','registrar','dean','lecturer'].includes(currentUser.role)} />}
-            {activePortalTab === 'studio' && <><LearningStudio faculty={['super_admin','registrar','dean','lecturer'].includes(currentUser.role)} /><Proctoring faculty={['super_admin','registrar','dean','lecturer'].includes(currentUser.role)} /></>}
-            {activePortalTab === 'institution' && <InstitutionalControls />}
             {activePortalTab === 'tasks' && (
               <TaskManagementDashboard currentUser={currentUser} />
             )}
 
             {activePortalTab === 'analytics' && (
-              <><HistoricalPrediction />
               <IntegratedAnalyticsHub />
-              </>
             )}
 
             {activePortalTab === 'faculty_admin' && (
-              <><FacultyTools />
               <FacultyAdminDashboard currentUser={currentUser} />
-              </>
             )}
 
             {activePortalTab === 'academics' && (
-              <><CourseDependencyMapper />
               <AcademicPlanningRegistration
                 currentUser={currentUser}
                 onOpenPrintModal={handleOpenPrintModal}
               />
-              </>
             )}
 
             {activePortalTab === 'student_portal' && (
-              <><StudentServices />
               <StudentPortalView
                 currentUser={currentUser}
                 onOpenPrintModal={handleOpenPrintModal}
               />
-              </>
+            )}
+
+            {activePortalTab === 'classroom' && (
+              <VirtualClassroomCollab currentUser={currentUser} />
             )}
 
             {activePortalTab === 'admissions' && (
@@ -261,23 +362,29 @@ export default function App() {
             )}
 
             {activePortalTab === 'finance' && (
-              <><TuitionReminders />
               <FinanceBursarModule currentUser={currentUser} />
-              </>
             )}
 
             {activePortalTab === 'compliance' && (
-              <><NcheComplianceMonitor />
               <PolicyComplianceRegister currentUser={currentUser} />
-              </>
             )}
           </main>
 
-          <footer className="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-            Harvest Intercontinental American University · Staging evaluation environment
+          {/* Quick Actions Floating Action Menu */}
+          <PortalQuickActionsMenu
+            currentUser={currentUser}
+            onNavigateTab={handleSelectTabWithSubAction}
+            onOpenPrintModal={handleOpenPrintModal}
+          />
+
+          <footer className="bg-[#4A1249] text-purple-100 border-t border-[#C39A53]/40 py-5 text-center text-xs">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <span className="text-[#C39A53] font-semibold">Harvest Intercontinental American University ERP Subsystem • Republic of Liberia</span>
+              <span className="text-purple-200">Staging evaluation · Accreditation details subject to official verification</span>
+              <span className="text-amber-200 font-mono text-[11px]">Secure login required · Test data only</span>
+            </div>
           </footer>
         </div>
-        </CampusProvider>
       )}
 
       {/* LOGIN MODAL */}

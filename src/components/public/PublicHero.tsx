@@ -1,17 +1,13 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  GraduationCap,
   ArrowRight,
-  ShieldCheck,
-  Building2,
-  Users,
-  Award,
-  BookOpen,
-  CheckCircle2,
-  Lock,
-  Layers,
-  BarChart3,
-  ListTodo,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
+  ChevronLeft,
+  ChevronRight,
+  Video,
 } from 'lucide-react';
 
 interface PublicHeroProps {
@@ -20,159 +16,312 @@ interface PublicHeroProps {
   onOpenApplicationModal: () => void;
 }
 
+interface HeroVideoSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  src: string;
+  poster: string;
+  badge: string;
+  label: string;
+}
+
+const HERO_VIDEOS: HeroVideoSlide[] = [
+  {
+    id: 'campus',
+    title: 'HIAU Main Academic Campus',
+    subtitle: 'Exterior complex, 2nd-floor lecture halls & palm quadrangle',
+    src: '/assets/aistudio/image_20261105_121706_f720baa0.mp4',
+    poster: '/assets/aistudio/image_29eb5504.png',
+    badge: 'Video 1 • Campus First',
+    label: '01 Campus Tour',
+  },
+  {
+    id: 'classroom',
+    title: 'Interactive Laptop Lab & Smart Classroom',
+    subtitle: 'Individual wooden carrels, dedicated laptops & interactive projection',
+    src: '/assets/aistudio/image_20261105_102657_b174d32f.mp4',
+    poster: '/assets/aistudio/image_51d124f3.png',
+    badge: 'Video 2 • Classroom Second',
+    label: '02 Smart Lab',
+  },
+];
+
 export const PublicHero: React.FC<PublicHeroProps> = ({
-  onOpenPortal,
+  onOpenPortal: _onOpenPortal,
   onNavigateSection,
   onOpenApplicationModal,
 }) => {
-  return (
-    <div className="relative bg-gradient-to-b from-slate-900 via-slate-850 to-slate-900 text-white overflow-hidden py-16 lg:py-24 border-b border-slate-800">
-      {/* Decorative backdrop elements */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-amber-500 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-blue-600 blur-3xl" />
-      </div>
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Column: Heading & Value Prop */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>Full NCHE Institutional Accreditation & Recognition • Republic of Liberia</span>
+  // Dual video refs: keep both permanently mounted & preloaded to eliminate any blank gap
+  const campusVideoRef = useRef<HTMLVideoElement>(null);
+  const classroomVideoRef = useRef<HTMLVideoElement>(null);
+
+  const currentVideo = HERO_VIDEOS[activeVideoIndex];
+
+  // Seamless instant handoff between the two videos with crossfade
+  const switchVideo = (nextIndex: number) => {
+    if (nextIndex === activeVideoIndex) return;
+
+    const incoming = nextIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
+    const outgoing = activeVideoIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
+
+    if (incoming) {
+      incoming.currentTime = 0;
+      incoming.muted = isMuted;
+      if (isPlaying) {
+        incoming.play().catch(() => {});
+      }
+    }
+
+    setActiveVideoIndex(nextIndex);
+
+    // Pause outgoing video only after incoming crossfade completes to prevent blank gaps
+    setTimeout(() => {
+      if (outgoing && outgoing !== incoming) {
+        outgoing.pause();
+      }
+    }, 750);
+  };
+
+  // Sync play / pause state to active video
+  useEffect(() => {
+    const current = activeVideoIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
+    if (!current) return;
+    if (isPlaying) {
+      current.play().catch(() => {});
+    } else {
+      current.pause();
+    }
+  }, [isPlaying, activeVideoIndex]);
+
+  // Sync mute state to both video elements
+  useEffect(() => {
+    if (campusVideoRef.current) campusVideoRef.current.muted = isMuted;
+    if (classroomVideoRef.current) classroomVideoRef.current.muted = isMuted;
+  }, [isMuted]);
+
+  // Initial autoplay attempt on mount
+  useEffect(() => {
+    if (campusVideoRef.current && isPlaying) {
+      campusVideoRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  const togglePlayback = () => {
+    const current = activeVideoIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
+    if (!current) return;
+    if (isPlaying) {
+      current.pause();
+      setIsPlaying(false);
+    } else {
+      current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
+    }
+  };
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (campusVideoRef.current) campusVideoRef.current.muted = nextMuted;
+    if (classroomVideoRef.current) classroomVideoRef.current.muted = nextMuted;
+  };
+
+  const handleNextVideo = () => {
+    switchVideo((activeVideoIndex + 1) % HERO_VIDEOS.length);
+    setIsPlaying(true);
+  };
+
+  const handlePrevVideo = () => {
+    switchVideo((activeVideoIndex - 1 + HERO_VIDEOS.length) % HERO_VIDEOS.length);
+    setIsPlaying(true);
+  };
+
+  return (
+    <div className="relative w-full bg-white text-[#4A1249] overflow-hidden border-b border-purple-100">
+      {/* HIAU Full-Bleed Edge-to-Edge Diagonal Split Hero */}
+      <div className="relative w-full min-h-[580px] lg:min-h-[620px] xl:min-h-[680px] flex flex-col justify-center bg-white">
+        {/* Left Column: Full-Bleed Carousel Video to Left Edge with Signature Slanted Cut */}
+        <div
+          className="lg:absolute lg:inset-y-0 lg:left-0 lg:w-[53%] xl:w-[52%] w-full h-84 sm:h-96 lg:h-full relative overflow-hidden z-10 bg-[#2A082C]"
+          style={{
+            clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
+          }}
+        >
+          {/* Video 0: Campus Complex (Preloaded & Always Mounted for Seamless Crossfade) */}
+          <video
+            ref={campusVideoRef}
+            src={HERO_VIDEOS[0].src}
+            poster={HERO_VIDEOS[0].poster}
+            preload="auto"
+            muted={isMuted}
+            playsInline
+            onEnded={() => switchVideo(1)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
+              activeVideoIndex === 0 ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
+            }`}
+          />
+
+          {/* Video 1: Smart Classroom & Lab (Preloaded & Always Mounted for Seamless Crossfade) */}
+          <video
+            ref={classroomVideoRef}
+            src={HERO_VIDEOS[1].src}
+            poster={HERO_VIDEOS[1].poster}
+            preload="auto"
+            muted={isMuted}
+            playsInline
+            onEnded={() => switchVideo(0)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
+              activeVideoIndex === 1 ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
+            }`}
+          />
+
+          {/* Diagonal HIAU Heritage Gold Accent Slash (Exact Slanted Divider Line) */}
+          <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-1.5 bg-[#C39A53] shadow-md z-20 pointer-events-none" />
+
+          {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}
+          <div className="absolute top-4 left-4 right-12 z-20 flex items-center justify-between pointer-events-none">
+            <span className="bg-[#4A1249]/90 text-[#C39A53] border border-[#C39A53]/70 px-3 py-1 rounded text-xs font-collegiate font-bold uppercase tracking-wider backdrop-blur-md flex items-center gap-1.5 shadow-md">
+              <Video className="w-3.5 h-3.5 text-[#C39A53]" />
+              <span>{currentVideo.badge}</span>
+            </span>
+          </div>
+
+          {/* Bottom Video Information & Carousel Controls */}
+          <div className="absolute bottom-4 left-4 right-8 z-20 flex flex-col gap-2.5">
+            {/* Video Caption Card */}
+            <div className="bg-[#2A082C]/85 backdrop-blur-md border border-[#C39A53]/40 p-2.5 rounded-lg text-white max-w-sm hidden sm:block">
+              <span className="text-xs font-collegiate font-bold text-[#C39A53] uppercase tracking-wide block truncate">
+                {currentVideo.title}
+              </span>
+              <span className="text-[11px] text-purple-100 block truncate mt-0.5">
+                {currentVideo.subtitle}
+              </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-              Shaping Tomorrow's Leaders for <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500">Liberia and the World</span>
+            {/* Bottom Controls Bar: Prev / Play-Pause / Next / Mute & 01/02 Selectors */}
+            <div className="flex items-center gap-2">
+              {/* Play / Pause Toggle Button */}
+              <button
+                onClick={togglePlayback}
+                className="w-9 h-9 rounded-full bg-[#4A1249]/90 hover:bg-[#4A1249] text-white flex items-center justify-center backdrop-blur-md border border-[#C39A53]/70 shadow-lg cursor-pointer transition-transform active:scale-95"
+                aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                title={isPlaying ? 'Pause video' : 'Play video'}
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 text-[#C39A53]" />
+                ) : (
+                  <Play className="w-4 h-4 text-[#C39A53] ml-0.5" />
+                )}
+              </button>
+
+              {/* Audio Mute / Unmute Toggle Button */}
+              <button
+                onClick={toggleMute}
+                className="w-9 h-9 rounded-full bg-[#4A1249]/90 hover:bg-[#4A1249] text-white flex items-center justify-center backdrop-blur-md border border-[#C39A53]/70 shadow-lg cursor-pointer transition-transform active:scale-95"
+                aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
+                title={isMuted ? 'Unmute audio' : 'Mute audio'}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 text-[#C39A53]" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-[#C39A53]" />
+                )}
+              </button>
+
+              {/* Prev / Next Video Carousel Switchers */}
+              <div className="flex items-center gap-1 bg-[#2A082C]/80 backdrop-blur-md p-1 rounded-full border border-[#C39A53]/50">
+                <button
+                  onClick={handlePrevVideo}
+                  className="w-7 h-7 rounded-full bg-[#4A1249] hover:bg-[#661B69] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+                  aria-label="Previous video (Campus)"
+                  title="Previous video"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 text-[#C39A53]" />
+                </button>
+                <button
+                  onClick={handleNextVideo}
+                  className="w-7 h-7 rounded-full bg-[#4A1249] hover:bg-[#661B69] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+                  aria-label="Next video (Classroom)"
+                  title="Next video"
+                >
+                  <ChevronRight className="w-3.5 h-3.5 text-[#C39A53]" />
+                </button>
+              </div>
+
+              {/* 2-Slide Tabs (01 Campus / 02 Classroom) */}
+              <div className="flex items-center gap-1.5 ml-1">
+                {HERO_VIDEOS.map((vid, idx) => {
+                  const isActive = activeVideoIndex === idx;
+                  return (
+                    <button
+                      key={vid.id}
+                      onClick={() => {
+                        switchVideo(idx);
+                        setIsPlaying(true);
+                      }}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-collegiate font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-[#C39A53] text-[#2A082C] shadow-md ring-1 ring-[#C39A53]'
+                          : 'bg-[#2A082C]/80 text-purple-200 hover:text-white hover:bg-[#4A1249] border border-white/20'
+                      }`}
+                    >
+                      {vid.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Clean White Canvas in HIAU Imperial Purple & Gold */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-20 relative z-20">
+          <div className="lg:w-1/2 lg:ml-auto lg:pl-10 xl:pl-16 space-y-6 text-left">
+            {/* HIAU Brand Headline in Imperial Purple */}
+            <h1 className="font-collegiate font-black text-5xl sm:text-6xl lg:text-7xl xl:text-[84px] text-[#4A1249] tracking-tight leading-[0.92] uppercase">
+              HARVEST UNIVERSITY <br />
+              <span className="text-[#4A1249]">IN LIBERIA</span>
             </h1>
 
-            <p className="text-lg text-slate-300 max-w-2xl leading-relaxed">
-              Gwoah's University is a premier 21st-century institution delivering rigorous degree programs in Health Sciences, Engineering, Computing, Agriculture, and Public Administration across our Monrovia and Fendall campuses.
+            {/* Subtitle Paragraph */}
+            <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-xl font-normal">
+              Our Liberia location is preparing career-ready students for the challenges and opportunities of tomorrow. Strong academic excellence, Christ-centered leadership, and global standards accelerate hands-on learning opportunities, technological research, and community service across Liberia.
             </p>
 
-            {/* Public Action CTAs */}
+            {/* Dual Rectangular CTA Buttons in Authentic HIAU Brand Colors (Purple & Gold) */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
                 onClick={onOpenApplicationModal}
-                className="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-lg hover:shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer"
+                className="px-8 py-4 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-collegiate font-black text-sm uppercase tracking-wider rounded-none shadow-sm transition-all flex items-center gap-3 cursor-pointer hover:shadow-md active:scale-98"
               >
-                <GraduationCap className="w-5 h-5" />
-                <span>Apply for 2026/2027 Admissions</span>
+                <span>BECOME A STUDENT</span>
+                <ArrowRight className="w-4 h-4 text-[#2A082C]" />
               </button>
 
               <button
                 onClick={() => onNavigateSection('colleges')}
-                className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 transition-colors flex items-center gap-2 cursor-pointer"
+                className="px-8 py-4 bg-[#4A1249] hover:bg-[#661B69] text-white font-collegiate font-black text-sm uppercase tracking-wider rounded-none shadow-sm transition-all flex items-center gap-3 cursor-pointer hover:shadow-md active:scale-98 border border-[#C39A53]/40"
               >
-                <BookOpen className="w-5 h-5 text-amber-400" />
-                <span>Explore Colleges & Curricula</span>
-              </button>
-
-              <button
-                onClick={onOpenPortal}
-                className="px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl border border-amber-500/40 hover:border-amber-400 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Lock className="w-4 h-4" />
-                <span>University ERP Portal</span>
+                <span>EXPLORE DEGREE PROGRAMS</span>
+                <ArrowRight className="w-4 h-4 text-[#C39A53]" />
               </button>
             </div>
-
-            {/* Quick institutional badges */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-800/80">
-              <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-amber-400">1,850+</div>
-                <div className="text-xs text-slate-400">Enrolled Scholars</div>
-              </div>
-              <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-amber-400">5</div>
-                <div className="text-xs text-slate-400">Academic Colleges</div>
-              </div>
-              <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-amber-400">120-132</div>
-                <div className="text-xs text-slate-400">B.Sc. Credit Standard</div>
-              </div>
-              <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-emerald-400">100%</div>
-                <div className="text-xs text-slate-400">NCHE Aligned</div>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Right Column: Platform Preview & Nested Architecture Callout */}
-          <div className="lg:col-span-5">
-            <div className="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl relative">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700/80">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-3 h-3 rounded-full bg-rose-500" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="ml-2 text-xs font-mono text-slate-400">erp.gwoah.edu.lr</span>
-                </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">
-                  Integrated ERP Subsystem
-                </span>
-              </div>
-
-              {/* ERP Feature Highlights inside Hero Card */}
-              <div className="mt-5 space-y-4">
-                <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
-                      <ListTodo className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-100">Institutional Task Management</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        Interactive Kanban and priority workflows for accreditation review, exam moderation, admissions verification, and SLA tracking.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
-                      <BarChart3 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-100">Integrated Analytics Engine</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        Live institutional dashboards monitoring admissions conversion, tuition revenue, faculty workload, and MoE EMIS datasets.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                      <Layers className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-100">Academic Planning & Add/Drop</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        Course prerequisites enforcement, capacity management, official printable semester registration plans, and Bursar audit controls.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nested Portal Entry Callout */}
-              <div className="mt-5 pt-4 border-t border-slate-700/80">
-                <div className="text-[11px] text-slate-400 mb-2">
-                  <span className="font-semibold text-slate-300">Nested Navigation Entry:</span> Home → Academic Services → Student Services → University Portal
-                </div>
-                <button
-                  onClick={onOpenPortal}
-                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow transition-all cursor-pointer"
-                >
-                  <Lock className="w-4 h-4" />
-                  <span>Launch ERP System & Task Board</span>
-                </button>
-              </div>
-            </div>
-          </div>
+      {/* Full-Width HIAU Heritage Gold Banner Strip */}
+      <div className="bg-[#C39A53] text-[#2A082C] py-7 px-4 sm:px-6 lg:px-8 border-t border-[#A17A32]/40">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-collegiate font-black uppercase tracking-tight text-[#2A082C]">
+            Take your next giant leap in Liberia with Harvest Intercontinental American University
+          </h2>
         </div>
       </div>
     </div>

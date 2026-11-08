@@ -1,9 +1,9 @@
-# Staging 0.4 — clean operational foundation
+# HIAU Staging 0.4 — clean operational foundation
 
-Repository: https://github.com/totagits/Gwoah-s-University/tree/staging
-Workspace: https://gwoahuniversity.totag.network/?portal=1
+Repository: https://github.com/totagits/Harvest-Intercontinental-American-University/tree/staging
+Workspace: https://hiau-staging.totag.network/?portal=1
 
-## Available workflows
+This is the intended staging environment; URL and deployment are pending Hostinger DNS/Coolify configuration. Existing SQLite staging data must not be copied into a new environment without review.\n\n## Available workflows
 
 No sample operational records are loaded. The active application uses normalized SQLite tables, foreign keys, atomic transactions, schema migration tracking and append-only workflow audit entries.
 

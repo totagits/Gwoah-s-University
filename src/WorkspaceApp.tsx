@@ -503,7 +503,7 @@ export default function WorkspaceApp() {
       const pdf = new jsPDF();
       let y = 22;
       pdf.setFontSize(19);
-      pdf.text('Gwoah’s University', 18, y);
+      pdf.text('Harvest Intercontinental American University', 18, y);
       y += 12;
       pdf.setFontSize(11);
       for (const line of [
@@ -537,7 +537,7 @@ export default function WorkspaceApp() {
           <main className="ws-welcome">
             <div className="ws-brand">
               <GraduationCap size={34} />
-              <strong>Gwoah’s University</strong>
+              <strong>Harvest Intercontinental American University</strong>
             </div>
             <span className="ws-eyebrow">UNIVERSITY OPERATIONS</span>
             <h1>
@@ -563,7 +563,7 @@ export default function WorkspaceApp() {
               <div className="ws-brand">
                 <GraduationCap />
                 <strong>
-                  Gwoah’s University <small>Operations</small>
+                  Harvest Intercontinental American University <small>Operations</small>
                 </strong>
               </div>
               <div className="ws-user">

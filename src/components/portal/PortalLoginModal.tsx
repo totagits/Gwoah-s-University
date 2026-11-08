@@ -29,7 +29,7 @@ export function PortalLoginModal({
   return (
     <div className="campus-modal">
       <section className="campus-panel" style={{ maxWidth: 480 }}>
-        <div className="campus-eyebrow">GWOAH’S UNIVERSITY</div>
+        <div className="campus-eyebrow">HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY</div>
         <h2
           style={{
             fontFamily: 'Georgia,serif',

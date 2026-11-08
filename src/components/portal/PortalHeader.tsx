@@ -90,7 +90,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             </button>
             <span className="text-slate-600">|</span>
             <span className="text-slate-400">
-              Active Term: <strong className="text-slate-200">Semester I 2026/2027</strong> (Week 2 • Add/Drop Active)
+              Staging · Academic dates and enrollment periods must be configured by an authorized administrator.
             </span>
           </div>
 
@@ -154,7 +154,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-white tracking-tight">
-                  Gwoah's University ERP
+                  Harvest Intercontinental American University ERP
                 </h2>
                 <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
                   {currentUser.role.replace('_', ' ')}

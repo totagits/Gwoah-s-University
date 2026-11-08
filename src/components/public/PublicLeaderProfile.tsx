@@ -22,13 +22,30 @@ import {
   Menu,
   X,
   ShieldCheck,
+  BookOpen,
+  ExternalLink,
+  Globe,
 } from 'lucide-react';
 import {
   resolveLeaderProfile,
   LEADER_GROUPS,
   LeaderProfile,
   LEADERSHIP_PROFILES,
+  PublicationItem,
 } from '../../data/leadershipData';
+
+// Branded Official Social Media Icons
+const LinkedInIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+  </svg>
+);
+
+const TwitterXIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
 interface PublicLeaderProfileProps {
   profileId: string;
@@ -48,7 +65,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
   const profile: LeaderProfile =
     resolveLeaderProfile(profileId) || LEADERSHIP_PROFILES['chancellor'];
 
-  const [activeTab, setActiveTab] = useState<'bio' | 'education' | 'mandates' | 'offices'>('bio');
+  const [activeTab, setActiveTab] = useState<'bio' | 'education' | 'publications' | 'mandates' | 'offices'>('bio');
   const [copiedLink, setCopiedLink] = useState(false);
   const [useSecondaryPhoto, setUseSecondaryPhoto] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -150,26 +167,29 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Breadcrumbs Row (Home > About HIAU > Page Name) */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-purple-200 font-medium">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-purple-100 font-medium">
               <button
                 onClick={onClose}
-                className="flex items-center gap-1.5 text-amber-300 hover:text-white transition-colors cursor-pointer group"
+                className="flex items-center gap-1.5 text-[#FCD34D] hover:text-white transition-colors cursor-pointer group"
               >
-                <Home className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
-                <span>Home</span>
+                <Home className="w-4 h-4 text-[#FCD34D] group-hover:scale-110 transition-transform" />
+                <span className="text-[#FCD34D] font-bold">Home</span>
               </button>
-              <ChevronRight className="w-3.5 h-3.5 text-purple-300" />
+              <ChevronRight className="w-3.5 h-3.5 text-purple-200" />
               <button
                 onClick={() => {
                   onClose();
                   setTimeout(() => onNavigateSection('about'), 50);
                 }}
-                className="hover:text-white transition-colors cursor-pointer"
+                className="text-purple-100 hover:text-white transition-colors cursor-pointer font-medium"
               >
                 About HIAU
               </button>
-              <ChevronRight className="w-3.5 h-3.5 text-purple-300" />
-              <span className="text-white font-bold tracking-wide uppercase">
+              <ChevronRight className="w-3.5 h-3.5 text-purple-200" />
+              <span
+                className="text-white font-extrabold tracking-wider uppercase px-2.5 py-1 rounded bg-white/15 border border-white/30 shadow-xs"
+                style={{ color: '#FFFFFF' }}
+              >
                 {profile.breadcrumb}
               </span>
             </div>
@@ -178,47 +198,50 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-                className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold cursor-pointer border border-white/20"
+                className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded text-xs font-semibold cursor-pointer border border-white/30"
               >
-                <Menu className="w-3.5 h-3.5 text-[#C39A53]" />
-                <span>Switch Leader</span>
+                <Menu className="w-3.5 h-3.5 text-[#FCD34D]" />
+                <span className="text-white font-bold" style={{ color: '#FFFFFF' }}>Switch Leader</span>
               </button>
 
               <button
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#C39A53]/20 hover:bg-[#C39A53]/35 text-[#C39A53] hover:text-white border border-[#C39A53]/50 rounded text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] border border-[#C39A53] rounded text-xs font-bold transition-all cursor-pointer shadow-sm"
                 title="Copy unique link to this profile"
               >
                 {copiedLink ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-300 font-bold">Link Copied!</span>
+                    <Check className="w-3.5 h-3.5 text-[#2A082C]" />
+                    <span className="text-[#2A082C] font-bold">Link Copied!</span>
                   </>
                 ) : (
                   <>
-                    <Share2 className="w-3.5 h-3.5 text-[#C39A53]" />
-                    <span className="hidden sm:inline">Share Profile Link</span>
+                    <Share2 className="w-3.5 h-3.5 text-[#2A082C]" />
+                    <span className="hidden sm:inline font-bold text-[#2A082C]">Share Profile Link</span>
                   </>
                 )}
               </button>
 
               <button
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-collegiate font-bold uppercase tracking-wider rounded border border-white/20 transition-all cursor-pointer shadow-xs active:scale-98"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-collegiate font-bold uppercase tracking-wider rounded border border-white/40 transition-all cursor-pointer shadow-md active:scale-98"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-[#C39A53]" />
-                <span className="hidden sm:inline">Return to Overview</span>
-                <span className="sm:hidden">Close</span>
+                <ArrowLeft className="w-3.5 h-3.5 text-[#FCD34D]" />
+                <span className="hidden sm:inline text-white font-bold" style={{ color: '#FFFFFF' }}>Return to Overview</span>
+                <span className="sm:hidden text-white font-bold" style={{ color: '#FFFFFF' }}>Close</span>
               </button>
             </div>
           </div>
 
           {/* Large Hero Title */}
           <div>
-            <span className="text-xs font-collegiate font-bold text-[#C39A53] tracking-widest uppercase block mb-1">
+            <span className="text-xs sm:text-sm font-collegiate font-bold text-[#FCD34D] tracking-widest uppercase block mb-1 drop-shadow-xs">
               Harvest Intercontinental American University Leadership
             </span>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-collegiate font-black text-white tracking-tight uppercase drop-shadow-sm">
+            <h1
+              className="text-3xl sm:text-5xl lg:text-6xl font-collegiate font-black text-white tracking-tight uppercase drop-shadow-md"
+              style={{ color: '#FFFFFF' }}
+            >
               {profile.bannerTitle}
             </h1>
           </div>
@@ -281,9 +304,9 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                         onSelectProfile(exec.id);
                         setMobileSidebarOpen(false);
                       }}
-                      className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 cursor-pointer group border ${
+                      className={`w-full text-left p-3 rounded-xl transition-all flex items-center gap-3 cursor-pointer group border ${
                         isCurrent
-                          ? 'bg-[#4A1249] text-white shadow-md border-[#C39A53] ring-1 ring-[#C39A53]/50'
+                          ? 'bg-[#4A1249] text-white shadow-lg border-[#C39A53] ring-2 ring-[#C39A53]'
                           : 'bg-[#FAF8FB] hover:bg-purple-50 text-slate-800 border-purple-100 hover:border-purple-300'
                       }`}
                     >
@@ -303,20 +326,22 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
                           <span
-                            className={`text-[10px] font-bold uppercase tracking-wider ${
-                              isCurrent ? 'text-[#C39A53]' : 'text-[#822180]'
+                            className={`text-[10px] font-black uppercase tracking-wider ${
+                              isCurrent ? 'text-[#FCD34D]' : 'text-[#822180]'
                             }`}
+                            style={isCurrent ? { color: '#FCD34D' } : undefined}
                           >
                             {exec.title}
                           </span>
                           {isCurrent && (
-                            <span className="w-2 h-2 rounded-full bg-[#C39A53] animate-pulse" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#C39A53] ring-2 ring-white/60 animate-pulse" />
                           )}
                         </div>
                         <div
                           className={`text-xs font-bold truncate leading-tight mt-0.5 ${
-                            isCurrent ? 'text-white' : 'text-slate-900 group-hover:text-[#4A1249]'
+                            isCurrent ? 'text-white drop-shadow-xs' : 'text-slate-900 group-hover:text-[#4A1249]'
                           }`}
+                          style={isCurrent ? { color: '#FFFFFF' } : undefined}
                         >
                           {exec.role}
                         </div>
@@ -325,7 +350,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                       <ChevronRight
                         className={`w-4 h-4 shrink-0 transition-transform ${
                           isCurrent
-                            ? 'text-[#C39A53] translate-x-0.5'
+                            ? 'text-[#FCD34D] translate-x-0.5'
                             : 'text-slate-400 group-hover:text-[#4A1249]'
                         }`}
                       />
@@ -369,9 +394,9 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                               onSelectProfile(member.id);
                               setMobileSidebarOpen(false);
                             }}
-                            className={`w-full text-left p-1.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer group ${
+                            className={`w-full text-left p-2 rounded-lg transition-all flex items-center gap-2.5 cursor-pointer group ${
                               isSelected
-                                ? 'bg-[#4A1249] text-white shadow-xs font-bold border-l-2 border-[#C39A53]'
+                                ? 'bg-[#4A1249] text-white shadow-md font-bold border-l-4 border-[#C39A53]'
                                 : 'text-slate-700 hover:bg-purple-50/80 hover:text-[#4A1249]'
                             }`}
                           >
@@ -388,16 +413,18 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                               <div
                                 className={`text-[11px] font-bold truncate leading-tight ${
                                   isSelected
-                                    ? 'text-white'
+                                    ? 'text-white drop-shadow-xs'
                                     : 'text-slate-800 group-hover:text-[#4A1249]'
                                 }`}
+                                style={isSelected ? { color: '#FFFFFF' } : undefined}
                               >
                                 {member.name}
                               </div>
                               <div
                                 className={`text-[10px] truncate leading-tight ${
-                                  isSelected ? 'text-purple-200' : 'text-slate-500'
+                                  isSelected ? 'text-[#FCD34D] font-bold' : 'text-slate-500'
                                 }`}
+                                style={isSelected ? { color: '#FCD34D' } : undefined}
                               >
                                 {member.role}
                               </div>
@@ -443,38 +470,89 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
 
                 {/* Profile Name & Subtitle */}
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-collegiate font-bold uppercase tracking-wider bg-[#4A1249] text-[#C39A53] mb-2">
-                    <Award className="w-3 h-3 text-[#C39A53]" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-collegiate font-black uppercase tracking-wider bg-[#4A1249] text-[#FCD34D] mb-2 shadow-xs border border-[#C39A53]/60">
+                    <Award className="w-3.5 h-3.5 text-[#FCD34D]" />
                     <span>{profile.roleBadge}</span>
                   </div>
 
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-collegiate font-black text-[#2A082C] tracking-tight leading-tight uppercase">
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-collegiate font-black text-[#1F0620] tracking-tight leading-tight uppercase">
                     {profile.name}
                   </h2>
 
-                  <p className="text-base sm:text-lg font-medium text-slate-600 mt-2 leading-snug">
+                  <p className="text-base sm:text-lg font-bold text-[#3B1440] mt-2 leading-snug">
                     {profile.subtitle}
                   </p>
 
                   {/* Optional Section Kicker */}
                   {profile.kicker && (
-                    <div className="mt-3 text-sm font-bold text-[#4A1249] uppercase tracking-wide">
+                    <div className="mt-3 text-sm font-extrabold text-[#4A1249] uppercase tracking-wide">
                       {profile.kicker}
                     </div>
                   )}
 
+                  {/* Actionable Branded Social Media Handles (LinkedIn, Twitter/X) */}
+                  {profile.socialLinks && (profile.socialLinks.linkedin || profile.socialLinks.twitter || profile.socialLinks.website) && (
+                    <div className="flex flex-wrap items-center gap-2 mt-3.5 pt-1">
+                      <span className="text-[11px] font-collegiate font-black uppercase tracking-wider text-[#6E4908] flex items-center gap-1 mr-0.5">
+                        <span>Connect:</span>
+                      </span>
+
+                      {profile.socialLinks.linkedin && (
+                        <a
+                          href={profile.socialLinks.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-bold transition-all shadow-xs hover:shadow hover:scale-105 active:scale-95 cursor-pointer group"
+                          aria-label={`${profile.name} on LinkedIn`}
+                        >
+                          <LinkedInIcon className="w-3.5 h-3.5 fill-current text-white" />
+                          <span className="font-bold text-white" style={{ color: '#FFFFFF' }}>LinkedIn</span>
+                          <ExternalLink className="w-3 h-3 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+                        </a>
+                      )}
+
+                      {profile.socialLinks.twitter && (
+                        <a
+                          href={profile.socialLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0F1419] hover:bg-black text-white text-xs font-bold transition-all shadow-xs hover:shadow hover:scale-105 active:scale-95 border border-slate-700 cursor-pointer group"
+                          aria-label={`${profile.name} on Twitter / X`}
+                        >
+                          <TwitterXIcon className="w-3.5 h-3.5 fill-current text-white" />
+                          <span className="font-bold text-white" style={{ color: '#FFFFFF' }}>X (Twitter)</span>
+                          <ExternalLink className="w-3 h-3 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+                        </a>
+                      )}
+
+                      {profile.socialLinks.website && (
+                        <a
+                          href={profile.socialLinks.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4A1249] hover:bg-[#661B69] text-white text-xs font-bold transition-all shadow-xs hover:shadow hover:scale-105 active:scale-95 border border-[#C39A53]/50 cursor-pointer group"
+                          aria-label={`${profile.name} Official Website`}
+                        >
+                          <Globe className="w-3.5 h-3.5 text-[#FCD34D]" />
+                          <span className="font-bold text-white" style={{ color: '#FFFFFF' }}>Official Portal</span>
+                          <ExternalLink className="w-3 h-3 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+
                   {/* Gold horizontal accent line matching HIAU authentic screenshots */}
-                  <div className="w-16 h-1 bg-[#C39A53] my-4 rounded-full" />
+                  <div className="w-20 h-1.5 bg-[#C39A53] my-4 rounded-full shadow-xs" />
                 </div>
 
                 {/* Dynamic Content Tabs */}
-                <div className="flex flex-wrap items-center gap-2 border-b border-purple-200 pb-2">
+                <div className="flex flex-wrap items-center gap-2 border-b-2 border-purple-200 pb-2.5">
                   <button
                     onClick={() => setActiveTab('bio')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    className={`px-3.5 py-2 rounded-lg text-xs font-collegiate font-black uppercase tracking-wider transition-all cursor-pointer ${
                       activeTab === 'bio'
-                        ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                        : 'text-slate-600 hover:text-[#4A1249] hover:bg-purple-50'
+                        ? 'bg-[#4A1249] text-white shadow-md ring-1 ring-[#C39A53]/50'
+                        : 'text-[#3B1440] hover:text-[#4A1249] hover:bg-purple-100 font-bold'
                     }`}
                   >
                     Biography Narrative
@@ -483,27 +561,41 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                   {profile.education && profile.education.length > 0 && (
                     <button
                       onClick={() => setActiveTab('education')}
-                      className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                      className={`px-3.5 py-2 rounded-lg text-xs font-collegiate font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
                         activeTab === 'education'
-                          ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                          : 'text-slate-600 hover:text-[#4A1249] hover:bg-purple-50'
+                          ? 'bg-[#4A1249] text-white shadow-md ring-1 ring-[#C39A53]/50'
+                          : 'text-[#3B1440] hover:text-[#4A1249] hover:bg-purple-100 font-bold'
                       }`}
                     >
-                      <GraduationCap className="w-3.5 h-3.5" />
+                      <GraduationCap className="w-4 h-4" />
                       <span>Qualifications ({profile.education.length})</span>
+                    </button>
+                  )}
+
+                  {profile.publications && profile.publications.length > 0 && (
+                    <button
+                      onClick={() => setActiveTab('publications')}
+                      className={`px-3.5 py-2 rounded-lg text-xs font-collegiate font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                        activeTab === 'publications'
+                          ? 'bg-[#4A1249] text-white shadow-md ring-1 ring-[#C39A53]/50'
+                          : 'text-[#3B1440] hover:text-[#4A1249] hover:bg-purple-100 font-bold'
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Works ({profile.publications.length})</span>
                     </button>
                   )}
 
                   {profile.strategicMandates && profile.strategicMandates.length > 0 && (
                     <button
                       onClick={() => setActiveTab('mandates')}
-                      className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                      className={`px-3.5 py-2 rounded-lg text-xs font-collegiate font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
                         activeTab === 'mandates'
-                          ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                          : 'text-slate-600 hover:text-[#4A1249] hover:bg-purple-50'
+                          ? 'bg-[#4A1249] text-white shadow-md ring-1 ring-[#C39A53]/50'
+                          : 'text-[#3B1440] hover:text-[#4A1249] hover:bg-purple-100 font-bold'
                       }`}
                     >
-                      <Compass className="w-3.5 h-3.5" />
+                      <Compass className="w-4 h-4" />
                       <span>Strategic Mandates</span>
                     </button>
                   )}
@@ -511,13 +603,13 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                   {profile.keyOffices && profile.keyOffices.length > 0 && (
                     <button
                       onClick={() => setActiveTab('offices')}
-                      className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                      className={`px-3.5 py-2 rounded-lg text-xs font-collegiate font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
                         activeTab === 'offices'
-                          ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                          : 'text-slate-600 hover:text-[#4A1249] hover:bg-purple-50'
+                          ? 'bg-[#4A1249] text-white shadow-md ring-1 ring-[#C39A53]/50'
+                          : 'text-[#3B1440] hover:text-[#4A1249] hover:bg-purple-100 font-bold'
                       }`}
                     >
-                      <Briefcase className="w-3.5 h-3.5" />
+                      <Briefcase className="w-4 h-4" />
                       <span>Key Appointments</span>
                     </button>
                   )}
@@ -526,9 +618,9 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 {/* TAB 1: BIOGRAPHY NARRATIVE */}
                 {activeTab === 'bio' && (
                   <div className="space-y-4 animate-in fade-in">
-                    <div className="space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed text-justify">
+                    <div className="space-y-4 text-[#1B051C] text-sm sm:text-base leading-relaxed text-justify font-medium">
                       {profile.paragraphs.map((para, idx) => (
-                        <p key={idx} className="first-of-type:font-normal">
+                        <p key={idx} className="first-of-type:font-medium">
                           {para}
                         </p>
                       ))}
@@ -536,16 +628,138 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
 
                     {/* Inspirational Quote Callout */}
                     {profile.quote && (
-                      <div className="relative mt-8 p-6 bg-[#FAF4FB] border-l-4 border-l-[#4A1249] rounded-r-xl shadow-xs">
-                        <Quote className="w-8 h-8 text-[#C39A53]/30 absolute top-4 right-4" />
-                        <p className="text-sm sm:text-base italic text-[#4A1249] font-serif leading-relaxed pr-8">
+                      <div className="relative mt-8 p-6 sm:p-7 bg-[#FAF4FB] border-l-4 border-l-[#4A1249] rounded-r-xl shadow-md border border-purple-100">
+                        <Quote className="w-9 h-9 text-[#C39A53]/35 absolute top-4 right-4" />
+                        <p className="text-base sm:text-lg italic text-[#2A082C] font-serif font-bold leading-relaxed pr-8">
                           "{profile.quote}"
                         </p>
-                        <div className="mt-3 text-xs font-bold uppercase tracking-wider text-[#C39A53]">
-                          — {profile.name}
+                        <div className="mt-3.5 text-xs font-black uppercase tracking-wider text-[#6E4908] flex items-center gap-1.5">
+                          <span className="w-4 h-0.5 bg-[#6E4908] rounded-full inline-block" />
+                          <span>{profile.name}</span>
                         </div>
                       </div>
                     )}
+
+                    {/* SELECTED BIBLIOGRAPHY & WORKS SECTION (Directly below biography) */}
+                    {profile.publications && profile.publications.length > 0 && (
+                      <div className="mt-10 pt-7 border-t-2 border-purple-200">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-[#4A1249] text-[#FCD34D] flex items-center justify-center font-bold shadow-xs">
+                              <BookOpen className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl sm:text-2xl font-collegiate font-black text-[#1F0620] uppercase tracking-tight">
+                                Selected Bibliography & Works
+                              </h3>
+                              <span className="text-xs text-[#6E4908] font-bold block">
+                                Notable scholarly treatises, published volumes, keynote addresses & curriculum frameworks
+                              </span>
+                            </div>
+                          </div>
+                          <span className="self-start sm:self-auto text-[11px] font-collegiate font-black uppercase tracking-wider px-2.5 py-1 bg-purple-100 text-[#4A1249] border border-purple-200 rounded">
+                            {profile.publications.length} Works Recorded
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          {profile.publications.map((work, widx) => (
+                            <div
+                              key={widx}
+                              className="p-4 bg-[#FAF8FB] hover:bg-white border-2 border-purple-200/80 hover:border-[#C39A53] rounded-xl transition-all shadow-xs group"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                                <span
+                                  className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded border ${
+                                    work.type === 'Book'
+                                      ? 'bg-[#4A1249] text-[#FCD34D] border-[#C39A53]/60'
+                                      : work.type === 'Policy Treatise'
+                                      ? 'bg-[#FAF4E8] text-[#8C6215] border-[#C39A53]/50'
+                                      : work.type === 'Curriculum Standard'
+                                      ? 'bg-purple-100 text-[#4A1249] border-purple-300'
+                                      : 'bg-white text-[#1F0620] border-purple-200 font-bold'
+                                  }`}
+                                >
+                                  {work.type || 'Scholarly Publication'}
+                                </span>
+                                {work.year && (
+                                  <span className="text-xs font-mono font-bold text-[#8C6215] bg-white px-2 py-0.5 rounded border border-purple-100">
+                                    {work.year}
+                                  </span>
+                                )}
+                              </div>
+
+                              <h4 className="text-sm sm:text-base font-bold text-[#1F0620] group-hover:text-[#4A1249] transition-colors leading-snug">
+                                "{work.title}"
+                              </h4>
+
+                              {work.venue && (
+                                <div className="text-xs font-bold text-[#4A1249] mt-1 flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#C39A53]" />
+                                  <span>{work.venue}</span>
+                                </div>
+                              )}
+
+                              {work.description && (
+                                <p className="text-xs text-[#1B051C] mt-2 leading-relaxed font-medium">
+                                  {work.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* TAB: PUBLICATIONS & SCHOLARLY WORKS DEDICATED VIEW */}
+                {activeTab === 'publications' && profile.publications && (
+                  <div className="space-y-4 animate-in fade-in">
+                    <div className="p-5 bg-[#FAF8FB] border border-purple-200 rounded-xl">
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h4 className="text-xs font-collegiate font-black text-[#1F0620] uppercase tracking-wider flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-[#8C6215]" />
+                          <span>Scholarly Treatises, Books & Curriculum Frameworks</span>
+                        </h4>
+                        <span className="text-[11px] font-bold text-[#6E4908] bg-[#FAF4E8] px-2 py-0.5 rounded border border-[#C39A53]/30">
+                          {profile.publications.length} Publications
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {profile.publications.map((work, widx) => (
+                          <div
+                            key={widx}
+                            className="p-4 bg-white border border-purple-200 hover:border-[#C39A53] rounded-lg shadow-xs transition-all"
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-purple-50 text-[#4A1249] border border-purple-200">
+                                {work.type || 'Scholarly Work'}
+                              </span>
+                              {work.year && (
+                                <span className="text-xs font-mono font-bold text-[#8C6215]">
+                                  {work.year}
+                                </span>
+                              )}
+                            </div>
+                            <h5 className="text-sm sm:text-base font-bold text-[#1F0620] leading-snug">
+                              "{work.title}"
+                            </h5>
+                            {work.venue && (
+                              <div className="text-xs font-bold text-[#4A1249] mt-1">
+                                {work.venue}
+                              </div>
+                            )}
+                            {work.description && (
+                              <p className="text-xs text-[#1B051C] mt-1.5 leading-relaxed font-medium">
+                                {work.description}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -561,10 +775,10 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                         {profile.education.map((item, eidx) => (
                           <div
                             key={eidx}
-                            className="flex items-start gap-3 p-3 bg-white border border-purple-100 rounded-lg shadow-2xs"
+                            className="flex items-start gap-3 p-3.5 bg-white border border-purple-200 rounded-lg shadow-xs"
                           >
-                            <div className="w-2 h-2 rounded-full bg-[#C39A53] mt-2 shrink-0" />
-                            <span className="text-xs sm:text-sm text-slate-800 font-medium">
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#C39A53] mt-1.5 shrink-0" />
+                            <span className="text-xs sm:text-sm text-[#1B051C] font-bold leading-snug">
                               {item}
                             </span>
                           </div>
@@ -577,19 +791,19 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 {/* TAB 3: STRATEGIC MANDATES */}
                 {activeTab === 'mandates' && profile.strategicMandates && (
                   <div className="space-y-4 animate-in fade-in">
-                    <div className="p-4 bg-[#FAF8FB] border border-purple-200 rounded-xl">
-                      <h4 className="text-xs font-collegiate font-bold text-[#4A1249] uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Compass className="w-4 h-4 text-[#C39A53]" />
+                    <div className="p-5 bg-[#FAF8FB] border border-purple-200 rounded-xl">
+                      <h4 className="text-xs font-collegiate font-black text-[#1F0620] uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Compass className="w-4 h-4 text-[#8C6215]" />
                         <span>Vision & Institutional Priority Directives</span>
                       </h4>
                       <div className="space-y-2">
                         {profile.strategicMandates.map((mandate, midx) => (
                           <div
                             key={midx}
-                            className="flex items-start gap-3 p-3 bg-white border border-purple-100 rounded-lg shadow-2xs"
+                            className="flex items-start gap-3 p-3.5 bg-white border border-purple-200 rounded-lg shadow-xs"
                           >
-                            <CheckCircle className="w-4 h-4 text-[#C39A53] mt-0.5 shrink-0" />
-                            <span className="text-xs sm:text-sm text-slate-800 font-medium">
+                            <CheckCircle className="w-4 h-4 text-[#8C6215] mt-0.5 shrink-0" />
+                            <span className="text-xs sm:text-sm text-[#1B051C] font-bold leading-snug">
                               {mandate}
                             </span>
                           </div>
@@ -602,8 +816,8 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 {/* TAB 4: KEY OFFICES & APPOINTMENTS */}
                 {activeTab === 'offices' && profile.keyOffices && (
                   <div className="space-y-4 animate-in fade-in">
-                    <div className="p-4 bg-[#FAF8FB] border border-purple-200 rounded-xl">
-                      <h4 className="text-xs font-collegiate font-bold text-[#4A1249] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <div className="p-5 bg-[#FAF8FB] border border-purple-200 rounded-xl">
+                      <h4 className="text-xs font-collegiate font-black text-[#1F0620] uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-[#4A1249]" />
                         <span>Executive Appointments & Councils</span>
                       </h4>
@@ -611,10 +825,10 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                         {profile.keyOffices.map((office, oidx) => (
                           <div
                             key={oidx}
-                            className="flex items-start gap-3 p-3 bg-white border border-purple-100 rounded-lg shadow-2xs"
+                            className="flex items-start gap-3 p-3.5 bg-white border border-purple-200 rounded-lg shadow-xs"
                           >
                             <Award className="w-4 h-4 text-[#4A1249] mt-0.5 shrink-0" />
-                            <span className="text-xs sm:text-sm text-slate-800 font-medium">
+                            <span className="text-xs sm:text-sm text-[#1B051C] font-bold leading-snug">
                               {office}
                             </span>
                           </div>
@@ -626,23 +840,23 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
 
                 {/* Contact / Administrative Liaison info if provided */}
                 {profile.contactLiaison && (
-                  <div className="p-4 bg-[#FAF4FB] border border-purple-200/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                  <div className="p-4 sm:p-5 bg-[#FAF4FB] border-2 border-purple-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                     <div>
-                      <div className="font-bold text-[#4A1249] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                        <Building className="w-3.5 h-3.5 text-[#C39A53]" />
+                      <div className="font-collegiate font-black text-[#1F0620] uppercase tracking-wider text-xs flex items-center gap-1.5">
+                        <Building className="w-4 h-4 text-[#8C6215]" />
                         <span>{profile.contactLiaison.office}</span>
                       </div>
-                      <div className="text-slate-600 flex items-center gap-1 mt-0.5 text-[11px]">
-                        <MapPin className="w-3 h-3 text-slate-400" />
+                      <div className="text-[#3B1440] font-semibold flex items-center gap-1 mt-1 text-xs">
+                        <MapPin className="w-3.5 h-3.5 text-[#4A1249]" />
                         <span>{profile.contactLiaison.location}</span>
                       </div>
                     </div>
                     {profile.contactLiaison.email && (
                       <a
                         href={`mailto:${profile.contactLiaison.email}`}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-purple-300 text-[#4A1249] hover:bg-[#4A1249] hover:text-white rounded font-medium transition-colors cursor-pointer text-xs shrink-0"
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-white border-2 border-purple-300 text-[#4A1249] hover:bg-[#4A1249] hover:text-white rounded font-bold transition-colors cursor-pointer text-xs shrink-0 shadow-xs"
                       >
-                        <Mail className="w-3.5 h-3.5 text-[#C39A53]" />
+                        <Mail className="w-3.5 h-3.5 text-[#8C6215]" />
                         <span>{profile.contactLiaison.email}</span>
                       </a>
                     )}
@@ -650,52 +864,53 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 )}
 
                 {/* Institutional Credentials Badge strip */}
-                <div className="pt-4 border-t border-purple-100 flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                  <span className="flex items-center gap-1 text-[#4A1249] font-bold">
-                    <CheckCircle className="w-4 h-4 text-[#C39A53]" />
+                <div className="pt-4 border-t border-purple-200 flex flex-wrap items-center gap-3 text-xs text-[#3B1440] font-bold">
+                  <span className="flex items-center gap-1.5 text-[#1F0620] font-extrabold">
+                    <CheckCircle className="w-4 h-4 text-[#8C6215]" />
                     <span>Statutory Leader</span>
                   </span>
                   <span>•</span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5 text-[#1B051C]">
                     <Building className="w-4 h-4 text-[#4A1249]" />
                     <span>Main Campus • Old Road, Chugbor</span>
                   </span>
                   <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4 text-[#C39A53]" />
+                  <span className="flex items-center gap-1.5 text-[#1B051C]">
+                    <GraduationCap className="w-4 h-4 text-[#8C6215]" />
                     <span>HIAU Liberia</span>
                   </span>
                 </div>
               </div>
 
               {/* DYNAMIC FORMAL PORTRAIT PANEL (5 cols on xl) */}
-              <div className="xl:col-span-5 space-y-4">
-                <div className="bg-[#FAF8FB] border-2 border-purple-200/80 rounded-2xl p-4 sm:p-5 shadow-xl hover:shadow-2xl transition-all">
-                  {/* Photo Frame with subtle shadow and border */}
-                  <div className="relative overflow-hidden rounded-xl bg-[#2A082C] aspect-3/4 shadow-md group">
+              <div className="xl:col-span-5 space-y-5">
+                <div className="bg-white border-2 border-[#4A1249] rounded-2xl p-5 sm:p-6 shadow-[0_25px_50px_-12px_rgba(74,18,73,0.35)] ring-4 ring-[#C39A53]/25 transition-all">
+                  {/* Photo Frame with high-contrast shadow and border styling */}
+                  <div className="relative rounded-xl overflow-hidden bg-[#1A051C] border-4 border-[#C39A53] shadow-[0_16px_36px_rgba(26,5,28,0.55)] ring-2 ring-[#4A1249] group aspect-[3/4] w-full max-w-[420px] mx-auto flex items-center justify-center">
                     <img
                       src={currentDisplayedImage}
                       alt={profile.name}
-                      className="w-full h-full object-cover object-top hover:scale-102 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                      style={{ objectPosition: 'center 12%' }}
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
 
                     {/* Corner official badge */}
-                    <div className="absolute top-3 left-3 bg-[#4A1249]/95 text-[#C39A53] border border-[#C39A53]/50 px-3 py-1 rounded text-[11px] font-collegiate font-bold uppercase tracking-wider shadow backdrop-blur-xs flex items-center gap-1.5">
-                      <Award className="w-3.5 h-3.5 text-[#C39A53]" />
+                    <div className="absolute top-3.5 left-3.5 bg-[#4A1249] text-[#FCD34D] border-2 border-[#C39A53] px-3.5 py-1.5 rounded-md text-[11px] font-collegiate font-black uppercase tracking-wider shadow-lg backdrop-blur-xs flex items-center gap-1.5 z-10">
+                      <Award className="w-3.5 h-3.5 text-[#FCD34D]" />
                       <span>{profile.roleBadge}</span>
                     </div>
 
                     {/* Secondary Photo Switcher if available */}
                     {profile.secondaryImage && (
-                      <div className="absolute bottom-3 right-3 z-10">
+                      <div className="absolute bottom-3.5 right-3.5 z-10">
                         <button
                           onClick={() => setUseSecondaryPhoto(!useSecondaryPhoto)}
-                          className="px-2.5 py-1 bg-black/75 hover:bg-[#4A1249] text-white text-[10px] font-bold uppercase tracking-wider rounded-md border border-white/30 backdrop-blur-sm transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                          className="px-3 py-1.5 bg-[#1F0620]/90 hover:bg-[#4A1249] text-white text-[10px] font-black uppercase tracking-wider rounded-md border-2 border-[#C39A53] backdrop-blur-sm transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95"
                           title="Toggle between formal studio portrait and campus photograph"
                         >
-                          <Camera className="w-3 h-3 text-[#C39A53]" />
+                          <Camera className="w-3.5 h-3.5 text-[#FCD34D]" />
                           <span>
                             {useSecondaryPhoto ? 'Show Formal Portrait' : 'Show Campus Photo'}
                           </span>
@@ -704,23 +919,64 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                     )}
                   </div>
 
-                  {/* Caption Under Photo (matching screenshot for President and leaders) */}
+                  {/* Caption Under Photo (strict WCAG AAA high contrast typography) */}
                   {profile.imageCaption && (
-                    <div className="mt-4 pt-3 border-t border-purple-100 text-center space-y-0.5">
+                    <div className="mt-5 pt-4 border-t-2 border-purple-100 text-center space-y-1">
                       {profile.imageCaption.map((line, lidx) => (
                         <div
                           key={lidx}
                           className={
                             lidx === 0
-                              ? 'text-xs sm:text-sm font-bold text-[#4A1249]'
+                              ? 'text-sm sm:text-base font-collegiate font-black text-[#1F0620] tracking-wide uppercase'
                               : lidx === 1
-                              ? 'text-xs font-semibold text-[#A17A32] uppercase tracking-wide'
-                              : 'text-[11px] text-slate-500'
+                              ? 'text-xs font-black text-[#6E4908] uppercase tracking-wider'
+                              : 'text-xs font-bold text-[#491E51]'
                           }
                         >
                           {line}
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Actionable Branded Social Links Underneath Portrait */}
+                  {profile.socialLinks && (profile.socialLinks.linkedin || profile.socialLinks.twitter || profile.socialLinks.website) && (
+                    <div className="mt-4 pt-3 border-t border-purple-100 flex items-center justify-center gap-2">
+                      {profile.socialLinks.linkedin && (
+                        <a
+                          href={profile.socialLinks.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-bold shadow-xs hover:shadow transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                          title={`${profile.name} on LinkedIn`}
+                        >
+                          <LinkedInIcon className="w-3.5 h-3.5 fill-current" />
+                          <span style={{ color: '#FFFFFF' }}>LinkedIn</span>
+                        </a>
+                      )}
+                      {profile.socialLinks.twitter && (
+                        <a
+                          href={profile.socialLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0F1419] hover:bg-black text-white text-xs font-bold shadow-xs hover:shadow transition-all hover:scale-105 active:scale-95 border border-slate-700 cursor-pointer"
+                          title={`${profile.name} on X (Twitter)`}
+                        >
+                          <TwitterXIcon className="w-3.5 h-3.5 fill-current" />
+                          <span style={{ color: '#FFFFFF' }}>X (Twitter)</span>
+                        </a>
+                      )}
+                      {profile.socialLinks.website && (
+                        <a
+                          href={profile.socialLinks.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-lg bg-[#4A1249] hover:bg-[#661B69] text-white shadow-xs hover:shadow transition-all hover:scale-105 active:scale-95 border border-[#C39A53]/50 cursor-pointer"
+                          title="Official Website / Portal"
+                        >
+                          <Globe className="w-4 h-4 text-[#FCD34D]" />
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>

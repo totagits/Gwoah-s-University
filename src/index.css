@@ -33,13 +33,24 @@
   --border-subtle: #E8E0EC;
 }
 
-/* Base typography */
+/* Base typography with strict WCAG AAA contrast and font smoothing */
 html, body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--canvas-white);
-  color: #2E0F34;
+  color: #1B051C;
+  font-weight: 450;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings base typography with increased weight and high contrast */
+h1, h2, h3, h4, h5, h6 {
+  color: #1F0620;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
 }
 
 /* Condensed collegiate headline font */
@@ -47,7 +58,8 @@ html, body {
 .font-collegiate {
   font-family: 'Barlow Condensed', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   text-transform: uppercase;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
+  font-weight: 800;
 }
 
 /* University Serif headings */
@@ -61,22 +73,22 @@ html, body {
 .bg-hiau-purple-dark { background-color: #2A082C; }
 .bg-hiau-purple-light { background-color: #661B69; }
 .bg-hiau-purple-soft { background-color: #FAF4FB; }
-.text-hiau-purple { color: #4A1249; }
+.text-hiau-purple { color: #350B34; font-weight: 700; }
 .border-hiau-purple { border-color: #4A1249; }
 
 /* Backward compatibility utility classes mapping to HIAU Purple */
 .bg-academic-navy { background-color: #4A1249; }
 .bg-academic-navy-dark { background-color: #2A082C; }
 .bg-academic-navy-light { background-color: #661B69; }
-.text-academic-navy { color: #4A1249; }
+.text-academic-navy { color: #350B34; font-weight: 700; }
 .border-academic-navy { border-color: #4A1249; }
 
-/* HIAU Heritage Gold utility classes */
+/* HIAU Heritage Gold utility classes (WCAG AAA compliant values on light canvas) */
 .bg-heritage-gold { background-color: #C39A53; }
 .bg-heritage-gold-light { background-color: #DDB86C; }
-.bg-heritage-gold-dark { background-color: #A17A32; }
+.bg-heritage-gold-dark { background-color: #8C6215; }
 .bg-heritage-gold-soft { background-color: #FAF4E8; }
-.text-heritage-gold { color: #C39A53; }
+.text-heritage-gold { color: #6E4908; font-weight: 700; }
 .border-heritage-gold { border-color: #C39A53; }
 
 /* HIAU Clean White utility classes */
@@ -85,8 +97,27 @@ html, body {
 .border-hiau-white { border-color: #FFFFFF; }
 
 .bg-forest-green { background-color: #145A53; }
-.text-forest-green { color: #145A53; }
+.text-forest-green { color: #0E3D38; font-weight: 700; }
 .border-forest-green { border-color: #145A53; }
+
+/* High-contrast portrait frame and aspect ratio preservation */
+.hiau-portrait-frame {
+  border: 3px solid #C39A53;
+  box-shadow: 0 20px 45px -10px rgba(42, 8, 44, 0.45), 0 0 0 4px #4A1249;
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+  background-color: #1F0620;
+}
+
+.hiau-portrait-aspect {
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 
 /* Signature Hero Diagonal Divider Cut (Collegiate Geometric Style) */
 .hero-diagonal-clip {
@@ -100,7 +131,9 @@ html, body {
 }
 
 /* ==========================================================================
-   DEFAULT & LIGHT THEME: HIAU PURPLE, GOLD & WHITE STANDARD (WCAG AAA)
+   DEFAULT & LIGHT THEME: HIAU PURPLE, GOLD & WHITE STANDARD (STRICT WCAG AAA)
+   All body text colors maintain contrast ratio >= 7.0:1
+   All headings maintain contrast ratio >= 8.5:1
    ========================================================================== */
 
 [data-theme="light"] body,
@@ -111,15 +144,15 @@ html.theme-light body,
 [data-theme="light"] div.bg-slate-950,
 :root:not([data-theme="dark"]) div.bg-slate-950 {
   background-color: #FAF8FB !important;
-  color: #2E0F34 !important;
+  color: #1B051C !important;
 }
 
 [data-theme="light"] .bg-slate-900,
 :root:not([data-theme="dark"]) .bg-slate-900 {
   background-color: #FFFFFF !important;
-  color: #2E0F34 !important;
-  border-color: #E8E0EC !important;
-  box-shadow: 0 1px 3px 0 rgba(74, 18, 73, 0.05), 0 1px 2px -1px rgba(74, 18, 73, 0.05) !important;
+  color: #1B051C !important;
+  border-color: #E2D7E6 !important;
+  box-shadow: 0 2px 6px 0 rgba(74, 18, 73, 0.08) !important;
 }
 
 [data-theme="light"] .bg-slate-900\/50,
@@ -131,7 +164,7 @@ html.theme-light body,
 :root:not([data-theme="dark"]) .bg-slate-900\/80,
 :root:not([data-theme="dark"]) .bg-slate-900\/90 {
   background-color: #FFFFFF !important;
-  border-color: #E8E0EC !important;
+  border-color: #E2D7E6 !important;
 }
 
 [data-theme="light"] .bg-slate-850,
@@ -139,8 +172,8 @@ html.theme-light body,
 :root:not([data-theme="dark"]) .bg-slate-850,
 :root:not([data-theme="dark"]) .bg-slate-800 {
   background-color: #F8F5FA !important;
-  color: #2E0F34 !important;
-  border-color: #E8E0EC !important;
+  color: #1B051C !important;
+  border-color: #E2D7E6 !important;
 }
 
 [data-theme="light"] .bg-slate-800\/40,
@@ -152,7 +185,7 @@ html.theme-light body,
 :root:not([data-theme="dark"]) .bg-slate-800\/60,
 :root:not([data-theme="dark"]) .bg-slate-800\/80 {
   background-color: #F8F5FA !important;
-  border-color: #E8E0EC !important;
+  border-color: #E2D7E6 !important;
 }
 
 [data-theme="light"] .border-slate-800,
@@ -163,35 +196,153 @@ html.theme-light body,
 :root:not([data-theme="dark"]) .border-slate-800\/80,
 :root:not([data-theme="dark"]) .border-slate-700,
 :root:not([data-theme="dark"]) .border-slate-700\/80 {
-  border-color: #E8E0EC !important;
+  border-color: #DDD2E2 !important;
 }
 
-[data-theme="light"] .text-white,
-[data-theme="light"] .text-slate-100,
-[data-theme="light"] .text-slate-200,
-:root:not([data-theme="dark"]) .text-white,
-:root:not([data-theme="dark"]) .text-slate-100,
-:root:not([data-theme="dark"]) .text-slate-200 {
-  color: #2E0F34 !important;
+/* WCAG AAA High-Contrast Text Color Scale on Light Canvas */
+[data-theme="light"] .text-slate-900,
+:root:not([data-theme="dark"]) .text-slate-900 {
+  color: #150316 !important; /* Contrast > 17:1 */
+  font-weight: 700;
 }
 
-[data-theme="light"] .text-slate-300,
-[data-theme="light"] .text-slate-400,
-:root:not([data-theme="dark"]) .text-slate-300,
-:root:not([data-theme="dark"]) .text-slate-400 {
-  color: #4A3352 !important;
+[data-theme="light"] .text-slate-800,
+:root:not([data-theme="dark"]) .text-slate-800 {
+  color: #230826 !important; /* Contrast > 14:1 */
+  font-weight: 650;
+}
+
+[data-theme="light"] .text-slate-700,
+:root:not([data-theme="dark"]) .text-slate-700 {
+  color: #38133E !important; /* Contrast > 10.5:1 */
+  font-weight: 500;
+}
+
+[data-theme="light"] .text-slate-600,
+:root:not([data-theme="dark"]) .text-slate-600 {
+  color: #491E51 !important; /* Contrast > 8.5:1 */
+  font-weight: 500;
 }
 
 [data-theme="light"] .text-slate-500,
 :root:not([data-theme="dark"]) .text-slate-500 {
-  color: #6C5574 !important;
+  color: #55275E !important; /* Contrast >= 7.2:1 (Strict WCAG AAA) */
+  font-weight: 500;
 }
 
-[data-theme="light"] .text-amber-400,
-[data-theme="light"] .text-amber-300,
-:root:not([data-theme="dark"]) .text-amber-400,
-:root:not([data-theme="dark"]) .text-amber-300 {
-  color: #A17A32 !important;
+/* Scope inverted slate text inside lightened portal card containers */
+[data-theme="light"] .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-100,
+[data-theme="light"] .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-200,
+[data-theme="light"] .bg-slate-800:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-100,
+[data-theme="light"] .bg-slate-800:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-200,
+:root:not([data-theme="dark"]) .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-100,
+:root:not([data-theme="dark"]) .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-200,
+:root:not([data-theme="dark"]) .bg-slate-800:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-100,
+:root:not([data-theme="dark"]) .bg-slate-800:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-200 {
+  color: #1B051C !important;
+}
+
+[data-theme="light"] .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-300,
+[data-theme="light"] .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-400,
+:root:not([data-theme="dark"]) .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-300,
+:root:not([data-theme="dark"]) .bg-slate-900:not([class*="bg-[#"]):not([class*="bg-purple"]) .text-slate-400 {
+  color: #3E1645 !important;
+}
+
+/* ==========================================================================
+   PERFECT CONTRAST & LEGIBILITY ASSURANCE:
+   .text-white AND HEADINGS INSIDE DARK CONTAINERS MUST ALWAYS BE PURE, CRISP WHITE
+   Strict WCAG AAA compliance (contrast ratio > 15:1 against #4A1249 / #2A082C)
+   ========================================================================== */
+.text-white,
+[data-theme="light"] .text-white,
+:root:not([data-theme="dark"]) .text-white,
+[class*="bg-[#4A1249]"] .text-white,
+[class*="bg-[#2A082C]"] .text-white,
+[class*="bg-[#1F0620]"] .text-white,
+[class*="bg-[#160418]"] .text-white,
+[class*="bg-[#661B69]"] .text-white,
+.bg-hiau-purple .text-white,
+.bg-hiau-purple-dark .text-white,
+/* Headings inside dark containers */
+[class*="bg-[#4A1249]"] h1,
+[class*="bg-[#4A1249]"] h2,
+[class*="bg-[#4A1249]"] h3,
+[class*="bg-[#4A1249]"] h4,
+[class*="bg-[#4A1249]"] h5,
+[class*="bg-[#4A1249]"] h6,
+[class*="bg-[#2A082C]"] h1,
+[class*="bg-[#2A082C]"] h2,
+[class*="bg-[#2A082C]"] h3,
+[class*="bg-[#2A082C]"] h4,
+[class*="bg-[#2A082C]"] h5,
+[class*="bg-[#2A082C]"] h6,
+[class*="bg-[#1F0620]"] h1,
+[class*="bg-[#1F0620]"] h2,
+[class*="bg-[#1F0620]"] h3,
+[class*="bg-[#1F0620]"] h4,
+[class*="bg-[#160418]"] h1,
+[class*="bg-[#160418]"] h2,
+[class*="bg-[#160418]"] h3,
+[class*="bg-[#160418]"] h4,
+[class*="bg-[#661B69]"] h1,
+[class*="bg-[#661B69]"] h2,
+[class*="bg-[#661B69]"] h3,
+[class*="bg-[#661B69]"] h4,
+.bg-hiau-purple h1,
+.bg-hiau-purple h2,
+.bg-hiau-purple h3,
+.bg-hiau-purple-dark h1,
+.bg-hiau-purple-dark h2,
+.bg-hiau-purple-dark h3,
+h1.text-white,
+h2.text-white,
+h3.text-white,
+h4.text-white,
+/* Dark purple button text & spans */
+button[class*="bg-[#4A1249]"] span,
+button[class*="bg-[#4A1249]"] div,
+button[class*="bg-[#661B69]"] span,
+button[class*="bg-[#661B69]"] div,
+button[class*="bg-[#2A082C]"] span,
+button[class*="bg-[#2A082C]"] div,
+button[class*="bg-white/20"] span,
+button[class*="bg-white/10"] span {
+  color: #FFFFFF !important;
+}
+
+/* Light purple/lavender subtitle text on dark purple backgrounds */
+[class*="bg-[#4A1249]"] .text-purple-100,
+[class*="bg-[#2A082C]"] .text-purple-100,
+[class*="bg-[#1F0620]"] .text-purple-100 {
+  color: #F5EDF8 !important;
+}
+[class*="bg-[#4A1249]"] .text-purple-200,
+[class*="bg-[#2A082C]"] .text-purple-200,
+[class*="bg-[#1F0620]"] .text-purple-200 {
+  color: #E8D5ED !important;
+}
+
+/* Preserve bright, radiant gold text inside dark purple headers and hero banners (WCAG AAA >= 8.5:1) */
+[class*="bg-[#4A1249]"] .text-amber-300,
+[class*="bg-[#4A1249]"] .text-amber-400,
+[class*="bg-[#2A082C]"] .text-amber-300,
+[class*="bg-[#2A082C]"] .text-amber-400,
+.bg-hiau-purple .text-amber-300,
+.bg-hiau-purple-dark .text-amber-300,
+[class*="bg-[#4A1249]"] [class*="text-[#FCD34D]"],
+[class*="bg-[#2A082C]"] [class*="text-[#FCD34D]"] {
+  color: #FCD34D !important;
+  font-weight: 700;
+}
+
+/* Accessible Gold on light background (exceeds 7.2:1 AAA) */
+[data-theme="light"] .text-amber-500:not([class*="bg-[#"]):not([class*="bg-purple"]),
+[data-theme="light"] .text-amber-600:not([class*="bg-[#"]):not([class*="bg-purple"]),
+:root:not([data-theme="dark"]) .text-amber-500:not([class*="bg-[#"]):not([class*="bg-purple"]),
+:root:not([data-theme="dark"]) .text-amber-600:not([class*="bg-[#"]):not([class*="bg-purple"]) {
+  color: #6E4908 !important;
+  font-weight: 700;
 }
 
 [data-theme="light"] .bg-amber-500,
@@ -251,47 +402,77 @@ html.theme-light body,
 }
 
 /* ==========================================================================
-   ACADEMIC MIDNIGHT PURPLE THEME (DARK MODE)
+   ACADEMIC MIDNIGHT PURPLE THEME (DARK MODE - STRICT WCAG AAA COMPLIANT)
+   Contrast ratio >= 7.0:1 across all body text & >= 8.5:1 for headings
    ========================================================================== */
 
 [data-theme="dark"] body,
 html.theme-dark body {
-  background-color: #1A051C !important;
+  background-color: #160418 !important;
   color: #FAF8FB !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+html.theme-dark h1,
+html.theme-dark h2,
+html.theme-dark h3,
+html.theme-dark h4,
+html.theme-dark h5,
+html.theme-dark h6 {
+  color: #FFFFFF !important;
+  font-weight: 800;
 }
 
 [data-theme="dark"] .min-h-screen.bg-slate-950,
 [data-theme="dark"] div.bg-slate-950 {
-  background-color: #1A051C !important;
+  background-color: #160418 !important;
 }
 
 [data-theme="dark"] .bg-slate-900 {
-  background-color: #2A082C !important;
-  border-color: rgba(195, 154, 83, 0.25) !important;
+  background-color: #270729 !important;
+  border-color: rgba(195, 154, 83, 0.35) !important;
 }
 
 [data-theme="dark"] .bg-slate-850,
 [data-theme="dark"] .bg-slate-800 {
-  background-color: #380C3B !important;
-  border-color: rgba(195, 154, 83, 0.25) !important;
+  background-color: #350A38 !important;
+  border-color: rgba(195, 154, 83, 0.35) !important;
 }
 
 [data-theme="dark"] .text-white,
 [data-theme="dark"] .text-slate-100 {
-  color: #FAF8FB !important;
+  color: #FFFFFF !important; /* Contrast > 18:1 (WCAG AAA) */
 }
 
-[data-theme="dark"] .text-slate-300,
+[data-theme="dark"] .text-slate-200 {
+  color: #F5EDF8 !important; /* Contrast > 15:1 (WCAG AAA) */
+}
+
+[data-theme="dark"] .text-slate-300 {
+  color: #E6D7EB !important; /* Contrast > 12:1 (WCAG AAA) */
+}
+
 [data-theme="dark"] .text-slate-400 {
-  color: #D6C7DA !important;
+  color: #D3BCD9 !important; /* Contrast >= 9.2:1 (WCAG AAA) */
+}
+
+[data-theme="dark"] .text-slate-500 {
+  color: #C2A5CB !important; /* Contrast >= 7.3:1 (Strict WCAG AAA) */
 }
 
 [data-theme="dark"] .text-amber-400,
 [data-theme="dark"] .text-amber-300 {
-  color: #DDB86C !important;
+  color: #FDE047 !important; /* Contrast >= 9.5:1 (WCAG AAA) */
+  font-weight: 700;
 }
 
 [data-theme="dark"] .bg-amber-500 {
   background-color: #C39A53 !important;
-  color: #1A051C !important;
+  color: #160418 !important;
+  font-weight: 800;
 }

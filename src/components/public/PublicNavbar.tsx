@@ -674,9 +674,9 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 if (onOpenApplicationModal) onOpenApplicationModal();
                 else onNavigateSection('admissions');
               }}
-              className="px-6 py-2.5 bg-[#4A1249] hover:bg-[#661B69] text-white font-collegiate font-black text-sm uppercase tracking-wider rounded-none transition-all flex items-center gap-3 shadow-sm cursor-pointer border border-[#C39A53]/60 active:scale-98"
+              className="px-6 py-2.5 bg-[#4A1249] hover:bg-[#661B69] text-white font-collegiate font-black text-sm uppercase tracking-wider rounded-none transition-all flex items-center gap-3 shadow-md cursor-pointer border-2 border-[#C39A53] active:scale-98"
             >
-              <span>APPLY NOW</span>
+              <span className="text-white font-black tracking-wider text-sm drop-shadow-xs" style={{ color: '#FFFFFF' }}>APPLY NOW</span>
               <ArrowRight className="w-4 h-4 text-[#C39A53]" />
             </button>
           </div>
@@ -821,7 +821,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 }}
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#4A1249] text-white font-collegiate font-bold text-sm uppercase rounded-none cursor-pointer border border-[#C39A53]/50"
               >
-                <span>APPLY NOW</span>
+                <span className="text-white font-bold" style={{ color: '#FFFFFF' }}>APPLY NOW</span>
                 <ArrowRight className="w-4 h-4 text-[#C39A53]" />
               </button>
               {currentUser && (

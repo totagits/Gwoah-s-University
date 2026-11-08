@@ -1145,6 +1145,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 )}
               </div>
             </div>
+          </main>
         </div>
       </div>
 

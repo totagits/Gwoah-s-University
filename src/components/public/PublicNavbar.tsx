@@ -49,15 +49,15 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               Republic of Liberia
             </span>
             <span className="hidden sm:inline text-slate-950 font-semibold">
-              Chartered by the National Commission on Higher Education (NCHE) • Accreditation Ref: NCHE/ACCR/2026-GU
+              Academic accreditation details pending institutional verification
             </span>
           </div>
           <div className="flex items-center gap-4 text-[11px] font-semibold">
             <span className="flex items-center gap-1">
               <Wifi className="w-3.5 h-3.5 text-emerald-950" />
-              <span>Campus Starlink & Low-Bandwidth Mode Active</span>
+              <span>University digital services</span>
             </span>
-            <span className="hidden md:inline">Monrovia & Fendall Campuses</span>
+            <span className="hidden md:inline">University information portal</span>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors">
-                  Gwoah's University
+                  Harvest Intercontinental American University
                 </h1>
                 <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-1.5 py-0.5 rounded">
                   Liberia

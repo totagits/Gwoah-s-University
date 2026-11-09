@@ -113,7 +113,7 @@ export class Operations {
       CREATE TABLE IF NOT EXISTS transcript_requests(id TEXT PRIMARY KEY,student_id TEXT NOT NULL REFERENCES students(id),purpose TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN('requested','under_review','issued','declined')),reviewed_by TEXT REFERENCES users(id),note TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,title TEXT NOT NULL,description TEXT NOT NULL,assignee_id TEXT NOT NULL REFERENCES users(id),status TEXT NOT NULL CHECK(status IN('todo','in_progress','completed')),due_date TEXT NOT NULL,created_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,recipient_id TEXT NOT NULL REFERENCES users(id),kind TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT);
+      CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,recipient_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT);
       CREATE INDEX IF NOT EXISTS notifications_recipient ON notifications(recipient_id,created_at DESC);
       CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT,created_at TEXT NOT NULL);
       CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit BEGIN SELECT RAISE(ABORT,'Audit entries cannot be modified'); END;
@@ -1066,6 +1066,7 @@ export class Operations {
       users: this.users(),
       courses: tables.courses,
       registrations: tables.registrations,
+      notifications: this.all('SELECT * FROM notifications ORDER BY created_at,id'),
       tables,
     };
   }
@@ -1079,6 +1080,9 @@ export class Operations {
         'Snapshot is not a relational operations snapshot.',
       );
     this.transaction(() => {
+      // Restore recipient inboxes only when present in newer snapshots.
+      // Older schemaVersion=1 backups remain valid and restore to an empty inbox.
+      this.run('DELETE FROM notifications');
       for (const name of [...operationalTables].reverse())
         this.run(`DELETE FROM ${name}`);
       for (const name of operationalTables) {
@@ -1092,6 +1096,14 @@ export class Operations {
             `INSERT INTO ${name} (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')})`,
             ...columns.map((key) => row[key] ?? null),
           );
+        }
+      }
+      if (Array.isArray(data.notifications)) {
+        for (const row of data.notifications) {
+          if (!row || typeof row !== 'object' || !['id','recipient_id','kind','title','body','created_at','read_at'].every(key => Object.prototype.hasOwnProperty.call(row,key)))
+            throw new WorkflowError('Invalid notification backup record.');
+          this.run('INSERT INTO notifications(id,recipient_id,kind,title,body,created_at,read_at) VALUES(?,?,?,?,?,?,?)',
+            row.id,row.recipient_id,row.kind,row.title,row.body,row.created_at,row.read_at);
         }
       }
       this.audit('system', 'SNAPSHOT_RESTORE', 'operations', null, {

@@ -1,0 +1,120 @@
+name: Restore HIAU original portraits and circular favicon
+on:
+  push:
+    branches: [fix/hiau-leadership-portraits-round-favicon]
+    paths:
+      - '.github/workflows/hiau-restore-leadership-media.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  restore-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: original-main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0
+      - name: Restore original official leadership portraits
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            'assets/images/hiau_chancellor_portrait_1794157550151.jpg'
+            'assets/images/hiau_president_portrait_1794157550124.jpg'
+            'assets/images/hiau_chair_portrait_1794157551551.jpg'
+            'assets/hiau/chancellor_darlingston_johnson.jpg'
+            'assets/hiau/president_kona_facia_nepay.jpg'
+            'assets/hiau/prof_mamawa_freeman_moore.png'
+            'assets/hiau/board_chair_jonathan_taylor.jpg'
+            'assets/hiau/stanton_johnson.jpg'
+            'assets/hiau/trustee_nelson_williams.jpg'
+            'assets/hiau/trustee_charlyn_brumskin.jpg'
+            'assets/hiau/trustee_augustine_konneh.jpg'
+            'assets/hiau/dr_jacob_meiporkoyah.png'
+            'assets/hiau/rev_dr_earl_darlington.png'
+            'assets/hiau/dr_timothy_jornkatonor.jpg'
+            'assets/hiau/mr_george_sorbor.jpg'
+            'assets/hiau/trustee_beoni_uery.jpg'
+            'assets/hiau/trustee_wolo_belleh.jpg'
+            'assets/hiau/trustee_carmenia_abdallah.jpg'
+            'assets/hiau/trustee_walker_richards.jpg'
+            'assets/hiau/rev_armah_karmoh.png'
+            'assets/hiau/dr_emmitt_dennis.jpg'
+            'assets/hiau/mr_thomas_gmawlue.jpg'
+          )
+          for f in "${files[@]}"; do
+            src="original-main/public/$f"
+            dest="public/$f"
+            test -s "$src" || { echo "::error::Missing original main asset $f"; exit 1; }
+            mkdir -p "$(dirname "$dest")"
+            cp "$src" "$dest"
+            file --mime-type "$dest"
+          done
+          echo "Restored ${#files[@]} authentic images"
+          rm -rf original-main
+      - name: Create circular transparent favicon from official seal
+        shell: bash
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageChops, ImageDraw, ImageOps
+          from pathlib import Path
+          src = Path('public/assets/aistudio/image_bfcc4a11.png')
+          assert src.is_file(), "Original university seal is missing"
+          im = Image.open(src).convert('RGBA')
+          white = Image.new('RGB', im.size, 'white')
+          flat = Image.new('RGB', im.size, 'white')
+          flat.paste(im, mask=im.getchannel('A'))
+          difference = ImageChops.difference(flat, white).convert('L').point(lambda p: 255 if p > 28 else 0)
+          box = difference.getbbox()
+          if box:
+            left, top, right, bottom = box
+            width, height = right-left, bottom-top
+            pad = int(max(width, height) * 0.055)
+            im = im.crop((max(0, left-pad),max(0, top-pad),min(im.width,right+pad),min(im.height,bottom+pad)))
+          side=max(im.size)
+          centered=Image.new('RGBA',(side,side),'white')
+          centered.alpha_composite(im,((side-im.width)//2,(side-im.height)//2))
+          size=512
+          centered=centered.resize((size,size),Image.Resampling.LANCZOS)
+          mask=Image.new('L',(size*4,size*4),0)
+          d=ImageDraw.Draw(mask)
+          d.ellipse((2,2,size*4-3,size*4-3),fill=255)
+          mask=mask.resize((size,size),Image.Resampling.LANCZOS)
+          centered.putalpha(mask)
+          for n in (16,32,180):
+            output='apple-touch-icon.png' if n==180 else f'favicon-{n}x{n}.png'
+            centered.resize((n,n),Image.Resampling.LANCZOS).save('public/'+output)
+            print(output)
+          PY
+      - name: Validate generated assets and site build
+        run: |
+          test -s public/favicon-16x16.png
+          test -s public/favicon-32x32.png
+          test -s public/apple-touch-icon.png
+          npm ci
+          npm run lint
+          npm run build
+          npm test
+          test -s dist/favicon-32x32.png
+          test -s dist/assets/hiau/stanton_johnson.jpg
+          test -s dist/assets/hiau/chancellor_darlingston_johnson.jpg
+      - name: Commit recovered media and icon files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/hiau/ public/assets/images/ public/favicon-16x16.png public/favicon-32x32.png public/apple-touch-icon.png
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "assets(hiau): recover 22 authentic staff portraits and circular favicon"
+            git push origin HEAD:fix/hiau-leadership-portraits-round-favicon
+          fi

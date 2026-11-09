@@ -52,5 +52,8 @@ jobs:
             echo "Clips already present"
           else
             git commit -m "media(hiau): add 19 original narrated program explainer videos"
+            # The reference branch may have received test updates while clips render.
+            # Integrate those normal commits without forcing or overwriting them.
+            git pull --rebase origin feat/hiau-degree-detail-pages-media
             git push origin HEAD:feat/hiau-degree-detail-pages-media
           fi

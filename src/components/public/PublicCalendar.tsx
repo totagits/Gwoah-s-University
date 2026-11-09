@@ -97,8 +97,7 @@ export const PublicCalendar: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
-                </div>;
+                  </div>;
                 })}
               </div>
             </div>;

@@ -81,6 +81,8 @@ const operationalTables = [
   'alumni_profiles',
   'transcript_requests',
   'tasks',
+  'curriculum_programs',
+  'curriculum_courses',
 ] as const;
 
 export class Operations {
@@ -113,6 +115,32 @@ export class Operations {
       CREATE TABLE IF NOT EXISTS transcript_requests(id TEXT PRIMARY KEY,student_id TEXT NOT NULL REFERENCES students(id),purpose TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN('requested','under_review','issued','declined')),reviewed_by TEXT REFERENCES users(id),note TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,title TEXT NOT NULL,description TEXT NOT NULL,assignee_id TEXT NOT NULL REFERENCES users(id),status TEXT NOT NULL CHECK(status IN('todo','in_progress','completed')),due_date TEXT NOT NULL,created_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS curriculum_programs(
+        id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL, college TEXT NOT NULL,
+        credential TEXT NOT NULL, general_half INTEGER NOT NULL DEFAULT 0 CHECK(general_half>=0),
+        college_half INTEGER NOT NULL DEFAULT 0 CHECK(college_half>=0),
+        major_half INTEGER NOT NULL DEFAULT 0 CHECK(major_half>=0),
+        minor_half INTEGER NOT NULL DEFAULT 0 CHECK(minor_half>=0),
+        elective_half INTEGER NOT NULL DEFAULT 0 CHECK(elective_half>=0),
+        required_half INTEGER NOT NULL DEFAULT 0 CHECK(required_half>=0),
+        status TEXT NOT NULL CHECK(status IN('draft','in_review','approved')),
+        source_title TEXT NOT NULL, source_page TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '', created_by TEXT NOT NULL, updated_at TEXT NOT NULL,
+        approved_by TEXT, approved_at TEXT
+      );
+      CREATE TABLE IF NOT EXISTS curriculum_courses(
+        id TEXT PRIMARY KEY, program_id TEXT NOT NULL REFERENCES curriculum_programs(id),
+        code TEXT NOT NULL, title TEXT NOT NULL, category TEXT NOT NULL
+          CHECK(category IN('general','college','major','minor','elective')),
+        credits_half INTEGER NOT NULL CHECK(credits_half>0 AND credits_half<=60),
+        year INTEGER NOT NULL CHECK(year>=1 AND year<=6),
+        semester INTEGER NOT NULL CHECK(semester>=1 AND semester<=3),
+        prerequisite_codes TEXT NOT NULL DEFAULT '',
+        source_page TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL,
+        UNIQUE(program_id,year,semester,code)
+      );
+      CREATE INDEX IF NOT EXISTS curriculum_course_program ON curriculum_courses(program_id,year,semester);
       CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,recipient_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT);
       CREATE INDEX IF NOT EXISTS notifications_recipient ON notifications(recipient_id,created_at DESC);
       CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT,created_at TEXT NOT NULL);

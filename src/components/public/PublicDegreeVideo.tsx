@@ -71,7 +71,8 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
       <video ref={videoRef} key={route} controls autoPlay muted playsInline preload="auto"
         poster="/assets/aistudio/image_29eb5504.png"
         className="aspect-video w-full object-contain" aria-label={`Educational video about ${title}`}
-        onError={()=>setMediaError(true)} onPlaying={()=>setAutoplayBlocked(false)}>
+        onError={()=>setMediaError(true)} onPlaying={()=>setAutoplayBlocked(false)}
+        onVolumeChange={event=>setSoundOn(!event.currentTarget.muted&&event.currentTarget.volume>0)}>
         <source src={source} type="video/mp4"/>
         Your browser does not support this degree video.
       </video>

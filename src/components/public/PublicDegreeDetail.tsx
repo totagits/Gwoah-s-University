@@ -56,6 +56,10 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
       src:'/assets/degree-clips/image_20261108_233524.mp4',
       label:'University-provided Liberal Arts & Humanities degree introduction',
     },
+    'liberal_arts--bachelor-of-arts-in-strategic-communications-media': {
+      src:'/assets/degree-clips/image_20261109_002629_2.mp4',
+      label:'University-provided Strategic Communications & Media degree introduction',
+    },
   };
   const suppliedVideo=universityProvidedVideos[route];
   const degreeVideoSource=suppliedVideo?.src ?? `/assets/degree-clips/${route}.mp4`;

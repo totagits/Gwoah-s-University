@@ -113,6 +113,8 @@ export class Operations {
       CREATE TABLE IF NOT EXISTS transcript_requests(id TEXT PRIMARY KEY,student_id TEXT NOT NULL REFERENCES students(id),purpose TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN('requested','under_review','issued','declined')),reviewed_by TEXT REFERENCES users(id),note TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,title TEXT NOT NULL,description TEXT NOT NULL,assignee_id TEXT NOT NULL REFERENCES users(id),status TEXT NOT NULL CHECK(status IN('todo','in_progress','completed')),due_date TEXT NOT NULL,created_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,recipient_id TEXT NOT NULL REFERENCES users(id),kind TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT);
+      CREATE INDEX IF NOT EXISTS notifications_recipient ON notifications(recipient_id,created_at DESC);
       CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT,created_at TEXT NOT NULL);
       CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit BEGIN SELECT RAISE(ABORT,'Audit entries cannot be modified'); END;
       CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit BEGIN SELECT RAISE(ABORT,'Audit entries cannot be removed'); END;
@@ -1008,8 +1010,52 @@ export class Operations {
         result = { ...before, status: data.status };
       } else throw new WorkflowError('Unknown workflow action.');
       this.audit(actor, action, result.id || action, before, result);
+      // Explicit workflow notifications only: no sample, global, or inferred events.
+      if (action === 'task' && result.assignee_id !== actor.id) {
+        this.notify(result.assignee_id, 'task', 'New task assigned', 'A university task has been assigned to your account.');
+      } else if (action === 'taskStatus' && result.created_by !== actor.id) {
+        this.notify(result.created_by, 'task', 'Task status changed', 'A university task you created has changed status.');
+      } else if (action === 'publishGrade') {
+        const row = this.one(
+          'SELECT u.id AS recipient_id FROM grades g JOIN registrations r ON r.id=g.registration_id JOIN students s ON s.id=r.student_id JOIN users u ON u.id=s.user_id WHERE g.id=? AND g.status=?',
+          result.id, 'published',
+        );
+        if (row?.recipient_id)
+          this.notify(row.recipient_id, 'academic', 'A course result was published', 'A new result is available in your academic record.');
+      } else if (action === 'transcriptReview') {
+        const row = this.one('SELECT s.user_id AS recipient_id FROM transcript_requests t JOIN students s ON s.id=t.student_id WHERE t.id=?',result.id);
+        if (row?.recipient_id)
+          this.notify(row.recipient_id, 'records', 'Transcript request updated', 'The status of your transcript request has changed.');
+      }
       return result;
     });
+  }
+  notify(recipientId: string, kind: string, title: string, body: string) {
+    // Stored in the same SQLite transaction as the triggering workflow.
+    this.run(
+      'INSERT INTO notifications(id,recipient_id,kind,title,body,created_at,read_at) VALUES(?,?,?,?,?,?,NULL)',
+      id(), recipientId, kind, title, body, now(),
+    );
+  }
+  notificationsFor(actor: Actor) {
+    return this.all(
+      'SELECT id,kind,title,body,created_at,read_at FROM notifications WHERE recipient_id=? ORDER BY created_at DESC,rowid DESC LIMIT 50',
+      actor.id,
+    );
+  }
+  readNotification(actor: Actor, notificationId: string) {
+    if (typeof notificationId !== 'string' || !/^[a-f0-9-]{36}$/.test(notificationId))
+      throw new WorkflowError('Invalid notification identifier.', 400);
+    const result = this.run(
+      "UPDATE notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND recipient_id=?",
+      now(), notificationId, actor.id,
+    );
+    if (!result.changes) throw new WorkflowError('Notification not found.', 404);
+    return { success: true };
+  }
+  readAllNotifications(actor: Actor) {
+    this.run('UPDATE notifications SET read_at=? WHERE recipient_id=? AND read_at IS NULL',now(),actor.id);
+    return { success: true };
   }
   exportSnapshot() {
     const tables: Record<string, any[]> = {};

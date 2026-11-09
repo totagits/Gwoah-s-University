@@ -16,6 +16,7 @@ export type CurriculumFinding = {
   detail:string;
 };
 const categories=['general','college','major','minor','elective'] as const;
+const creditKeys={general:'general_half',college:'college_half',major:'major_half',minor:'minor_half',elective:'elective_half'} as const;
 const label=(name:string)=>name.charAt(0).toUpperCase()+name.slice(1);
 const norm=(s:string)=>s.trim().toUpperCase().replace(/\s+/g,' ');
 const splitPrerequisites=(s:string)=>s.split(/[,;\n]+/g).map(norm).filter(Boolean);
@@ -30,13 +31,13 @@ export function validateCurriculum(program:CurriculumProgram,courses:CurriculumC
     error('UNVERIFIED_PROGRAM_CODE','Replace the provisional REF- program code with the official university code.');
   if(program.notes.includes('SOURCE_REVIEW_REQUIRED'))
     error('UNRESOLVED_SOURCE','Resolve the source-PDF discrepancies and update the review notes before approval.');
-  const parts=categories.reduce((sum,category)=>sum+Number(program[category+'_half']||0),0);
+  const parts=categories.reduce((sum,category)=>sum+Number(program[creditKeys[category]]||0),0);
   if(parts!==program.required_half)
     error('PROGRAM_TOTAL_MISMATCH',`Category requirements add to ${parts/2} credits; stated total is ${program.required_half/2}.`);
   const totals:Record<string,{required:number;listed:number}>={};
   for(const cat of categories){
     const listed=courses.filter(c=>c.category===cat).reduce((sum,c)=>sum+c.credits_half,0);
-    const required=program[cat+'_half'];
+    const required=program[creditKeys[cat]];
     totals[cat]={required:required/2,listed:listed/2};
     if(cat==='minor'||cat==='elective'){
       if(required>0 && listed===0)error('MISSING_'+cat.toUpperCase()+'_OPTIONS',

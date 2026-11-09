@@ -40,6 +40,7 @@ interface SubmenuItem {
   icon: React.ReactNode;
   action: () => void;
   badge?: string;
+  restricted?: boolean;
 }
 
 export const PublicNavbar: React.FC<PublicNavbarProps> = ({
@@ -154,6 +155,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       },
       {
         label: 'Campus Facilities Feedback & Repairs',
+        restricted: true,
         desc: 'Submit maintenance work orders for rooms and equipment',
         icon: <Wrench className="w-4 h-4 text-[#4A1249]" />,
         action: () => onOpenPortal('facilities'),
@@ -227,6 +229,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       },
       {
         label: 'Admissions Officer Review Desk',
+        restricted: true,
         desc: 'Evaluate applicant transcripts and manage acceptances',
         icon: <Users className="w-4 h-4 text-[#4A1249]" />,
         action: () => onOpenPortal('admissions'),
@@ -279,6 +282,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       },
       {
         label: 'Shared Resource Library (ERP)',
+        restricted: true,
         desc: 'Document versioning, syllabi, study guides & past papers',
         icon: <BookOpen className="w-4 h-4 text-[#C39A53]" />,
         action: () => onOpenPortal('library'),
@@ -286,6 +290,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       },
       {
         label: 'Campus Facilities Feedback',
+        restricted: true,
         desc: 'Report repair, plumbing, or classroom issues directly to staff',
         icon: <Wrench className="w-4 h-4 text-[#4A1249]" />,
         action: () => onOpenPortal('facilities'),
@@ -358,17 +363,6 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               <span className="hidden sm:inline text-xs font-bold text-slate-700">Search</span>
             </button>
 
-            {/* Authenticated Session Quick Link (Hidden for public visitors) */}
-            {currentUser && (
-              <button
-                onClick={() => onOpenPortal()}
-                className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#4A1249] hover:bg-[#661B69] text-white rounded-none text-xs font-collegiate font-bold uppercase tracking-wider transition-colors cursor-pointer border border-[#C39A53]/50 shadow-xs"
-              >
-                <div className="w-2 h-2 rounded-full bg-[#C39A53] animate-pulse" />
-                <span>ERP ({currentUser.role.replace('_', ' ')})</span>
-              </button>
-            )}
-
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -411,7 +405,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   } else if (q.includes('cal') || q.includes('exam') || q.includes('date')) {
                     onNavigateSection('calendar');
                   } else if (q.includes('repair') || q.includes('facil') || q.includes('work')) {
-                    onOpenPortal('student_portal');
+                    onNavigateSection('dei');
                   } else {
                     onNavigateSection('about');
                   }
@@ -432,7 +426,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 } else if (q.includes('cal') || q.includes('exam') || q.includes('date')) {
                   onNavigateSection('calendar');
                 } else if (q.includes('repair') || q.includes('facil') || q.includes('work')) {
-                  onOpenPortal('student_portal');
+                  onNavigateSection('dei');
                 } else {
                   onNavigateSection('about');
                 }
@@ -507,7 +501,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         <span className="text-[10px] text-[#C39A53] font-semibold">HIAU Liberia</span>
                       </div>
                       <div className="py-1 space-y-1">
-                        {submenus[link.id].map((sub, idx) => (
+                        {submenus[link.id].filter(sub => !sub.restricted || !!currentUser).map((sub, idx) => (
                           <button
                             key={idx}
                             onClick={() => {
@@ -543,128 +537,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               );
             })}
 
-            {/* NESTED MULTI-HOP NAVIGATION FOR SECURE PORTAL ACCESS */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter('services')}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button
-                onClick={() => setActiveDropdown(activeDropdown === 'services' ? null : 'services')}
-                className={`flex items-center gap-1.5 text-sm font-bold py-1.5 px-2 transition-colors cursor-pointer border-b-2 ${
-                  activeDropdown === 'services'
-                    ? 'text-[#4A1249] border-[#C39A53]'
-                    : 'text-[#4A1249] hover:text-[#661B69] border-transparent'
-                }`}
-                aria-expanded={activeDropdown === 'services'}
-                aria-haspopup="true"
-              >
-                <Layers className="w-4 h-4 text-[#C39A53]" />
-                <span>University Services</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-[#4A1249] transition-transform duration-200 ${
-                    activeDropdown === 'services' ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
 
-              {activeDropdown === 'services' && (
-                <div
-                  className="absolute left-0 mt-1 w-88 bg-white border-2 border-purple-200 rounded-none shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-1"
-                  onMouseEnter={() => handleMouseEnter('services')}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <div className="px-3 py-2 border-b border-purple-100 text-[11px] font-extrabold text-[#4A1249] uppercase tracking-wider flex items-center justify-between">
-                    <span>Institutional Services Directory</span>
-                    <span className="text-[10px] text-[#C39A53]">Single Sign-On</span>
-                  </div>
-                  <div className="py-1 space-y-1">
-                    <button
-                      onClick={() => {
-                        onOpenPortal('student_portal');
-                        setActiveDropdown(null);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Users className="w-4 h-4 text-[#C39A53]" />
-                        <span>Student Portal & Grades</span>
-                      </span>
-                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Student</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onOpenPortal('academics');
-                        setActiveDropdown(null);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <GraduationCap className="w-4 h-4 text-[#4A1249]" />
-                        <span>Registrar & Academic Audit</span>
-                      </span>
-                      <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">Registrar</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onOpenPortal('finance');
-                        setActiveDropdown(null);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <FileText className="w-4 h-4 text-[#C39A53]" />
-                        <span>Bursar & Tuition Accounts</span>
-                      </span>
-                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">Bursar</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onOpenPortal('faculty_admin');
-                        setActiveDropdown(null);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-slate-800 hover:text-[#4A1249] hover:bg-purple-50 flex items-center justify-between cursor-pointer font-medium rounded-sm"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Users className="w-4 h-4 text-[#4A1249]" />
-                        <span>Faculty & Dean Administration</span>
-                      </span>
-                      <span className="text-[10px] font-bold text-indigo-800 bg-indigo-100 px-1.5 py-0.5 rounded">Faculty</span>
-                    </button>
-
-                    {/* Multi-Step Gateway Progression */}
-                    <div className="mt-2 pt-2 border-t border-purple-100">
-                      <div className="px-3 py-1 text-[11px] text-[#C39A53] font-black flex items-center gap-1 uppercase tracking-wider">
-                        <Lock className="w-3.5 h-3.5 text-[#C39A53]" />
-                        <span>Secure Multi-Step ERP Gateway</span>
-                      </div>
-                      <div className="p-3 bg-[#FAF4FB] border border-purple-200 mt-1">
-                        <div className="text-[11px] text-slate-600 mb-2 flex items-center gap-1.5 font-mono">
-                          <span>Home</span>
-                          <span>→</span>
-                          <span>Services</span>
-                          <span>→</span>
-                          <span className="text-[#4A1249] font-black">ERP Portal</span>
-                        </div>
-                        <button
-                          onClick={() => {
-                            onOpenPortal();
-                            setActiveDropdown(null);
-                          }}
-                          className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#4A1249] hover:bg-[#661B69] text-white font-black text-xs uppercase tracking-wider shadow-sm transition-all cursor-pointer border border-[#C39A53]/50"
-                        >
-                          <Lock className="w-3.5 h-3.5 text-[#C39A53]" />
-                          <span>Enter University ERP</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
           </nav>
 
           {/* Right: Solid Rectangular APPLY NOW button in HIAU Imperial Purple */}
@@ -716,7 +589,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
                   {hasSub && isExpanded && (
                     <div className="pl-6 pr-3 py-1 space-y-1 bg-purple-50/50">
-                      {submenus[link.id].map((sub, sidx) => (
+                      {submenus[link.id].filter(sub => !sub.restricted || !!currentUser).map((sub, sidx) => (
                         <button
                           key={sidx}
                           onClick={() => {
@@ -742,75 +615,6 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               );
             })}
 
-            {/* Mobile University Services Accordion */}
-            <div className="border-b border-purple-50 pb-1">
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-left text-sm font-bold text-[#4A1249] flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-[#C39A53]" />
-                  University Services
-                </span>
-                <button
-                  onClick={() =>
-                    setMobileExpandedSection(
-                      mobileExpandedSection === 'services' ? null : 'services'
-                    )
-                  }
-                  className="p-1 text-[#4A1249] hover:bg-purple-50 rounded"
-                >
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      mobileExpandedSection === 'services' ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {mobileExpandedSection === 'services' && (
-                <div className="pl-6 pr-3 py-2 space-y-1.5 bg-purple-50/50">
-                  <button
-                    onClick={() => {
-                      onOpenPortal('student_portal');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
-                  >
-                    <span>Student Portal & Grades</span>
-                    <span className="text-[10px] text-purple-700 font-bold">Student</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      onOpenPortal('academics');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
-                  >
-                    <span>Registrar & Academic Audit</span>
-                    <span className="text-[10px] text-amber-700 font-bold">Registrar</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      onOpenPortal('finance');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
-                  >
-                    <span>Bursar Tuition Accounts</span>
-                    <span className="text-[10px] text-emerald-700 font-bold">Bursar</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      onOpenPortal('faculty_admin');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left py-1.5 px-2 text-xs font-semibold text-slate-800 hover:text-[#4A1249] flex items-center justify-between"
-                  >
-                    <span>Faculty & Dean Admin</span>
-                    <span className="text-[10px] text-indigo-700 font-bold">Faculty</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* Mobile Actions: Apply Now & ERP Access */}
             <div className="pt-2 px-3 flex flex-col gap-2">
               <button
@@ -824,18 +628,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 <span className="text-white font-bold" style={{ color: '#FFFFFF' }}>APPLY NOW</span>
                 <ArrowRight className="w-4 h-4 text-[#C39A53]" />
               </button>
-              {currentUser && (
-                <button
-                  onClick={() => {
-                    onOpenPortal();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-bold text-xs uppercase rounded-none cursor-pointer shadow-sm"
-                >
-                  <Lock className="w-4 h-4 text-[#2A082C]" />
-                  <span>Return to ERP ({currentUser.role})</span>
-                </button>
-              )}
+
             </div>
           </div>
         )}

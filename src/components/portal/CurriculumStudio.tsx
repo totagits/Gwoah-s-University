@@ -67,6 +67,7 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
   const canApprove=currentUser.role==='super_admin';
   const [programs,setPrograms]=useState<Program[]>([]);
   const [courses,setCourses]=useState<Course[]>([]);
+  const [publications,setPublications]=useState<{program_id:string;degree_route:string;version:number;effective_year:string}[]>([]);
   const [selected,setSelected]=useState('');
   const [programInput,setProgramInput]=useState<ProgramInput>(emptyProgram);
   const [courseInput,setCourseInput]=useState<CourseInput>(emptyCourse);
@@ -92,7 +93,7 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
       const r=await fetch('/api/curriculum/programs',{cache:'no-store'});
       const data=await r.json();
       if(!r.ok)throw new Error(messageFrom(data));
-      setPrograms(data.programs||[]);setCourses(data.courses||[]);
+      setPrograms(data.programs||[]);setCourses(data.courses||[]);setPublications(data.publications||[]);
       setSelected(prev=>data.programs?.some((p:Program)=>p.id===prev)?prev:(data.programs?.[0]?.id||''));
     }catch(e){setError(e instanceof Error?e.message:'Unable to load curriculum drafts.');}
     finally{setLoading(false);}
@@ -151,6 +152,20 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
     if(!active)return;
     if(status==='approved'&&!window.confirm('Approve this internal curriculum draft for catalog preparation? This does NOT publish the program to live admissions or registration.'))return;
     await mutate('/api/curriculum/programs/'+active.id+'/status','POST',{status});
+  };
+  const publishCurriculum=async()=>{
+    if(!active||!canApprove)return;
+    const year=window.prompt('Enter approved effective academic year (e.g., 2027-2028). Publishing will make the course list and credit requirements visible to all public visitors.');
+    if(!year)return;
+    if(!window.confirm('Publish the approved curriculum for '+active.name+'? This is a separate public release; live registrations and student degree rules will NOT change.'))return;
+    await mutate('/api/curriculum/programs/'+active.id+'/publish','POST',
+      {effectiveYear:year,confirmation:'PUBLISH_PUBLIC_CURRICULUM'});
+  };
+  const withdrawCurriculum=async()=>{
+    if(!active||!canApprove)return;
+    if(!window.confirm('Withdraw the public curriculum listing for '+active.name+'? Existing student records will not change.'))return;
+    await mutate('/api/curriculum/programs/'+active.id+'/withdraw','POST',
+      {confirmation:'WITHDRAW_PUBLIC_CURRICULUM'});
   };
   const removeCourse=async(course:Course)=>{
     if(!active||!window.confirm('Remove '+course.code+' from this draft curriculum?'))return;
@@ -252,6 +267,10 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
                 {active.status==='draft'&&<button disabled={busy} onClick={()=>void submitStatus('in_review')} className="rounded-lg bg-[#4a1249] px-3 py-2 text-sm font-semibold text-white">Submit for review</button>}
                 {active.status==='in_review'&&canApprove&&<button disabled={busy} onClick={()=>void submitStatus('approved')} className="inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-3 py-2 text-sm font-semibold text-white"><FileCheck className="h-4 w-4"/>Approve draft</button>}
                 {active.status!=='draft'&&canApprove&&<button disabled={busy} onClick={()=>void submitStatus('draft')} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">Reopen for corrections</button>}
+                {active.status==='approved'&&canApprove&&!publications.some(p=>p.program_id===active.id)&&
+                  <button type="button" disabled={busy} onClick={()=>void publishCurriculum()} className="rounded-lg bg-[#4a1249] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">Publish to degree page</button>}
+                {canApprove&&publications.some(p=>p.program_id===active.id)&&
+                  <button type="button" disabled={busy} onClick={()=>void withdrawCurriculum()} className="rounded-lg border border-amber-400 bg-white px-3 py-2 text-sm font-semibold text-amber-900 disabled:opacity-50">Withdraw publication</button>}
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -264,6 +283,14 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
               </div>)}
             </div>
             {active.notes&&<p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">Source review: {active.notes}</p>}
+            {publications.filter(p=>p.program_id===active.id).map(p=>
+              <p key={p.degree_route} className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
+                Published on public degree page · Version {p.version} · Effective {p.effective_year}
+              </p>)}
+            {active.status==='approved'&&!publications.some(p=>p.program_id===active.id)&&
+              <p className="mt-3 rounded-lg bg-[#faf8fb] p-3 text-xs text-slate-600">
+                Approved internally; not yet publicly released. Only a Super Administrator can publish an approved curriculum.
+              </p>}
             {active.status==='approved'&&<p className="mt-3 text-xs font-semibold text-emerald-800"><CheckCircle2 className="mr-1 inline h-4 w-4"/>Approved for internal catalog preparation. Not published to admissions or registration.</p>}
           </section>
           <section className="rounded-2xl border border-[#e6dce7] bg-white p-5 shadow-sm">

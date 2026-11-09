@@ -70,7 +70,7 @@ export const COLLEGE_SCIENCE_REFERENCES:readonly ReferenceProgram[]=[
     code:'REF-HIAU-BS-CIV',name:'Bachelor of Science in Civil Engineering',
     credential:'Bachelor of Science',page:'9–13',
     general:44,college:36,major:90,minor:0,elective:9,total:179,
-    notes:base+' Page 9 lists 177 total with 90 content and 9 elective hours; category components sum to 179, while page 10 labels content 91 but its printed total reads 90. For arithmetic-only intake the provisional total is 179 (44+36+90+9), which conflicts with the source-stated 177. No category allocation is fabricated; both figures require reconciliation before review. Program availability unverified.',
+    notes:base+' HIAU stakeholder confirmed on 2026-11-08 that Civil Engineering requires 179 total credits. Category breakdown 44 general + 36 college + 90 major + 9 electives = 179. The original PDF states 177 on page 9 and has a 90/91 content-hour discrepancy on page 10; retain both discrepancies for the Registrar audit. The 179-credit decision is recorded, but full curriculum sequence and degree availability are not yet verified.',
     courses:[
       {code:'HCEN 101',title:'Engineering Orientation',credits:3,year:1,semester:1,category:'college',page:'12'},
       {code:'HCEN 102',title:'Foundations of Engineering',credits:3,year:1,semester:2,category:'college',page:'12'},

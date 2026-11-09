@@ -20,6 +20,10 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
   const explainer=degreeExplainers.degrees.find(item=>item.college===college.id&&item.name===program.name);
   const focusAreas=program.focus.split(',').map(area=>area.trim()).filter(Boolean);
   const hasConfirmedCredit=program.name==='Bachelor of Science in Civil Engineering';
+  const isSuppliedAccountingClip=route==='business--bachelor-of-business-administration-in-accounting';
+  const degreeVideoSource=isSuppliedAccountingClip
+    ? '/assets/degree-clips/business--bachelor-of-business-administration-in-accounting-user.mp4'
+    : `/assets/degree-clips/${route}.mp4`;
   const academicNote=hasConfirmedCredit
     ? 'HIAU has specified a total of 179 credits for Civil Engineering. Its detailed semester-by-semester course sequence is still undergoing Registrar review and has not been published here.'
     : 'Official course codes, semester sequencing, total credits, admission criteria and program availability must be verified with HIAU. Draft curriculum entries are not published degree requirements.';
@@ -95,18 +99,18 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Learn about this field</p>
           <h2 id="degree-video" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Why this degree matters today</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700">
-            Watch an original narrated explanation of the field, its relevance to the modern world,
-            and possible areas of professional development. This educational animation is not
-            documentary footage of a particular HIAU degree program.
+            {isSuppliedAccountingClip
+              ? 'Watch the Accounting video provided for HIAU. This short introduction is not a substitute for the approved curriculum.'
+              : 'Watch an original narrated explanation of the field, its relevance to the modern world, and possible areas of professional development. This educational animation is not documentary footage of a particular HIAU degree program.'}
           </p>
           <div className="mt-5 overflow-hidden rounded-xl bg-[#2a082c]">
             <video key={route} controls preload="metadata" playsInline poster="/assets/aistudio/image_29eb5504.png"
-              className="aspect-video w-full object-contain" aria-label={`Narrated educational video about ${program.name}`}>
-              <source src={`/assets/degree-clips/${route}.mp4`} type="video/mp4"/>
+              className="aspect-video w-full object-contain" aria-label={`Educational video about ${program.name}`}>
+              <source src={degreeVideoSource} type="video/mp4"/>
               Your browser does not support this narrated degree video.
             </video>
           </div>
-          <p className="mt-2 text-xs text-slate-600">Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.</p>
+          <p className="mt-2 text-xs text-slate-600">{isSuppliedAccountingClip ? 'User-provided Accounting clip · 10 seconds' : 'Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.'}</p>
         </section>
       </div>
       <aside className="lg:sticky lg:top-28 lg:self-start">

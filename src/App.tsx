@@ -46,6 +46,7 @@ export default function App() {
   const [activePublicSection, setActivePublicSection] = useState('hero');
   const [activeLeaderProfileId, setActiveLeaderProfileId] = useState<string | null>(null);
   const [activeDegreeRoute, setActiveDegreeRoute] = useState<string | null>(null);
+  const [lastPublicCollegeId, setLastPublicCollegeId] = useState<string>('business');
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -129,7 +130,9 @@ export default function App() {
       const hash = window.location.hash.replace(/^#/, '');
       if (hash.startsWith('degree=')) {
         const route=decodeURIComponent(hash.slice('degree='.length));
-        if (resolvePublicDegree(route)) {
+        const foundDegree=resolvePublicDegree(route);
+        if (foundDegree) {
+          setLastPublicCollegeId(foundDegree.college.id);
           setActiveDegreeRoute(route);
           setActiveLeaderProfileId(null);
           setViewMode('public');
@@ -337,7 +340,7 @@ export default function App() {
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
                 onOpenPortal={handleOpenPortal}
               />
-              <PublicColleges />
+              <PublicColleges initialCollegeId={lastPublicCollegeId} />
               <PublicAdmissions
                 isModalOpen={isApplicationModalOpen}
                 onCloseModal={() => setIsApplicationModalOpen(false)}

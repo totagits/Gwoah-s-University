@@ -319,6 +319,8 @@ export function installCurriculumStudio(app:Express,store:Operations){
       }else if(desired==='draft'){
         if(program.status==='draft')throw new WorkflowError('Program is already a draft.',409);
         if(!approver(res))throw new WorkflowError('Super Administrator must reopen the approved or reviewed draft.',403);
+        if(store.one('SELECT id FROM curriculum_publications WHERE program_id=? AND withdrawn_at IS NULL',program.id))
+          throw new WorkflowError('Withdraw the public publication before reopening the curriculum.',409);
       }else throw new WorkflowError('Unsupported curriculum status.');
       const actor=actorOf(res)!;
       store.transaction(()=>{

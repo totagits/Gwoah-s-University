@@ -24,7 +24,7 @@ import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
-import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
+import { VerifiedTuitionLedger } from './components/portal/VerifiedTuitionLedger';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';
 import { PrintableDocumentModal } from './components/portal/PrintableDocumentModal';
 import { PortalThemeSettingsModal } from './components/portal/PortalThemeSettingsModal';
@@ -428,7 +428,7 @@ export default function App() {
             )}
 
             {activePortalTab === 'finance' && (
-              <FinanceBursarModule currentUser={currentUser} />
+              <VerifiedTuitionLedger currentUser={currentUser} />
             )}
 
             {activePortalTab === 'compliance' && (

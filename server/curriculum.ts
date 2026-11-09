@@ -95,7 +95,7 @@ export function installCurriculumStudio(app:Express,store:Operations){
       if(intendedRoutes.length!==1)
         throw new WorkflowError('Program title must exactly match one unique listed public degree.',409);
       const route=intendedRoutes[0][0];
-      const courses=store.all('SELECT code,title,category,credits_half,year,semester,prerequisite_codes FROM curriculum_courses WHERE program_id=? ORDER BY year,semester,code',program.id);
+      const courses=store.all('SELECT code,title,category,credits_half,year,semester,prerequisite_codes,source_page FROM curriculum_courses WHERE program_id=? ORDER BY year,semester,code',program.id);
       if(!courses.length)throw new WorkflowError('No approved course sequence available.',409);
       const readiness=validateCurriculum(program,courses);
       if(!readiness.ready)throw new WorkflowError('Published curriculum must pass the full readiness audit.',409);

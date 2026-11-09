@@ -42,10 +42,18 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
   const explainer=degreeExplainers.degrees.find(item=>item.college===college.id&&item.name===program.name);
   const focusAreas=program.focus.split(',').map(area=>area.trim()).filter(Boolean);
   const hasConfirmedCredit=program.name==='Bachelor of Science in Civil Engineering';
-  const isSuppliedAccountingClip=route==='business--bachelor-of-business-administration-in-accounting';
-  const degreeVideoSource=isSuppliedAccountingClip
-    ? '/assets/degree-clips/image_20261108_223153.mp4'
-    : `/assets/degree-clips/${route}.mp4`;
+  const universityProvidedVideos:Record<string,{src:string;label:string}> = {
+    'business--bachelor-of-business-administration-in-accounting': {
+      src:'/assets/degree-clips/image_20261108_223153.mp4',
+      label:'University-provided Accounting degree introduction',
+    },
+    'business--bachelor-of-business-administration-in-entrepreneurship': {
+      src:'/assets/degree-clips/image_20261108_232357_1.mp4',
+      label:'University-provided Entrepreneurship degree introduction',
+    },
+  };
+  const suppliedVideo=universityProvidedVideos[route];
+  const degreeVideoSource=suppliedVideo?.src ?? `/assets/degree-clips/${route}.mp4`;
   const academicNote=hasConfirmedCredit
     ? 'HIAU has specified a total of 179 credits for Civil Engineering. Its detailed semester-by-semester course sequence is still undergoing Registrar review and has not been published here.'
     : 'Official course codes, semester sequencing, total credits, admission criteria and program availability must be verified with HIAU. Draft curriculum entries are not published degree requirements.';
@@ -149,8 +157,8 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Learn about this field</p>
           <h2 id="degree-video" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Why this degree matters today</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700">
-            {isSuppliedAccountingClip
-              ? 'Watch the Accounting video provided for HIAU. This short introduction is not a substitute for the approved curriculum.'
+            {suppliedVideo
+              ? 'Watch the university-provided introduction to this degree. This short video supplements the program overview and does not replace the official academic curriculum.'
               : 'Watch an original narrated explanation of the field, its relevance to the modern world, and possible areas of professional development. This educational animation is not documentary footage of a particular HIAU degree program.'}
           </p>
           <div className="mt-5 overflow-hidden rounded-xl bg-[#2a082c]">
@@ -160,7 +168,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
               Your browser does not support this narrated degree video.
             </video>
           </div>
-          <p className="mt-2 text-xs text-slate-600">{isSuppliedAccountingClip ? 'User-provided Accounting clip · 10 seconds' : 'Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.'}</p>
+          <p className="mt-2 text-xs text-slate-600">{suppliedVideo ? suppliedVideo.label : 'Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.'}</p>
         </section>
       </div>
       <aside className="lg:sticky lg:top-28 lg:self-start">

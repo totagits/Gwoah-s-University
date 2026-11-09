@@ -1,0 +1,41 @@
+import type { UserRole } from '../types';
+
+/**
+ * HIAU application migration: canonical list of actually rendered portal modules.
+ * Navigation is presentation only. Server RBAC remains the authorization boundary.
+ * Do not add a module until its corresponding App renderer and server API exist.
+ */
+export const PORTAL_MODULES = [
+  { id: 'tasks', label: 'Operations', group: 'primary' },
+  { id: 'analytics', label: 'Analytics', group: 'primary' },
+  { id: 'faculty_admin', label: 'Faculty & Staff', group: 'primary' },
+  { id: 'academics', label: 'Academic Planning', group: 'primary' },
+  { id: 'admissions', label: 'Admissions', group: 'primary' },
+  { id: 'finance', label: 'Finance', group: 'primary' },
+  { id: 'compliance', label: 'Compliance & Audit', group: 'primary' },
+  { id: 'student_portal', label: 'Student Workspace', group: 'secondary' },
+  { id: 'classroom', label: 'Virtual Classroom', group: 'secondary' },
+] as const;
+
+export type PortalModuleId = (typeof PORTAL_MODULES)[number]['id'];
+export const PORTAL_MODULE_IDS: ReadonlySet<string> = new Set(PORTAL_MODULES.map(m => m.id));
+
+const visibleByRole: Record<UserRole, readonly PortalModuleId[]> = {
+  super_admin: PORTAL_MODULES.map(m => m.id),
+  registrar: ['tasks', 'academics', 'admissions', 'student_portal'],
+  dean: ['tasks', 'analytics', 'faculty_admin', 'academics', 'compliance', 'classroom'],
+  lecturer: ['tasks', 'faculty_admin', 'classroom'],
+  bursar: ['tasks', 'finance'],
+  admissions_officer: ['tasks', 'admissions'],
+  student: ['student_portal', 'academics', 'classroom'],
+  alumni: [],
+};
+
+export const portalModulesForRole = (role: UserRole) =>
+  PORTAL_MODULES.filter(module => visibleByRole[role]?.includes(module.id));
+
+export const isPortalModuleAvailable = (role: UserRole, id: string) =>
+  PORTAL_MODULE_IDS.has(id) && !!visibleByRole[role]?.includes(id as PortalModuleId);
+
+export const defaultPortalModule = (role: UserRole): PortalModuleId | null =>
+  visibleByRole[role]?.[0] ?? null;

@@ -19,7 +19,7 @@ import { PortalLoginModal } from './components/portal/PortalLoginModal';
 import { TaskManagementDashboard } from './components/portal/TaskManagementDashboard';
 import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsHub';
 import { FacultyAdminDashboard } from './components/portal/FacultyAdminDashboard';
-import { AcademicPlanningRegistration } from './components/portal/AcademicPlanningRegistration';
+import { SecureStudentRegistration } from './components/portal/SecureStudentRegistration';
 import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
@@ -402,7 +402,7 @@ export default function App() {
             )}
 
             {activePortalTab === 'academics' && (
-              <AcademicPlanningRegistration
+              <SecureStudentRegistration
                 currentUser={currentUser}
                 onOpenPrintModal={handleOpenPrintModal}
               />

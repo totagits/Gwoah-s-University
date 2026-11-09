@@ -7,7 +7,8 @@ import type { UserProfile } from '../../types';
 import type { ThemeMode } from '../../utils/themeManager';
 import { portalModulesForRole, type PortalModuleId } from '../../portal/moduleRegistry';
 import { LanguagePicker, useLocalization } from '../../i18n/Localization';
-import { GlobalSearch, NotificationCenter } from './CampusServices';
+import { GlobalSearch } from './CampusServices';
+import { PortalNotificationsPopover } from './PortalNotificationsPopover';
 
 interface PortalHeaderProps {
   currentUser: UserProfile;
@@ -77,7 +78,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           <div className="min-w-0 flex-1 basis-full lg:basis-[360px] lg:max-w-[565px]">
             <div className="campus-header-tools flex items-center gap-3" aria-label="Search, notifications and language">
               <GlobalSearch navigate={onSelectTab}/>
-              <NotificationCenter/>
+              <PortalNotificationsPopover/>
               <LanguagePicker/>
             </div>
           </div>

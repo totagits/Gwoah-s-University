@@ -1,5 +1,6 @@
 import React from 'react';
 import { LanguagePicker, useLocalization } from '../../i18n/Localization';
+import { portalModulesForRole, type PortalModuleId } from '../../portal/moduleRegistry';
 import { GlobalSearch, NotificationCenter } from './CampusServices';
 import {
   GraduationCap,
@@ -47,33 +48,21 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
   onOpenThemeSettings,
 }) => {
   const {t}=useLocalization();
-  const tabs = [
-    { id: 'campus', label: 'Campus life', icon: GraduationCap },
-    { id: 'tasks', label: 'Tasks Dashboard', icon: ListTodo, badge: 'Core' },
-    { id: 'analytics', label: 'Integrated Analytics', icon: BarChart3, badge: 'Realtime' },
-    { id: 'faculty_admin', label: 'Faculty & Admin Desk', icon: Users, badge: 'New' },
-    { id: 'academics', label: 'Course Planning & Add/Drop', icon: BookOpen },
-    { id: 'student_portal', label: 'Student Portal', icon: User },
-    { id: 'admissions', label: 'Admissions Desk', icon: Inbox },
-    { id: 'finance', label: 'Finance & Bursar', icon: CreditCard },
-    { id: 'compliance', label: 'NCHE & Audit', icon: ShieldCheck },
-    { id: 'faculty_tools', label: 'Faculty tools & Research', icon: Users },
-    { id: 'library_tools', label: 'Digital library', icon: BookOpen },
-    { id: 'studio', label: 'Learning studio', icon: BookOpen },
-    { id: 'alumni', label: 'Alumni', icon: GraduationCap },
-    { id: 'institution', label: 'Institutional controls', icon: ShieldCheck },
-    { id: 'account', label: 'Account & integrations', icon: Settings },
-  ];
-
-  const roleOptions: Array<{ role: UserRole; label: string }> = [
-    { role: 'super_admin', label: 'Super Admin (President)' },
-    { role: 'registrar', label: 'Registrar (Mrs. Tweh)' },
-    { role: 'dean', label: 'Dean of Engineering' },
-    { role: 'lecturer', label: 'Senior Lecturer (Dr. Doe)' },
-    { role: 'student', label: 'Student (Sando F.)' },
-    { role: 'bursar', label: 'Bursar (Mr. Barclay)' },
-    { role: 'admissions_officer', label: 'Admissions Coordinator' },
-  ];
+  const tabIcons: Record<PortalModuleId, React.ElementType> = {
+    tasks: ListTodo,
+    analytics: BarChart3,
+    faculty_admin: Users,
+    academics: BookOpen,
+    admissions: Inbox,
+    finance: CreditCard,
+    compliance: ShieldCheck,
+    student_portal: User,
+    classroom: GraduationCap,
+  };
+  const availableModules = portalModulesForRole(currentUser.role);
+  const primaryModules = availableModules.filter(module => module.group === 'primary');
+  const otherModules = availableModules.filter(module => module.group === 'secondary');
+  const [moreOpen, setMoreOpen] = React.useState(false);
 
   return (
     <div className="bg-slate-900 border-b border-slate-800 text-white shadow-lg sticky top-0 z-30">
@@ -90,7 +79,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             </button>
             <span className="text-slate-600">|</span>
             <span className="text-slate-400">
-              Staging · Academic dates and enrollment periods must be configured by an authorized administrator.
+              HIAU Operations · Protected staging environment
             </span>
           </div>
 
@@ -167,41 +156,52 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           </div>
         </div>
 
-        <div className="campus-header-tools"><GlobalSearch navigate={onSelectTab}/><NotificationCenter/><LanguagePicker/></div>
+        <div className="campus-header-tools mt-3" aria-label="Search, notifications and language"><GlobalSearch navigate={onSelectTab}/><NotificationCenter/><LanguagePicker/></div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto pt-3 border-t border-slate-800/80 mt-3 no-scrollbar">
-          {tabs.filter(tab => {
-  const permissions:Record<string,string[]>={student:['campus','tasks','academics','student_portal','library_tools','studio','account'],alumni:['alumni','library_tools','account'],lecturer:['tasks','faculty_admin','faculty_tools','library_tools','studio','account'],dean:['tasks','analytics','faculty_admin','faculty_tools','library_tools','studio','compliance','account'],bursar:['tasks','finance','account'],admissions_officer:['tasks','admissions','account']};
-  return currentUser.role==='super_admin'||currentUser.role==='registrar'||permissions[currentUser.role]?.includes(tab.id);
-}).map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onSelectTab(tab.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-amber-400'}`} />
-                <span>{t(tab.label)}</span>
-                {tab.badge && (
-                  <span
-                    className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase ${
-                      isActive ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-amber-300 border border-slate-700'
-                    }`}
-                  >
-                    {tab.badge}
-                  </span>
+        {/* Only render modules with an implemented workspace; the API enforces access. */}
+        <nav aria-label="University ERP modules" className="mt-5 pt-4 border-t border-slate-200">
+          <div className="flex flex-wrap items-center gap-2">
+            {primaryModules.map(module => {
+              const Icon = tabIcons[module.id];
+              const selected = activeTab === module.id;
+              return (
+                <button
+                  type="button"
+                  key={module.id}
+                  onClick={() => { setMoreOpen(false); onSelectTab(module.id); }}
+                  aria-current={selected ? 'page' : undefined}
+                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249] ${selected ? 'bg-[#4A1249] border-[#4A1249] text-white shadow-sm' : 'border-transparent bg-transparent text-slate-700 hover:bg-[#f5edf5] hover:text-[#4A1249]'}`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{t(module.label)}</span>
+                </button>
+              );
+            })}
+            {otherModules.length > 0 && (
+              <div className="relative">
+                <button type="button" aria-expanded={moreOpen} aria-haspopup="true"
+                  onClick={() => setMoreOpen(value => !value)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 hover:bg-[#f5edf5]">
+                  Other workspaces <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                </button>
+                {moreOpen && (
+                  <div className="absolute right-0 top-full mt-2 z-50 min-w-[230px] rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                    {otherModules.map(module => {
+                      const Icon = tabIcons[module.id];
+                      return (
+                        <button type="button" key={module.id}
+                          onClick={() => { onSelectTab(module.id); setMoreOpen(false); }}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-sm text-slate-800 hover:bg-[#f5edf5]">
+                          <Icon className="h-4 w-4" aria-hidden="true" />{t(module.label)}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-              </button>
-            );
-          })}
-        </div>
+              </div>
+            )}
+          </div>
+        </nav>
       </div>
     </div>
   );

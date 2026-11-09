@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import type {Express,Response} from 'express';
 import {actorOf} from './identity';
 import {Operations,WorkflowError} from './operations';
+import {COLLEGE_SCIENCE_REFERENCES,COLLEGE_SCIENCE_SOURCE_TITLE,COLLEGE_SCIENCE_COLLEGE} from './collegeScienceReferences';
 
 const editor=(res:Response)=>['super_admin','registrar'].includes(actorOf(res)?.role||'');
 const approver=(res:Response)=>actorOf(res)?.role==='super_admin';
@@ -37,6 +38,57 @@ const record=(store:Operations,actorId:string,action:string,entity:string,detail
 };
 
 export function installCurriculumStudio(app:Express,store:Operations){
+  app.get('/api/curriculum/reference/college-science',(_req,res)=>{
+    if(!editor(res))return res.sendStatus(403);
+    const items=COLLEGE_SCIENCE_REFERENCES.map(p=>({
+      code:p.code,name:p.name,page:p.page,sourceTotal:p.total,
+      draftCourseCount:p.courses.length,notes:p.notes,
+      alreadyImported:!!store.one('SELECT id FROM curriculum_programs WHERE code=?',p.code),
+    }));
+    return res.json({source:COLLEGE_SCIENCE_SOURCE_TITLE,programs:items,
+      warning:'Source-referenced candidates only. REF-* codes are provisional; source conflicts require Registrar reconciliation.'});
+  });
+  app.post('/api/curriculum/reference/college-science/import',(req,res)=>{
+    if(!editor(res))return res.sendStatus(403);
+    if(req.body?.confirmation!=='IMPORT_UNVERIFIED_DRAFTS')
+      return res.status(400).json({error:'Confirm the source review draft import explicitly.'});
+    try{
+      const actor=actorOf(res)!;
+      const result=store.transaction(()=>{
+        let imported=0,skipped=0,courses=0;
+        for(const p of COLLEGE_SCIENCE_REFERENCES){
+          if(store.one('SELECT id FROM curriculum_programs WHERE code=?',p.code)){skipped++;continue;}
+          const identifier=crypto.randomUUID(),time=new Date().toISOString();
+          const row={
+            id:identifier,code:p.code,name:p.name,college:COLLEGE_SCIENCE_COLLEGE,
+            credential:p.credential,general_half:p.general*2,college_half:p.college*2,
+            major_half:p.major*2,minor_half:p.minor*2,elective_half:p.elective*2,
+            required_half:p.total*2,status:'draft',source_title:COLLEGE_SCIENCE_SOURCE_TITLE,
+            source_page:p.page,notes:p.notes,created_by:actor.id,updated_at:time,
+            approved_by:null,approved_at:null,
+          };
+          store.run('INSERT INTO curriculum_programs VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',...Object.values(row));
+          for(const c of p.courses){
+            const course={
+              id:crypto.randomUUID(),program_id:identifier,code:c.code,title:c.title,
+              category:c.category,credits_half:c.credits*2,year:c.year,semester:c.semester,
+              prerequisite_codes:'',source_page:c.page,notes:'Source example; not complete or approved.',
+              created_at:time,
+            };
+            store.run('INSERT INTO curriculum_courses VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',...Object.values(course));
+            courses++;
+          }
+          store.audit(actor.id,'CURRICULUM_REFERENCE_IMPORT',identifier,null,{
+            source:COLLEGE_SCIENCE_SOURCE_TITLE,program:p.code,exampleCourses:p.courses.length,
+            reviewRequired:true,
+          });
+          imported++;
+        }
+        return {imported,skipped,courseSamples:courses};
+      });
+      return res.status(201).json({success:true,...result});
+    }catch(e){return statusError(e,res);}
+  });
   app.get('/api/curriculum/programs',(_req,res)=>{
     if(!editor(res))return res.sendStatus(403);
     try {
@@ -86,11 +138,12 @@ export function installCurriculumStudio(app:Express,store:Operations){
       if(totals.reduce((a,b)=>a+b,0)!==total)
         throw new WorkflowError('Credit breakdown must equal the total required credits.');
       const name=val(d.name,'Program name'), college=val(d.college,'College');
+      const code=val(d.code,'Program code',32).toUpperCase();
       const credential=val(d.credential,'Award or credential',80);
       const source=val(d.sourceTitle,'Source document',220);
       store.transaction(()=>{
-        store.run('UPDATE curriculum_programs SET name=?,college=?,credential=?,general_half=?,college_half=?,major_half=?,minor_half=?,elective_half=?,required_half=?,source_title=?,source_page=?,notes=?,updated_at=? WHERE id=?',
-          name,college,credential,...totals,total,source,optional(d.sourcePage,32),optional(d.notes),new Date().toISOString(),old.id);
+        store.run('UPDATE curriculum_programs SET code=?,name=?,college=?,credential=?,general_half=?,college_half=?,major_half=?,minor_half=?,elective_half=?,required_half=?,source_title=?,source_page=?,notes=?,updated_at=? WHERE id=?',
+          code,name,college,credential,...totals,total,source,optional(d.sourcePage,32),optional(d.notes),new Date().toISOString(),old.id);
         record(store,actorOf(res)!.id,'CURRICULUM_DRAFT_EDIT',old.id,{name});
       });
       return res.json({success:true});
@@ -145,6 +198,8 @@ export function installCurriculumStudio(app:Express,store:Operations){
       if(!program)throw new WorkflowError('Curriculum program not found.',404);
       if(desired==='in_review'){
         if(program.status!=='draft')throw new WorkflowError('Only drafts can enter review.',409);
+        if(program.code.startsWith('REF-') || program.notes.includes('SOURCE_REVIEW_REQUIRED'))
+          throw new WorkflowError('Resolve reference program code and document discrepancies before submitting for review.',409);
         if(!store.one('SELECT id FROM curriculum_courses WHERE program_id=? LIMIT 1',program.id))
           throw new WorkflowError('Enter curriculum courses before requesting approval.');
       }else if(desired==='approved'){

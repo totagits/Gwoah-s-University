@@ -77,7 +77,7 @@ export const SecureStudentRegistration:React.FC<Props>=({currentUser,onOpenPrint
   const student=state?.ownStudent;
   const registrations=(state?.registrations||[]).filter(r=>r.student_id===student?.id);
   const active=registrations.filter(r=>r.status==='enrolled');
-  const openSections=(state?.sections||[]).filter(s=>s.term_status==='open'&&s.status==='open');
+  const openSections=(state?.sections||[]).filter(s=>s.term_status==='open');
   const creditsBySection=new Map((state?.sections||[]).map(s=>[s.id,Number(s.credits)||0]));
   const activeCredits=active.reduce((sum,r)=>sum+(creditsBySection.get(r.section_id)||Number(r.credits)||0),0);
   const activeTermIds=new Set(openSections.map(s=>s.term_id));
@@ -104,7 +104,7 @@ export const SecureStudentRegistration:React.FC<Props>=({currentUser,onOpenPrint
         {active.length===0?<p className="text-sm text-slate-600">No active registrations on your verified account.</p>:<div className="space-y-2">
           {active.map(r=>{
             const section=(state?.sections||[]).find(s=>s.id===r.section_id);
-            const canDrop=section?.term_status==='open'&&section?.status==='open';
+            const canDrop=section?.term_status==='open';
             return <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#e8dfe9] p-4">
               <div><p className="font-semibold">{asText(r.course_code)} — {asText(r.course_title)}</p>
                 <p className="mt-1 text-xs text-slate-600">{asText(r.term_title)} · {Number(section?.credits)||0} credits · {asText(section?.schedule)||'Schedule not recorded'}</p>

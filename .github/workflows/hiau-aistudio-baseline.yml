@@ -1,0 +1,37 @@
+name: HIAU AI Studio source baseline audit
+on:
+  pull_request:
+    branches: [staging]
+    paths:
+      - 'scripts/audit-aistudio-baseline.mjs'
+      - '.github/workflows/hiau-aistudio-baseline.yml'
+      - 'docs/HIAU_AISTUDIO_ZIP_RECONCILIATION.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current integration candidate
+        uses: actions/checkout@v4
+      - name: Checkout AI Studio original reference
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: original-main
+          persist-credentials: false
+      - name: Compare original ZIP hashes with main and staging
+        run: node scripts/audit-aistudio-baseline.mjs original-main
+      - name: Upload reconciliation inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hiau-aistudio-source-parity
+          path: artifacts/hiau-aistudio-parity.json
+      - name: Validate application
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+          npm test

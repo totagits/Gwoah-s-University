@@ -68,6 +68,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
   const [activeTab, setActiveTab] = useState<'bio' | 'education' | 'publications' | 'mandates' | 'offices'>('bio');
   const [copiedLink, setCopiedLink] = useState(false);
   const [useSecondaryPhoto, setUseSecondaryPhoto] = useState(false);
+  const [portraitUnavailable, setPortraitUnavailable] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [sidebarCategory, setSidebarCategory] = useState<
     'all' | 'Executive Leadership' | 'Governing Trustees' | 'Professors & Academic Deans'
@@ -79,6 +80,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setUseSecondaryPhoto(false);
+    setPortraitUnavailable(false);
     setActiveTab('bio');
     setMobileSidebarOpen(false);
   }, [profileId]);
@@ -964,13 +966,26 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                 <div className="bg-white border-2 border-[#4A1249] rounded-2xl p-5 sm:p-6 shadow-[0_25px_50px_-12px_rgba(74,18,73,0.35)] ring-4 ring-[#C39A53]/25 transition-all">
                   {/* Photo Frame with high-contrast shadow and border styling */}
                   <div className="relative rounded-xl overflow-hidden bg-[#1A051C] border-4 border-[#C39A53] shadow-[0_16px_36px_rgba(26,5,28,0.55)] ring-2 ring-[#4A1249] group aspect-[3/4] w-full max-w-[420px] mx-auto flex items-center justify-center">
-                    <img
-                      src={currentDisplayedImage}
-                      alt={profile.name}
-                      className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
-                      style={{ objectPosition: 'center 12%' }}
-                      referrerPolicy="no-referrer"
-                    />
+                    {portraitUnavailable ? (
+                      <div role="img" aria-label={`Portrait unavailable for ${profile.name}`} className="w-full h-full flex items-center justify-center text-center px-8 text-white font-bold text-sm">
+                        Official portrait unavailable
+                      </div>
+                    ) : (
+                      <img
+                        src={currentDisplayedImage}
+                        alt={profile.name}
+                        className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                        style={{ objectPosition: 'center 12%' }}
+                        referrerPolicy="no-referrer"
+                        onError={() => {
+                          if (!useSecondaryPhoto && profile.secondaryImage && profile.secondaryImage !== profile.image) {
+                            setUseSecondaryPhoto(true);
+                          } else {
+                            setPortraitUnavailable(true);
+                          }
+                        }}
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
 
                     {/* Corner official badge */}

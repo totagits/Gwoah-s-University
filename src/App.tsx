@@ -263,7 +263,7 @@ export default function App() {
     <div className="min-h-screen bg-[#FAF8FB] text-[#2E0F34] font-sans selection:bg-[#C39A53]/30 selection:text-[#4A1249]">
       {/* RENDER PUBLIC WEBSITE VIEW */}
       {viewMode === 'public' && (
-        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
+        <div className="hiau-public-site flex flex-col min-h-screen bg-[#FAF8FB]">
           <PublicNavbar
             onOpenPortal={handleOpenPortal}
             currentUser={currentUser}

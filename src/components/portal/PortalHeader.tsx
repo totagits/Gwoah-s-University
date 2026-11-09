@@ -25,6 +25,7 @@ const icons: Record<PortalModuleId, React.ElementType> = {
   tasks: ListTodo, analytics: BarChart3, faculty_admin: Users,
   academics: BookOpen, curriculum: BookOpen, admissions: Inbox, finance: CreditCard,
   compliance: ShieldCheck, student_portal: User, classroom: GraduationCap,
+  website_media: Settings,
 };
 
 export const PortalHeader: React.FC<PortalHeaderProps> = ({

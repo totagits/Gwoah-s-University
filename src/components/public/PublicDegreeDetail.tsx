@@ -62,7 +62,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
     },
   };
   const suppliedVideo=universityProvidedVideos[route];
-  const degreeVideoSource=suppliedVideo?.src ?? `/assets/degree-clips/${route}.mp4`;
+  const degreeVideoSource=`/api/public/video/${encodeURIComponent(route)}`;
   const academicNote=hasConfirmedCredit
     ? 'HIAU has specified a total of 179 credits for Civil Engineering. Its detailed semester-by-semester course sequence is still undergoing Registrar review and has not been published here.'
     : 'Official course codes, semester sequencing, total credits, admission criteria and program availability must be verified with HIAU. Draft curriculum entries are not published degree requirements.';

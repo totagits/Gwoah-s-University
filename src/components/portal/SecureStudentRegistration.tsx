@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useState} from 'react';
-import {BookOpen,Plus,Minus,RefreshCw,AlertCircle,CheckCircle2,Printer} from 'lucide-react';
+import {BookOpen,Plus,Minus,RefreshCw,AlertCircle,CheckCircle2} from 'lucide-react';
 import type {UserProfile} from '../../types';
 
 type Row=Record<string,any>;
@@ -13,12 +13,12 @@ type State={
   invoices:Row[];
   creditNotes:Row[];
 };
-type Props={currentUser:UserProfile;onOpenPrintModal:(type:'registration_plan')=>void};
+type Props={currentUser:UserProfile};
 const asText=(value:unknown)=>typeof value==='string'?value:'';
 const money=(value:unknown)=>typeof value==='number'&&Number.isFinite(value)
   ?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(value/100):'Not available';
 
-export const SecureStudentRegistration:React.FC<Props>=({currentUser,onOpenPrintModal})=>{
+export const SecureStudentRegistration:React.FC<Props>=({currentUser})=>{
   const [state,setState]=useState<State|null>(null);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
@@ -92,7 +92,7 @@ export const SecureStudentRegistration:React.FC<Props>=({currentUser,onOpenPrint
         <p className="font-semibold">{active.length} active course(s) · {activeCredits} credits {maxCredits.length===1?'· Maximum '+maxCredits[0]+' credits':''}</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={()=>void refresh()} disabled={busy} className="inline-flex items-center gap-2 rounded-lg border border-[#d2bfd5] px-3 py-2 text-sm font-semibold"><RefreshCw className="h-4 w-4"/>Refresh</button>
-          <button type="button" onClick={()=>onOpenPrintModal('registration_plan')} disabled={!student} className="inline-flex items-center gap-2 rounded-lg border border-[#d2bfd5] px-3 py-2 text-sm font-semibold disabled:opacity-50"><Printer className="h-4 w-4"/>Print registration slip</button>
+          <p className="text-xs text-slate-600">Official printable registration slips require Registrar verification.</p>
         </div>
       </div>
     </div>

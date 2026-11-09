@@ -21,6 +21,7 @@ import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsH
 import { FacultyAdminDashboard } from './components/portal/FacultyAdminDashboard';
 import { AcademicPlanningRegistration } from './components/portal/AcademicPlanningRegistration';
 import { CurriculumStudio } from './components/portal/CurriculumStudio';
+import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
@@ -409,6 +410,9 @@ export default function App() {
 
             {activePortalTab === 'curriculum' && (
               <CurriculumStudio currentUser={currentUser} />
+            )}
+            {activePortalTab === 'website_media' && (
+              <WebsiteVideoLibrary currentUser={currentUser} />
             )}
 
             {activePortalTab === 'student_portal' && (

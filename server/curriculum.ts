@@ -4,6 +4,7 @@ import {actorOf} from './identity';
 import {Operations,WorkflowError} from './operations';
 import {COLLEGE_SCIENCE_REFERENCES,COLLEGE_SCIENCE_SOURCE_TITLE,COLLEGE_SCIENCE_COLLEGE} from './collegeScienceReferences';
 import degreeNarrations from '../scripts/hiau-degree-video-content.json';
+import {validateCurriculum} from './curriculumValidation';
 
 const editor=(res:Response)=>['super_admin','registrar'].includes(actorOf(res)?.role||'');
 const approver=(res:Response)=>actorOf(res)?.role==='super_admin';
@@ -55,6 +56,16 @@ const selectPublished=(store:Operations,route:string)=>{
 };
 
 export function installCurriculumStudio(app:Express,store:Operations){
+  app.get('/api/curriculum/programs/:id/readiness',(_req,res)=>{
+    if(!editor(res))return res.sendStatus(403);
+    try{
+      const program=store.one('SELECT * FROM curriculum_programs WHERE id=?',_req.params.id);
+      if(!program)throw new WorkflowError('Curriculum program not found.',404);
+      const courses=store.all('SELECT * FROM curriculum_courses WHERE program_id=? ORDER BY year,semester,code',program.id);
+      return res.json(validateCurriculum(program,courses));
+    }catch(e){return statusError(e,res);}
+  });
+
   // Explicit, read-only public API: exposes a curated immutable snapshot, never draft notes,
   // internal reviewer identities, unpublished program records or source discrepancies.
   app.get('/api/public/degree-curriculum/:route', (req,res)=>{
@@ -86,6 +97,8 @@ export function installCurriculumStudio(app:Express,store:Operations){
       const route=intendedRoutes[0][0];
       const courses=store.all('SELECT code,title,category,credits_half,year,semester,prerequisite_codes FROM curriculum_courses WHERE program_id=? ORDER BY year,semester,code',program.id);
       if(!courses.length)throw new WorkflowError('No approved course sequence available.',409);
+      const readiness=validateCurriculum(program,courses);
+      if(!readiness.ready)throw new WorkflowError('Published curriculum must pass the full readiness audit.',409);
       for(const kind of ['general','college','major']){
         const subtotal=courses.filter(c=>c.category===kind).reduce((n,c)=>n+c.credits_half,0);
         if(subtotal!==program[kind+'_half'])
@@ -304,18 +317,10 @@ export function installCurriculumStudio(app:Express,store:Operations){
       }else if(desired==='approved'){
         if(!approver(res))throw new WorkflowError('Super Administrator approval required.',403);
         if(program.status!=='in_review')throw new WorkflowError('The draft must be submitted for review first.',409);
-        const courses=store.all('SELECT category,SUM(credits_half) AS credits FROM curriculum_courses WHERE program_id=? GROUP BY category',program.id);
-        // Required general/college/major course credits must exactly match approved rules.
-        // Minor and elective pools may have alternative choices; approval still requires at least one entry.
-        for(const kind of ['general','college','major'] as const){
-          const listed=courses.find(row=>row.category===kind)?.credits||0;
-          if(listed!==program[kind+'_half'])
-            throw new WorkflowError(kind+' requirements do not match entered course credits. Review source document.',409);
-        }
-        for(const kind of ['minor','elective'] as const){
-          if(program[kind+'_half']>0&&!courses.some(row=>row.category===kind))
-            throw new WorkflowError('Enter '+kind+' options or placeholders as draft courses before approval.',409);
-        }
+        const courses=store.all('SELECT * FROM curriculum_courses WHERE program_id=?',program.id);
+        const check=validateCurriculum(program,courses);
+        if(!check.ready)
+          throw new WorkflowError('Curriculum has '+check.errorCount+' readiness issue(s): '+check.findings.filter(f=>f.severity==='error').slice(0,2).map(f=>f.detail).join(' '),409);
       }else if(desired==='draft'){
         if(program.status==='draft')throw new WorkflowError('Program is already a draft.',409);
         if(!approver(res))throw new WorkflowError('Super Administrator must reopen the approved or reviewed draft.',403);

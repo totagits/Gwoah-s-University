@@ -2,6 +2,7 @@ import React, {useEffect,useState} from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, GraduationCap, PlayCircle } from 'lucide-react';
 import { resolvePublicDegree } from './PublicColleges';
 import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
+import {PublicDegreeVideo} from './PublicDegreeVideo';
 
 type PublishedDegree = {
   programName:string;programCode:string;credential:string;college:string;
@@ -163,14 +164,10 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="mt-3 text-sm leading-relaxed text-slate-700">
             {suppliedVideo
               ? 'Watch the university-provided introduction to this degree. This short video supplements the program overview and does not replace the official academic curriculum.'
-              : 'Watch an original narrated explanation of the field, its relevance to the modern world, and possible areas of professional development. This educational animation is not documentary footage of a particular HIAU degree program.'} The video starts muted automatically; use the player speaker control to hear the narration.
+              : 'Watch an original narrated explanation of the field, its relevance to the modern world, and possible areas of professional development. This educational animation is not documentary footage of a particular HIAU degree program.'} The video starts muted when autoplay is permitted; select Turn on narration to hear it.
           </p>
-          <div className="mt-5 overflow-hidden rounded-xl bg-[#2a082c]">
-            <video key={route} controls autoPlay muted preload="auto" playsInline poster="/assets/aistudio/image_29eb5504.png"
-              className="aspect-video w-full object-contain" aria-label={`Educational video about ${program.name}`}>
-              <source src={degreeVideoSource} type="video/mp4"/>
-              Your browser does not support this narrated degree video.
-            </video>
+          <div className="mt-5">
+            <PublicDegreeVideo key={route} route={route} source={degreeVideoSource} title={program.name}/>
           </div>
           <p className="mt-2 text-xs text-slate-600">{suppliedVideo ? suppliedVideo.label : 'Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.'}</p>
         </section>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { setSessionCsrf } from './services/session';
+import { defaultPortalModule, isPortalModuleAvailable, PORTAL_MODULES } from './portal/moduleRegistry';
 import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
@@ -29,7 +30,6 @@ import { VirtualClassroomCollab } from './components/portal/VirtualClassroomColl
 
 import { UserProfile, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
 import { api } from './services/api';
-import { DEMO_STUDENT, DEMO_REGISTRATIONS, DEMO_FINANCIAL_ACCOUNT } from './data/seedData';
 import {
   ThemeMode,
   resolveUserTheme,
@@ -55,9 +55,10 @@ export default function App() {
 
   // Printable Document Modal State
   const [printDocType, setPrintDocType] = useState<'registration_plan' | 'transcript' | 'financial_statement' | null>(null);
-  const [studentData, setStudentData] = useState<StudentProfileData>(DEMO_STUDENT);
-  const [registrationsData, setRegistrationsData] = useState<StudentRegistrationItem[]>(DEMO_REGISTRATIONS);
-  const [financialData, setFinancialData] = useState<FinancialAccount>(DEMO_FINANCIAL_ACCOUNT);
+  const [studentData, setStudentData] = useState<StudentProfileData | null>(null);
+  const [registrationsData, setRegistrationsData] = useState<StudentRegistrationItem[]>([]);
+  const [financialData, setFinancialData] = useState<FinancialAccount | null>(null);
+  const [printUnavailable, setPrintUnavailable] = useState<string | null>(null);
 
   // User Theme Preference State (persisted to ERP & localStorage)
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -155,6 +156,7 @@ export default function App() {
       if (!active) return;
       setSessionCsrf(session.csrf);
       setCurrentUser(session.user);
+      setActivePortalTab(defaultPortalModule(session.user.role) ?? 'tasks');
       if (params.has('portal')) setViewMode('portal');
     }).catch(() => {
       if (active && (params.has('portal') || params.has('activate'))) setIsLoginModalOpen(true);
@@ -165,14 +167,21 @@ export default function App() {
   }, []);
 
   // Fetch updated student and finance data for print documents
-  const refreshStudentPrintData = async () => {
+  const refreshStudentPrintData = async (): Promise<boolean> => {
+    setStudentData(null);
+    setRegistrationsData([]);
+    setFinancialData(null);
+    if (!currentUser || currentUser.role !== 'student') return false;
     try {
-      const res = await api.getStudent('u-student');
-      if (res.student) setStudentData(res.student);
-      if (res.registrations) setRegistrationsData(res.registrations);
-      if (res.financialAccount) setFinancialData(res.financialAccount);
+      const res = await api.getStudent(currentUser.id);
+      if (!res.student || !res.financialAccount) return false;
+      setStudentData(res.student);
+      setRegistrationsData(res.registrations ?? []);
+      setFinancialData(res.financialAccount);
+      return true;
     } catch (err) {
-      console.error('Failed to load student print data:', err);
+      console.error('Unable to retrieve verified student print data:', err);
+      return false;
     }
   };
 
@@ -180,6 +189,7 @@ export default function App() {
   const [studentSubTab, setStudentSubTab] = useState<'grades' | 'materials' | 'calendar' | 'library' | 'messages' | 'facilities' | 'classroom'>('grades');
 
   const handleSelectTabWithSubAction = (tabId: string, subAction?: string) => {
+    if (!currentUser || !isPortalModuleAvailable(currentUser.role, tabId)) return;
     setActivePortalTab(tabId);
     if (tabId === 'student_portal' && subAction) {
       if (['grades', 'materials', 'calendar', 'library', 'messages', 'facilities', 'classroom'].includes(subAction)) {
@@ -189,17 +199,16 @@ export default function App() {
   };
 
   const handleOpenPortal = (preferredTab?: string) => {
-    if (preferredTab === 'facilities' || preferredTab === 'library' || preferredTab === 'classroom') {
-      setActivePortalTab('student_portal');
-      setStudentSubTab(preferredTab);
-      setPendingPortalTab('student_portal');
-    } else if (preferredTab) {
-      setActivePortalTab(preferredTab);
-      setPendingPortalTab(preferredTab);
-    }
+    // Links on the public site cannot choose a role or silently enter an unrelated workspace.
     if (currentUser) {
+      const safeTab = preferredTab && isPortalModuleAvailable(currentUser.role, preferredTab)
+        ? preferredTab
+        : defaultPortalModule(currentUser.role);
+      if (safeTab) setActivePortalTab(safeTab);
       setViewMode('portal');
     } else {
+      // Defer any requested tab until after server authentication and role verification.
+      setPendingPortalTab(preferredTab && PORTAL_MODULES.some(m => m.id === preferredTab) ? preferredTab : null);
       setIsLoginModalOpen(true);
     }
   };
@@ -208,10 +217,11 @@ export default function App() {
     setCurrentUser(user);
     setIsLoginModalOpen(false);
     setViewMode('portal');
-    if (pendingPortalTab) {
-      setActivePortalTab(pendingPortalTab);
-      setPendingPortalTab(null);
-    }
+    const safeTab = pendingPortalTab && isPortalModuleAvailable(user.role, pendingPortalTab)
+      ? pendingPortalTab
+      : defaultPortalModule(user.role);
+    if (safeTab) setActivePortalTab(safeTab);
+    setPendingPortalTab(null);
   };
 
   const handleLogout = async () => {
@@ -255,8 +265,12 @@ export default function App() {
   };
 
   const handleOpenPrintModal = async (docType: 'registration_plan' | 'transcript' | 'financial_statement') => {
-    await refreshStudentPrintData();
-    setPrintDocType(docType);
+    setPrintUnavailable(null);
+    if (await refreshStudentPrintData()) {
+      setPrintDocType(docType);
+    } else {
+      setPrintUnavailable('This document requires a verified student record linked to your account. No sample record will be printed.');
+    }
   };
 
   return (
@@ -326,7 +340,19 @@ export default function App() {
             onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
           />
 
-          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <main id="erp-main-content" className="flex-1 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-10 py-7">
+            <div className="mb-7 border-b border-[#e6dce7] pb-5">
+              <p className="uppercase tracking-[0.18em] text-[11px] font-bold text-[#866080]">University operations / {currentUser.role.replaceAll('_', ' ')}</p>
+              <h1 className="text-2xl md:text-3xl font-semibold text-[#35103B] mt-1">
+                {PORTAL_MODULES.find(m => m.id === activePortalTab)?.label ?? 'Workspace access'}
+              </h1>
+              <p className="text-sm text-slate-600 mt-1">Authorized records and workflows for Harvest Intercontinental American University.</p>
+            </div>
+            {!isPortalModuleAvailable(currentUser.role, activePortalTab) && (
+              <section role="status" className="rounded-xl bg-white border border-slate-200 p-6 text-slate-700">
+                This workspace is not available to your assigned role. Contact the university administrator if you need additional access.
+              </section>
+            )}
             {activePortalTab === 'tasks' && (
               <TaskManagementDashboard currentUser={currentUser} />
             )}
@@ -394,8 +420,15 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess}
       />
 
+      {/* Never fabricate official academic/financial documents from demo records. */}
+      {printUnavailable && (
+        <div role="alert" className="fixed bottom-5 left-1/2 z-[80] w-[min(92vw,34rem)] -translate-x-1/2 rounded-xl border border-amber-300 bg-white p-4 shadow-xl">
+          <p className="text-sm text-slate-800">{printUnavailable}</p>
+          <button className="mt-3 text-sm font-semibold text-[#4A1249] underline" onClick={() => setPrintUnavailable(null)}>Dismiss</button>
+        </div>
+      )}
       {/* PRINTABLE OFFICIAL DOCUMENT MODAL */}
-      {printDocType && (
+      {printDocType && studentData && financialData && (
         <PrintableDocumentModal
           isOpen={true}
           onClose={() => setPrintDocType(null)}

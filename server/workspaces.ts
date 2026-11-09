@@ -178,6 +178,35 @@ export function installWorkspaces(app: Express, store: Operations) {
       },
     };
   };
+  // Recipient scope is always taken from the authenticated server session.
+  app.get('/api/notifications', (_req, res) => {
+    const actor = actorOf(res);
+    if (!actor) return res.sendStatus(401);
+    try {
+      const notifications = store.notificationsFor(actor);
+      return res.json({ notifications, unreadCount: notifications.filter(n => !n.read_at).length });
+    } catch {
+      return res.status(500).json({ error: 'Notifications are temporarily unavailable.' });
+    }
+  });
+  app.patch('/api/notifications/:id/read', (req, res) => {
+    const actor = actorOf(res);
+    if (!actor) return res.sendStatus(401);
+    try {
+      return res.json(store.readNotification(actor, req.params.id));
+    } catch (e: any) {
+      return res.status(e instanceof WorkflowError ? e.status : 500).json({
+        error: e instanceof WorkflowError ? e.message : 'Unable to update notification.'
+      });
+    }
+  });
+  app.post('/api/notifications/read-all', (_req, res) => {
+    const actor = actorOf(res);
+    if (!actor) return res.sendStatus(401);
+    try { return res.json(store.readAllNotifications(actor)); }
+    catch { return res.status(500).json({ error: 'Unable to update notifications.' }); }
+  });
+
   app.get('/api/workspaces/student-activity', (_req, res) => {
     const actor = actorOf(res);
     if (!actor || actor.role !== 'student')

@@ -81,14 +81,14 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     const item=resolveSlot(req.params.slot);
     if(!item)return res.status(404).end();
     const published=parse(store,item.slot).published;
-    if(published)return sendMedia(req,res,mediaPath(directory,published));
+    if(published&&fs.existsSync(mediaPath(directory,published)))return sendMedia(req,res,mediaPath(directory,published));
     return res.redirect(302,item.defaultSrc);
   });
   app.head('/api/public/video/:slot',(req,res)=>{
     const item=resolveSlot(req.params.slot);
     if(!item)return res.status(404).end();
     const published=parse(store,item.slot).published;
-    if(published)return sendMedia(req,res,mediaPath(directory,published));
+    if(published&&fs.existsSync(mediaPath(directory,published)))return sendMedia(req,res,mediaPath(directory,published));
     return res.redirect(302,item.defaultSrc);
   });
   app.get('/api/admin/website-videos',(_req,res)=>{

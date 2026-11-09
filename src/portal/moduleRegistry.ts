@@ -10,6 +10,7 @@ export const PORTAL_MODULES = [
   { id: 'analytics', label: 'Analytics', group: 'primary' },
   { id: 'faculty_admin', label: 'Faculty & Staff', group: 'primary' },
   { id: 'academics', label: 'Academic Planning', group: 'primary' },
+  { id: 'curriculum', label: 'Curriculum Studio', group: 'secondary' },
   { id: 'admissions', label: 'Admissions', group: 'primary' },
   { id: 'finance', label: 'Finance', group: 'primary' },
   { id: 'compliance', label: 'Compliance & Audit', group: 'primary' },
@@ -22,7 +23,7 @@ export const PORTAL_MODULE_IDS: ReadonlySet<string> = new Set(PORTAL_MODULES.map
 
 const visibleByRole: Record<UserRole, readonly PortalModuleId[]> = {
   super_admin: PORTAL_MODULES.filter(m => m.id !== 'student_portal').map(m => m.id),
-  registrar: ['tasks', 'academics', 'admissions'],
+  registrar: ['tasks', 'academics', 'admissions', 'curriculum'],
   dean: ['tasks', 'analytics', 'faculty_admin', 'academics', 'compliance', 'classroom'],
   lecturer: ['tasks', 'faculty_admin', 'classroom'],
   bursar: ['tasks', 'finance'],

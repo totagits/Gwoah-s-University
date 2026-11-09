@@ -23,7 +23,7 @@ interface PortalHeaderProps {
 
 const icons: Record<PortalModuleId, React.ElementType> = {
   tasks: ListTodo, analytics: BarChart3, faculty_admin: Users,
-  academics: BookOpen, admissions: Inbox, finance: CreditCard,
+  academics: BookOpen, curriculum: BookOpen, admissions: Inbox, finance: CreditCard,
   compliance: ShieldCheck, student_portal: User, classroom: GraduationCap,
 };
 

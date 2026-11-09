@@ -985,7 +985,7 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                           }
                         }}
                       />
-                    )
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
 
                     {/* Corner official badge */}

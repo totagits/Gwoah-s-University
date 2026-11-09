@@ -78,19 +78,21 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           </ul>
         </section>
         <section aria-labelledby="degree-video">
-          <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Experience HIAU</p>
-          <h2 id="degree-video" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Campus and learning in motion</h2>
+          <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Learn about this field</p>
+          <h2 id="degree-video" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Why this degree matters today</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700">
-            A short university video provides a glimpse of HIAU's general learning environment.
-            It is not a video specifically documenting this degree or its laboratory facilities.
+            Watch an original narrated explanation of the field, its relevance to the modern world,
+            and possible areas of professional development. This educational animation is not
+            documentary footage of a particular HIAU degree program.
           </p>
           <div className="mt-5 overflow-hidden rounded-xl bg-[#2a082c]">
-            <video controls preload="none" playsInline poster="/assets/aistudio/image_29eb5504.png"
-              className="aspect-video w-full object-contain" aria-label="HIAU campus video">
-              <source src="/assets/aistudio/image_20261105_121706_f720baa0.mp4" type="video/mp4"/>
-              Your browser does not support the campus video.
+            <video key={route} controls preload="metadata" playsInline poster="/assets/aistudio/image_29eb5504.png"
+              className="aspect-video w-full object-contain" aria-label={`Narrated educational video about ${program.name}`}>
+              <source src={`/assets/degree-clips/${route}.mp4`} type="video/mp4"/>
+              Your browser does not support this narrated degree video.
             </video>
           </div>
+          <p className="mt-2 text-xs text-slate-600">Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.</p>
         </section>
       </div>
       <aside className="lg:sticky lg:top-28 lg:self-start">

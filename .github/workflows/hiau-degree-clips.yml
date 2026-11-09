@@ -1,0 +1,56 @@
+name: Build HIAU original narrated degree clips
+on:
+  push:
+    branches: [feat/hiau-degree-detail-pages-media]
+    paths:
+      - '.github/workflows/hiau-degree-clips.yml'
+      - 'scripts/generate-degree-clips.py'
+      - 'scripts/hiau-degree-video-content.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  render-clips:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install offline video rendering and voice tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak
+          python -m pip install Pillow==11.3.0
+      - name: Produce 19 original narrated MP4 explainers
+        run: python scripts/generate-degree-clips.py
+      - name: Verify media integrity
+        run: |
+          test "$(find public/assets/degree-clips -maxdepth 1 -name '*.mp4' | wc -l)" -eq 19
+          python - <<'PY'
+          import json
+          import re
+          import subprocess
+          from pathlib import Path
+          degrees=json.loads(Path('scripts/hiau-degree-video-content.json').read_text())['degrees']
+          for item in degrees:
+            path=Path('public/assets/degree-clips')/(item['college']+'--'+re.sub(r'(^-+|-+$)','',re.sub('[^a-z0-9]+','-',item['name'].lower()))+'.mp4')
+            assert path.exists() and path.stat().st_size>15000, path
+            probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',str(path)]))
+            assert {'video','audio'}<=set(stream['codec_type'] for stream in probe['streams']),path
+            print(path,path.stat().st_size)
+          PY
+      - name: Commit generated degree clips
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/degree-clips/
+          if git diff --cached --quiet; then
+            echo "Clips already present"
+          else
+            git commit -m "media(hiau): add 19 original narrated program explainer videos"
+            git push origin HEAD:feat/hiau-degree-detail-pages-media
+          fi

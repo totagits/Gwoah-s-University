@@ -69,8 +69,8 @@ export const COLLEGE_SCIENCE_REFERENCES:readonly ReferenceProgram[]=[
   {
     code:'REF-HIAU-BS-CIV',name:'Bachelor of Science in Civil Engineering',
     credential:'Bachelor of Science',page:'9–13',
-    general:44,college:36,major:88,minor:0,elective:9,total:177,
-    notes:base+' Page 9 lists 177 total with 90 content and 9 elective hours; category components sum to 179, while page 10 labels content 91 but its printed total reads 90. For arithmetic-only intake this provisional category allocation uses major 88. It is NOT source-verified and must be corrected before review. Program availability unverified.',
+    general:44,college:36,major:90,minor:0,elective:9,total:179,
+    notes:base+' Page 9 lists 177 total with 90 content and 9 elective hours; category components sum to 179, while page 10 labels content 91 but its printed total reads 90. For arithmetic-only intake the provisional total is 179 (44+36+90+9), which conflicts with the source-stated 177. No category allocation is fabricated; both figures require reconciliation before review. Program availability unverified.',
     courses:[
       {code:'HCEN 101',title:'Engineering Orientation',credits:3,year:1,semester:1,category:'college',page:'12'},
       {code:'HCEN 102',title:'Foundations of Engineering',credits:3,year:1,semester:2,category:'college',page:'12'},

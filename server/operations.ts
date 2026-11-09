@@ -84,6 +84,9 @@ const operationalTables = [
   'curriculum_programs',
   'curriculum_courses',
   'curriculum_publications',
+  'class_sessions',
+  'class_resources',
+  'class_attendance',
 ] as const;
 
 export class Operations {
@@ -159,6 +162,26 @@ export class Operations {
         ON curriculum_publications(degree_route) WHERE withdrawn_at IS NULL;
       CREATE INDEX IF NOT EXISTS curriculum_publication_program
         ON curriculum_publications(program_id);
+      CREATE TABLE IF NOT EXISTS class_sessions(
+        id TEXT PRIMARY KEY,section_id TEXT NOT NULL REFERENCES sections(id),
+        title TEXT NOT NULL,starts_at TEXT NOT NULL,ends_at TEXT NOT NULL,
+        meeting_url TEXT,notes TEXT NOT NULL DEFAULT '',
+        created_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL,
+        CHECK(ends_at>starts_at)
+      );
+      CREATE INDEX IF NOT EXISTS class_sessions_by_section ON class_sessions(section_id,starts_at);
+      CREATE TABLE IF NOT EXISTS class_resources(
+        id TEXT PRIMARY KEY,section_id TEXT NOT NULL REFERENCES sections(id),
+        title TEXT NOT NULL,kind TEXT NOT NULL CHECK(kind IN('notes','recording','assignment','reading')),
+        url TEXT NOT NULL,description TEXT NOT NULL DEFAULT '',
+        published_by TEXT NOT NULL REFERENCES users(id),published_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS class_resources_by_section ON class_resources(section_id,published_at);
+      CREATE TABLE IF NOT EXISTS class_attendance(
+        session_id TEXT NOT NULL REFERENCES class_sessions(id),
+        student_id TEXT NOT NULL REFERENCES students(id),
+        checked_in_at TEXT NOT NULL,PRIMARY KEY(session_id,student_id)
+      );
       CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,recipient_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT);
       CREATE INDEX IF NOT EXISTS notifications_recipient ON notifications(recipient_id,created_at DESC);
       CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT,created_at TEXT NOT NULL);
@@ -1120,7 +1143,7 @@ export class Operations {
     if (
       data?.schemaVersion !== 1 ||
       !data.tables ||
-      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications'].includes(name)).every((name) => Array.isArray(data.tables[name]))
+      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications','class_sessions','class_resources','class_attendance'].includes(name)).every((name) => Array.isArray(data.tables[name]))
     )
       throw new WorkflowError(
         'Snapshot is not a relational operations snapshot.',

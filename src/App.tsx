@@ -29,7 +29,7 @@ import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRe
 import { PrintableDocumentModal } from './components/portal/PrintableDocumentModal';
 import { PortalThemeSettingsModal } from './components/portal/PortalThemeSettingsModal';
 import { PortalQuickActionsMenu } from './components/portal/PortalQuickActionsMenu';
-import { VirtualClassroomCollab } from './components/portal/VirtualClassroomCollab';
+import { SecureOnlineLearning } from './components/portal/SecureOnlineLearning';
 
 import { UserProfile, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
 import { api } from './services/api';
@@ -420,7 +420,7 @@ export default function App() {
             )}
 
             {activePortalTab === 'classroom' && (
-              <VirtualClassroomCollab currentUser={currentUser} />
+              <SecureOnlineLearning currentUser={currentUser} />
             )}
 
             {activePortalTab === 'admissions' && (

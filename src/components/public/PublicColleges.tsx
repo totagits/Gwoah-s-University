@@ -298,8 +298,8 @@ export const resolvePublicDegree = (route: string) => {
   return null;
 };
 
-export const PublicColleges: React.FC = () => {
-  const [selectedCollegeId, setSelectedCollegeId] = useState<string>('business');
+export const PublicColleges: React.FC<{initialCollegeId?: string}> = ({initialCollegeId='business'}) => {
+  const [selectedCollegeId, setSelectedCollegeId] = useState<string>(initialCollegeId);
   const [query, setQuery] = useState('');
   const activeCollege = BLEST_COLLEGES.find(college => college.id === selectedCollegeId) || BLEST_COLLEGES[0];
   const matchingPrograms = activeCollege.programs.filter(program =>
@@ -360,12 +360,17 @@ export const PublicColleges: React.FC = () => {
           </div>
           <span className="text-sm text-slate-600">Five colleges · {allPrograms} listed program descriptions</span>
         </div>
-        <p className="mb-8 max-w-3xl text-sm leading-relaxed text-slate-700">
-          HIAU organizes its academic vision through the BLEST framework:
-          Business, Liberal Arts, Education, Science &amp; Technology, and Theology.
-          The descriptions below are informational; they are not confirmation of
-          accreditation or admissions availability for an individual degree.
-        </p>
+        <div className="mb-8 grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_220px]">
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-700">
+            HIAU organizes its academic vision through the BLEST framework:
+            Business, Liberal Arts, Education, Science &amp; Technology, and Theology.
+            The descriptions below are informational; they are not confirmation of
+            accreditation or admissions availability for an individual degree.
+          </p>
+          <img src="/assets/aistudio/image_29eb5504.png"
+            alt="HIAU academic campus building" loading="lazy"
+            className="aspect-[16/9] w-full rounded-lg object-cover shadow-sm"/>
+        </div>
 
         <div className="grid items-start gap-8 lg:grid-cols-[270px_minmax(0,1fr)] xl:gap-12">
           <nav aria-label="Select an academic college" className="rounded-xl border border-[#e6dce7] bg-[#faf8fb] p-3 lg:sticky lg:top-28">

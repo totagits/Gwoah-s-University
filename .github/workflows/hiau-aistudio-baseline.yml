@@ -29,6 +29,8 @@ jobs:
         with:
           name: hiau-aistudio-source-parity
           path: artifacts/hiau-aistudio-parity.json
+      - name: Remove reference checkout from TypeScript compilation scope
+        run: rm -rf original-main
       - name: Validate application
         run: |
           npm ci

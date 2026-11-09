@@ -1,0 +1,37 @@
+name: HIAU media and build verification
+on:
+  pull_request:
+    branches: [staging]
+    paths:
+      - 'public/assets/**'
+      - '.github/workflows/hiau-media-check.yml'
+      - '.github/workflows/hiau-media-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Inspect restored and original media files
+        run: |
+          echo 'RESTORED MEDIA:'
+          find public/assets -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.mp4' -o -iname '*.svg' \) | head -90 || true
+          echo 'VERIFY RESTORED VIDEOS:'
+          file public/assets/aistudio/*.mp4
+          test -s public/assets/aistudio/image_20261105_121706_f720baa0.mp4
+          test -s public/assets/aistudio/image_20261105_102657_b174d32f.mp4
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      - name: Confirm built media MIME signatures
+        run: |
+          file dist/assets/aistudio/*.mp4
+          test -s dist/assets/aistudio/image_20261105_121706_f720baa0.mp4
+          test -s dist/assets/aistudio/image_20261105_102657_b174d32f.mp4

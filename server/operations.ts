@@ -83,6 +83,7 @@ const operationalTables = [
   'tasks',
   'curriculum_programs',
   'curriculum_courses',
+  'curriculum_publications',
 ] as const;
 
 export class Operations {
@@ -141,6 +142,23 @@ export class Operations {
         UNIQUE(program_id,year,semester,code)
       );
       CREATE INDEX IF NOT EXISTS curriculum_course_program ON curriculum_courses(program_id,year,semester);
+      CREATE TABLE IF NOT EXISTS curriculum_publications(
+        id TEXT PRIMARY KEY,
+        program_id TEXT NOT NULL REFERENCES curriculum_programs(id),
+        degree_route TEXT NOT NULL,
+        version INTEGER NOT NULL CHECK(version>0),
+        effective_year TEXT NOT NULL,
+        snapshot_json TEXT NOT NULL,
+        released_by TEXT NOT NULL,
+        released_at TEXT NOT NULL,
+        withdrawn_by TEXT,
+        withdrawn_at TEXT,
+        UNIQUE(degree_route,version)
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS curriculum_one_live_publication
+        ON curriculum_publications(degree_route) WHERE withdrawn_at IS NULL;
+      CREATE INDEX IF NOT EXISTS curriculum_publication_program
+        ON curriculum_publications(program_id);
       CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,recipient_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT);
       CREATE INDEX IF NOT EXISTS notifications_recipient ON notifications(recipient_id,created_at DESC);
       CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT,created_at TEXT NOT NULL);
@@ -1102,7 +1120,7 @@ export class Operations {
     if (
       data?.schemaVersion !== 1 ||
       !data.tables ||
-      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses'].includes(name)).every((name) => Array.isArray(data.tables[name]))
+      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications'].includes(name)).every((name) => Array.isArray(data.tables[name]))
     )
       throw new WorkflowError(
         'Snapshot is not a relational operations snapshot.',

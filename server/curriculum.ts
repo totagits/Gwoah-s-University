@@ -3,6 +3,7 @@ import type {Express,Response} from 'express';
 import {actorOf} from './identity';
 import {Operations,WorkflowError} from './operations';
 import {COLLEGE_SCIENCE_REFERENCES,COLLEGE_SCIENCE_SOURCE_TITLE,COLLEGE_SCIENCE_COLLEGE} from './collegeScienceReferences';
+import degreeNarrations from '../scripts/hiau-degree-video-content.json';
 
 const editor=(res:Response)=>['super_admin','registrar'].includes(actorOf(res)?.role||'');
 const approver=(res:Response)=>actorOf(res)?.role==='super_admin';
@@ -37,7 +38,104 @@ const record=(store:Operations,actorId:string,action:string,entity:string,detail
   store.audit(actorId,action,entity,null,details);
 };
 
+
+const slug=(value:string)=>value.toLowerCase().normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const publicationRoutes=new Map(degreeNarrations.degrees.map(item=>[
+  item.college+'--'+slug(item.name),item.name,
+]));
+const byPublicRoute=(route:string)=>{
+  const title=publicationRoutes.get(route);
+  if(!title)throw new WorkflowError('Public degree route not found.',404);
+  return title;
+};
+const selectPublished=(store:Operations,route:string)=>{
+  const row=store.one('SELECT snapshot_json FROM curriculum_publications WHERE degree_route=? AND withdrawn_at IS NULL',route);
+  return row?JSON.parse(row.snapshot_json):null;
+};
+
 export function installCurriculumStudio(app:Express,store:Operations){
+  // Explicit, read-only public API: exposes a curated immutable snapshot, never draft notes,
+  // internal reviewer identities, unpublished program records or source discrepancies.
+  app.get('/api/public/degree-curriculum/:route', (req,res)=>{
+    try{
+      byPublicRoute(req.params.route);
+      const published=selectPublished(store,req.params.route);
+      res.set('Cache-Control','public, max-age=30');
+      return res.json({published});
+    }catch(e){return statusError(e,res);}
+  });
+  app.post('/api/curriculum/programs/:id/publish',(req,res)=>{
+    if(!approver(res))return res.sendStatus(403);
+    try{
+      const actor=actorOf(res)!;
+      if(req.body?.confirmation!=='PUBLISH_PUBLIC_CURRICULUM')
+        throw new WorkflowError('Explicit publication confirmation required.');
+      const effectiveYear=val(req.body?.effectiveYear,'Effective academic year',32);
+      if(!/^20[2-9][0-9][\-/]20[2-9][0-9]$/.test(effectiveYear))
+        throw new WorkflowError('Use an academic year such as 2027-2028.');
+      const program=store.one('SELECT * FROM curriculum_programs WHERE id=?',req.params.id);
+      if(!program)throw new WorkflowError('Program not found.',404);
+      if(program.status!=='approved'||!program.approved_by||!program.approved_at)
+        throw new WorkflowError('Only approved curricula can be published.',409);
+      if(program.code.startsWith('REF-')||program.notes.includes('SOURCE_REVIEW_REQUIRED'))
+        throw new WorkflowError('Unresolved PDF references cannot be published.',409);
+      const intendedRoutes=[...publicationRoutes.entries()].filter(([,name])=>name===program.name);
+      if(intendedRoutes.length!==1)
+        throw new WorkflowError('Program title must exactly match one unique listed public degree.',409);
+      const route=intendedRoutes[0][0];
+      const courses=store.all('SELECT code,title,category,credits_half,year,semester,prerequisite_codes FROM curriculum_courses WHERE program_id=? ORDER BY year,semester,code',program.id);
+      if(!courses.length)throw new WorkflowError('No approved course sequence available.',409);
+      for(const kind of ['general','college','major']){
+        const subtotal=courses.filter(c=>c.category===kind).reduce((n,c)=>n+c.credits_half,0);
+        if(subtotal!==program[kind+'_half'])
+          throw new WorkflowError('Course-credit totals do not reconcile for '+kind,409);
+      }
+      if(program.general_half+program.college_half+program.major_half+program.minor_half+program.elective_half!==program.required_half)
+        throw new WorkflowError('Program credits do not reconcile.',409);
+      const snapshot={
+        programName:program.name,programCode:program.code,credential:program.credential,
+        college:program.college,requiredCredits:program.required_half/2,
+        credits:{
+          general:program.general_half/2,college:program.college_half/2,
+          major:program.major_half/2,minor:program.minor_half/2,elective:program.elective_half/2,
+        },effectiveYear,
+        courses:courses.map(c=>({
+          code:c.code,title:c.title,category:c.category,credits:c.credits_half/2,
+          year:c.year,semester:c.semester,prerequisites:c.prerequisite_codes,
+        })),
+        releasedAt:new Date().toISOString(),
+      };
+      const outcome=store.transaction(()=>{
+        const current=store.one('SELECT MAX(version) AS version FROM curriculum_publications WHERE degree_route=?',route);
+        const nextVersion=(Number(current?.version)||0)+1;
+        store.run('UPDATE curriculum_publications SET withdrawn_at=?,withdrawn_by=? WHERE degree_route=? AND withdrawn_at IS NULL',
+          snapshot.releasedAt,actor.id,route);
+        store.run('INSERT INTO curriculum_publications(id,program_id,degree_route,version,effective_year,snapshot_json,released_by,released_at) VALUES(?,?,?,?,?,?,?,?)',
+          crypto.randomUUID(),program.id,route,nextVersion,effectiveYear,JSON.stringify({...snapshot,version:nextVersion}),actor.id,snapshot.releasedAt);
+        record(store,actor.id,'CURRICULUM_PUBLIC_RELEASE',program.id,{route,version:nextVersion,effectiveYear});
+        return {route,version:nextVersion};
+      });
+      return res.status(201).json({success:true,...outcome});
+    }catch(e){return statusError(e,res);}
+  });
+  app.post('/api/curriculum/programs/:id/withdraw',(req,res)=>{
+    if(!approver(res))return res.sendStatus(403);
+    try{
+      if(req.body?.confirmation!=='WITHDRAW_PUBLIC_CURRICULUM')
+        throw new WorkflowError('Explicit withdrawal confirmation required.');
+      const active=store.one('SELECT * FROM curriculum_publications WHERE program_id=? AND withdrawn_at IS NULL',req.params.id);
+      if(!active)throw new WorkflowError('No active publication for that program.',404);
+      const actor=actorOf(res)!;
+      store.transaction(()=>{
+        store.run('UPDATE curriculum_publications SET withdrawn_at=?,withdrawn_by=? WHERE id=?',
+          new Date().toISOString(),actor.id,active.id);
+        record(store,actor.id,'CURRICULUM_PUBLIC_WITHDRAW',req.params.id,{route:active.degree_route,version:active.version});
+      });
+      return res.json({success:true,route:active.degree_route});
+    }catch(e){return statusError(e,res);}
+  });
+
   app.get('/api/curriculum/reference/college-science',(_req,res)=>{
     if(!editor(res))return res.sendStatus(403);
     const items=COLLEGE_SCIENCE_REFERENCES.map(p=>({
@@ -94,7 +192,8 @@ export function installCurriculumStudio(app:Express,store:Operations){
     try {
       const programs=store.all('SELECT * FROM curriculum_programs ORDER BY updated_at DESC,name');
       const courses=store.all('SELECT * FROM curriculum_courses ORDER BY year,semester,code,title');
-      return res.json({programs,courses});
+      const publications=store.all('SELECT program_id,degree_route,version,effective_year,released_at FROM curriculum_publications WHERE withdrawn_at IS NULL');
+      return res.json({programs,courses,publications});
     } catch(e){return statusError(e,res);}
   });
   app.post('/api/curriculum/programs',(req,res)=>{
@@ -220,6 +319,8 @@ export function installCurriculumStudio(app:Express,store:Operations){
       }else if(desired==='draft'){
         if(program.status==='draft')throw new WorkflowError('Program is already a draft.',409);
         if(!approver(res))throw new WorkflowError('Super Administrator must reopen the approved or reviewed draft.',403);
+        if(store.one('SELECT id FROM curriculum_publications WHERE program_id=? AND withdrawn_at IS NULL',program.id))
+          throw new WorkflowError('Withdraw the public publication before reopening the curriculum.',409);
       }else throw new WorkflowError('Unsupported curriculum status.');
       const actor=actorOf(res)!;
       store.transaction(()=>{

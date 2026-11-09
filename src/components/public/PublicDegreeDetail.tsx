@@ -1,7 +1,14 @@
-import React from 'react';
+import React, {useEffect,useState} from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, GraduationCap, PlayCircle } from 'lucide-react';
 import { resolvePublicDegree } from './PublicColleges';
 import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
+
+type PublishedDegree = {
+  programName:string;programCode:string;credential:string;college:string;
+  requiredCredits:number;effectiveYear:string;version:number;releasedAt:string;
+  credits:{general:number;college:number;major:number;minor:number;elective:number};
+  courses:{code:string;title:string;category:string;credits:number;year:number;semester:number;prerequisites:string}[];
+};
 
 interface DegreeDetailProps {
   route: string;
@@ -10,6 +17,21 @@ interface DegreeDetailProps {
 }
 
 export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,onNavigateSection}) => {
+  const [released,setReleased]=useState<PublishedDegree|null>(null);
+  const [releaseLoading,setReleaseLoading]=useState(true);
+  useEffect(()=>{
+    const controller=new AbortController();
+    setReleased(null);setReleaseLoading(true);
+    void fetch('/api/public/degree-curriculum/'+encodeURIComponent(route),{
+      signal:controller.signal,cache:'no-store',
+    }).then(async response=>{
+      if(!response.ok)throw new Error('Not available');
+      const data=await response.json();
+      if(!controller.signal.aborted)setReleased(data.published??null);
+    }).catch(()=>{if(!controller.signal.aborted)setReleased(null);})
+      .finally(()=>{if(!controller.signal.aborted)setReleaseLoading(false);});
+    return ()=>controller.abort();
+  },[route]);
   const match=resolvePublicDegree(route);
   if(!match) return <main className="mx-auto min-h-[50vh] max-w-5xl px-5 py-20 sm:px-8">
     <h1 className="text-3xl font-bold text-[#4a1249]">Degree information unavailable</h1>
@@ -95,6 +117,34 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="mt-4 text-base leading-7 text-slate-700">{explainer?.careers ?? 'Graduates may explore opportunities in their field or pursue further study, depending on professional qualifications and applicable regulations.'}</p>
           <p className="mt-3 text-xs leading-6 text-slate-600">Career paths are illustrative, not employment guarantees. Regulated professions may require additional training, certification or licensing.</p>
         </section>
+        {released&&<section aria-labelledby="degree-curriculum" className="rounded-xl border border-[#dbc9de] bg-[#faf8fb] p-5 sm:p-7">
+          <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">University-published academic curriculum</p>
+          <h2 id="degree-curriculum" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Program courses and requirements</h2>
+          <p className="mt-3 text-sm text-slate-700">Effective academic year {released.effectiveYear} · Publication version {released.version} · {released.requiredCredits} total credits</p>
+          <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {Object.entries(released.credits).map(([category,credits])=><div key={category} className="rounded-lg border border-[#e7dce8] bg-white p-3">
+              <dt className="text-xs capitalize text-slate-600">{category}</dt><dd className="mt-1 text-lg font-bold text-[#35103b]">{credits}</dd>
+            </div>)}
+          </dl>
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full min-w-[580px] text-left text-sm">
+              <thead><tr className="border-b border-[#d9cadc] text-[#35103b]">
+                <th scope="col" className="p-2">Year / Semester</th><th scope="col" className="p-2">Course</th>
+                <th scope="col" className="p-2">Category</th><th scope="col" className="p-2">Credits</th>
+              </tr></thead>
+              <tbody>{released.courses.map((course,index)=><tr key={course.code+'-'+index} className="border-b border-[#e7dce8]">
+                <td className="p-2">Year {course.year}, semester {course.semester}</td>
+                <td className="p-2"><span className="font-semibold text-[#35103b]">{course.code}</span> — {course.title}
+                  {course.prerequisites&&<span className="block text-xs text-slate-600">Prerequisites: {course.prerequisites}</span>}
+                </td><td className="p-2 capitalize">{course.category}</td><td className="p-2">{course.credits}</td>
+              </tr>)}</tbody>
+            </table>
+          </div>
+        </section>}
+        {!released&&!releaseLoading&&<p className="rounded-lg border border-[#e7dce8] bg-[#faf8fb] p-4 text-sm text-slate-600">
+          A detailed, university-published course sequence is not yet available for this degree.
+          Contact Admissions for confirmed academic requirements.
+        </p>}
         <section aria-labelledby="degree-video">
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Learn about this field</p>
           <h2 id="degree-video" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Why this degree matters today</h2>

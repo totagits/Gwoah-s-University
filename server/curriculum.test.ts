@@ -140,3 +140,86 @@ test('college science PDF reference import is idempotent, isolated, and blocked 
     if(path.dirname(directory)===os.tmpdir()&&path.basename(directory).startsWith('hiau-pdf-reference-'))fs.rmSync(directory,{recursive:true,force:true});
   }
 });
+
+
+test('only an explicitly published approved curriculum appears publicly; withdrawal and backups preserve boundaries',async()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-public-curriculum-'));
+  const store=new Operations(directory);
+  const app=express();app.use(express.json());
+  app.use((req,res,next)=>{
+    const role=req.get('x-test-role')||'public';
+    if(role!=='public')res.locals.actor={id:role+'-actor',role,name:role};
+    next();
+  });
+  installCurriculumStudio(app,store);
+  const server=app.listen(0,'127.0.0.1');
+  await new Promise<void>(resolve=>server.once('listening',resolve));
+  const base='http://127.0.0.1:'+(server.address() as any).port;
+  const call=async(method:string,route:string,role='public',body?:object)=>{
+    const res=await fetch(base+route,{method,headers:{'Content-Type':'application/json','x-test-role':role},
+      body:body?JSON.stringify(body):undefined});
+    return {status:res.status,data:await res.json().catch(()=>null)};
+  };
+  const route='science_tech--bachelor-of-science-in-information-technology-it';
+  const publicPath='/api/public/degree-curriculum/'+route;
+  try{
+    assert.equal((await call('GET',publicPath)).data.published,null);
+    assert.equal((await call('GET','/api/public/degree-curriculum/not-a-degree')).status,404);
+    const input={
+      code:'BS-IT',name:'Bachelor of Science in Information Technology (IT)',
+      college:'College of Science, Technology, and Allied Health',credential:'Bachelor of Science',
+      generalCredits:6,collegeCredits:3,majorCredits:6,minorCredits:0,electiveCredits:0,
+      requiredCredits:15,sourceTitle:'Approved academic policy',sourcePage:'3',
+      notes:'INTERNAL-ONLY REVIEW NOTES; these must never leak through public API.',
+    };
+    const made=await call('POST','/api/curriculum/programs','registrar',input);
+    assert.equal(made.status,201);
+    const id=made.data.program.id;
+    const publishPath='/api/curriculum/programs/'+id+'/publish';
+    const confirm={confirmation:'PUBLISH_PUBLIC_CURRICULUM',effectiveYear:'2027-2028'};
+    assert.equal((await call('POST',publishPath,'super_admin',confirm)).status,409);
+    for(const [category,code,credits,year,semester] of [
+      ['general','ENGL 101',3,1,1],['general','ENGL 102',3,1,2],
+      ['college','ITCB 201',3,2,1],['major','ITCB 401',3,4,1],
+      ['major','ITCB 402',3,4,2]
+    ] as const){
+      const res=await call('POST','/api/curriculum/programs/'+id+'/courses','registrar',
+        {category,code,title:code+' academic course',credits,year,semester});
+      assert.equal(res.status,201);
+    }
+    assert.equal((await call('GET',publicPath)).data.published,null);
+    assert.equal((await call('POST','/api/curriculum/programs/'+id+'/status','registrar',{status:'in_review'})).status,200);
+    assert.equal((await call('POST','/api/curriculum/programs/'+id+'/status','super_admin',{status:'approved'})).status,200);
+    assert.equal((await call('GET',publicPath)).data.published,null,'approved is not public');
+    assert.equal((await call('POST',publishPath,'registrar',confirm)).status,403);
+    assert.equal((await call('POST',publishPath,'super_admin',{effectiveYear:'2027-2028'})).status,400);
+    const published=await call('POST',publishPath,'super_admin',confirm);
+    assert.equal(published.status,201);
+    assert.equal(published.data.version,1);
+    const visible=await call('GET',publicPath);
+    assert.equal(visible.status,200);
+    assert.equal(visible.data.published.requiredCredits,15);
+    assert.equal(visible.data.published.courses.length,5);
+    assert.equal(visible.data.published.version,1);
+    assert.equal(JSON.stringify(visible).includes('INTERNAL-ONLY'),false);
+    assert.equal(JSON.stringify(visible).includes('approved_by'),false);
+    assert.equal((await call('POST','/api/curriculum/programs/'+id+'/withdraw','registrar',
+      {confirmation:'WITHDRAW_PUBLIC_CURRICULUM'})).status,403);
+    const backup=store.exportSnapshot();
+    assert.equal(backup.tables.curriculum_publications.length,1);
+    store.importSnapshot(backup);
+    assert.equal((await call('GET',publicPath)).data.published.version,1);
+    assert.equal((await call('POST','/api/curriculum/programs/'+id+'/withdraw','super_admin',
+      {confirmation:'WITHDRAW_PUBLIC_CURRICULUM'})).status,200);
+    assert.equal((await call('GET',publicPath)).data.published,null);
+    assert.equal((await call('POST',publishPath,'super_admin',confirm)).status,201);
+    assert.equal((await call('GET',publicPath)).data.published.version,2);
+    assert.equal(store.all('SELECT * FROM programs').length,0,'publication does not create a live ERP program');
+    assert.equal(store.all('SELECT * FROM courses').length,0,'publication does not create live ERP courses');
+  }finally{
+    await new Promise<void>(resolve=>server.close(()=>resolve()));
+    store.close();
+    if(path.dirname(directory)===os.tmpdir()&&path.basename(directory).startsWith('hiau-public-curriculum-'))
+      fs.rmSync(directory,{recursive:true,force:true});
+  }
+});

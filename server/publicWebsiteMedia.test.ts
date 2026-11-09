@@ -57,6 +57,11 @@ test('website media stays private until Super Administrator publishes and can re
     assert.equal(partial.status,206);
     assert.equal(await partial.text(),'ftyp');
     assert.equal((await request(media,'visitor',{headers:{Range:'bytes=999-1000'}})).status,416);
+    // If an operator accidentally loses an uploaded media file, visitors see
+    // the original site video rather than an unusable player.
+    const saved=JSON.parse(store.one('SELECT value FROM settings WHERE key=?','public-media:hero-campus').value);
+    fs.rmSync(path.join(directory,'public-media',saved.published),{force:true});
+    assert.equal((await request(media)).status,302);
     assert.equal((await request(admin,'super_admin',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'RESTORE_DEFAULT_WEBSITE_VIDEO'})})).status,200);
     assert.equal((await request(media)).status,302);
     assert.equal(store.all('SELECT * FROM programs').length,0);

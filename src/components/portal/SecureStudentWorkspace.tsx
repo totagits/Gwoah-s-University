@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BookOpen, ClipboardList, CreditCard, GraduationCap, RefreshCw } from 'lucide-react';
 import type { UserProfile } from '../../types';
+import { StudentActivityTimeline } from './StudentActivityTimeline';
 
 /** Authenticated read-only student view of the real operations database.
  *  Never use AI Studio's seed identities/grades/tuition as institutional records.
@@ -106,6 +107,7 @@ export const SecureStudentWorkspace: React.FC<{currentUser: UserProfile}> = ({cu
       </div>)}</div>}
       {payments.length > 0 && <p className="mt-4 text-xs text-slate-600">{payments.length} payment record(s) associated with your invoices. Only reconciled transactions reduce confirmed outstanding balances.</p>}
     </Panel>
-    <p className="text-xs text-slate-600">This workspace displays server-authorized records only. Messaging, student activity history, document issuance, and other original AI Studio features remain under controlled integration until their security and persistence checks pass.</p>
+    <StudentActivityTimeline />
+    <p className="text-xs text-slate-600">This workspace displays server-authorized records only. Messaging, document issuance, and other original AI Studio features remain under controlled integration until their security and persistence checks pass.</p>
   </div>;
 };

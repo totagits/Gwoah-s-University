@@ -295,3 +295,57 @@ test('currency uses exact cents and rejects ambiguous amounts', () => {
   assert.throws(() => money('1.001'));
   assert.throws(() => money('-1'));
 });
+
+
+test('student activity endpoint is scoped, redacted, and inaccessible to staff', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'gu-activity-test-'));
+  const db = new Operations(directory);
+  db.saveUsers([
+    { id: 'student-one', name: 'Student One', email: 'one@example.test', role: 'student' },
+    { id: 'student-two', name: 'Student Two', email: 'two@example.test', role: 'student' },
+    { id: 'admin-one', name: 'Administrator', email: 'admin@example.test', role: 'super_admin' },
+  ]);
+  db.audit('student-one', 'register', 'enrollment-1', null, { secret: 'private-one' });
+  db.audit('student-one', 'task', 'task-1', null, { secret: 'internal-only' });
+  db.audit('student-two', 'transcriptRequest', 'request-2', null, { secret: 'private-two' });
+  const app = express();
+  app.use(express.json());
+  app.use((req, res, next) => {
+    const id = String(req.get('x-test-user') || 'student-one');
+    const role = id === 'admin-one' ? 'super_admin' : 'student';
+    res.locals.actor = { id, name: id, role };
+    next();
+  });
+  installWorkspaces(app, db);
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise<void>(resolve => server.once('listening', resolve));
+  const port = (server.address() as any).port;
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const response = await fetch(base + '/api/workspaces/student-activity', { headers: { 'x-test-user': 'student-one' } });
+    assert.equal(response.status, 200);
+    const activity = await response.json();
+    assert.equal(activity.activities.length, 1);
+    assert.equal(activity.activities[0].action, 'register');
+    assert.deepEqual(Object.keys(activity.activities[0]).sort(), ['action', 'created_at', 'id']);
+    assert.equal(JSON.stringify(activity).includes('private-one'), false);
+    assert.equal(JSON.stringify(activity).includes('private-two'), false);
+    assert.equal(JSON.stringify(activity).includes('internal-only'), false);
+
+    const state = await (await fetch(base + '/api/workspaces/state', { headers: { 'x-test-user': 'student-one' } })).json();
+    assert.ok(state.audit.length > 0);
+    assert.equal(Object.prototype.hasOwnProperty.call(state.audit[0], 'after_json'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(state.audit[0], 'before_json'), false);
+
+    const other = await (await fetch(base + '/api/workspaces/student-activity', { headers: { 'x-test-user': 'student-two' } })).json();
+    assert.equal(other.activities.length, 1);
+    assert.equal(other.activities[0].action, 'transcriptRequest');
+    const forbidden = await fetch(base + '/api/workspaces/student-activity', { headers: { 'x-test-user': 'admin-one' } });
+    assert.equal(forbidden.status, 403);
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()));
+    db.close();
+    if (path.dirname(directory) === os.tmpdir() && path.basename(directory).startsWith('gu-activity-test-'))
+      fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

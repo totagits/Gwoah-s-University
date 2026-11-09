@@ -8,6 +8,11 @@ type Program={
   required_half:number;status:'draft'|'in_review'|'approved';
   source_title:string;source_page:string;notes:string;updated_at:string;
 };
+type Readiness = {
+  ready:boolean;courseCount:number;errorCount:number;warningCount:number;
+  totals:Record<string,{required:number;listed:number}>;
+  findings:{severity:'error'|'warning';code:string;detail:string}[];
+};
 type Course={
   id:string;program_id:string;code:string;title:string;
   category:'general'|'college'|'major'|'minor'|'elective';
@@ -67,6 +72,8 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
   const canApprove=currentUser.role==='super_admin';
   const [programs,setPrograms]=useState<Program[]>([]);
   const [courses,setCourses]=useState<Course[]>([]);
+  const [readiness,setReadiness]=useState<Readiness|null>(null);
+  const [readinessError,setReadinessError]=useState('');
   const [publications,setPublications]=useState<{program_id:string;degree_route:string;version:number;effective_year:string}[]>([]);
   const [selected,setSelected]=useState('');
   const [programInput,setProgramInput]=useState<ProgramInput>(emptyProgram);
@@ -99,6 +106,20 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
     finally{setLoading(false);}
   },[]);
   useEffect(()=>{void load();},[load]);
+  useEffect(()=>{
+    if(!selected){setReadiness(null);setReadinessError('');return;}
+    const controller=new AbortController();
+    setReadiness(null);setReadinessError('');
+    void fetch('/api/curriculum/programs/'+encodeURIComponent(selected)+'/readiness',{
+      signal:controller.signal,cache:'no-store',
+    }).then(async r=>{
+      if(!r.ok)throw new Error('Readiness report unavailable.');
+      return r.json();
+    }).then(data=>{if(!controller.signal.aborted)setReadiness(data);})
+      .catch(()=>{if(!controller.signal.aborted)setReadinessError('Could not verify curriculum completeness.');});
+    return ()=>controller.abort();
+  },[selected,programs,courses]);
+
   const loadSourcePreview=async()=>{
     setError('');
     try{
@@ -292,6 +313,38 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
                 Approved internally; not yet publicly released. Only a Super Administrator can publish an approved curriculum.
               </p>}
             {active.status==='approved'&&<p className="mt-3 text-xs font-semibold text-emerald-800"><CheckCircle2 className="mr-1 inline h-4 w-4"/>Approved for internal catalog preparation. Not published to admissions or registration.</p>}
+          </section>
+          <section aria-label="Curriculum readiness checks" className="rounded-2xl border border-[#e6dce7] bg-white p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold text-[#35103b]">Curriculum readiness audit</h3>
+              {readiness&&<span className={`rounded-full px-3 py-1 text-xs font-bold ${readiness.ready?'bg-emerald-50 text-emerald-800':'bg-amber-50 text-amber-900'}`}>
+                {readiness.ready?'No blocking issues':'Needs academic corrections'}
+              </span>}
+            </div>
+            <p className="mt-2 text-sm text-slate-600">
+              Checks entered credit totals, duplicate course codes, prerequisite order, missing verified courses, and unresolved source-document notes.
+              A passing automated check is not a substitute for academic approval.
+            </p>
+            {readinessError&&<p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{readinessError}</p>}
+            {!readiness&&!readinessError&&<p role="status" className="mt-3 text-sm text-slate-600">Checking academic data…</p>}
+            {readiness&&<>
+              <p className="mt-4 text-sm font-semibold text-[#35103b]">
+                {readiness.courseCount} entered courses · {readiness.errorCount} blocking issue(s) · {readiness.warningCount} advisory note(s)
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                {Object.entries(readiness.totals).map(([category,item])=>
+                  <div key={category} className="rounded-lg border border-[#e7dce8] p-3">
+                    <p className="text-xs font-medium capitalize text-slate-600">{category}</p>
+                    <p className="mt-1 text-sm font-bold text-[#35103b]">{item.listed} entered / {item.required} required</p>
+                  </div>)}
+              </div>
+              {readiness.findings.length>0?<ul className="mt-4 space-y-2">
+                {readiness.findings.map((issue,index)=><li key={issue.code+'-'+index}
+                  className={`rounded-lg border px-3 py-2 text-sm ${issue.severity==='error'?'border-red-200 bg-red-50 text-red-900':'border-amber-200 bg-amber-50 text-amber-950'}`}>
+                  <span className="font-semibold">{issue.severity==='error'?'Fix required':'Review'}:</span> {issue.detail}
+                </li>)}
+              </ul>:<p className="mt-4 text-sm font-semibold text-emerald-800">The entered course list passes the automated consistency checks.</p>}
+            </>}
           </section>
           <section className="rounded-2xl border border-[#e6dce7] bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2"><ClipboardList className="h-5 w-5 text-[#4a1249]"/><h3 className="text-lg font-semibold text-[#35103b]">Year-by-year curriculum sequence</h3></div>

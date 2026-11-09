@@ -22,7 +22,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
   const hasConfirmedCredit=program.name==='Bachelor of Science in Civil Engineering';
   const isSuppliedAccountingClip=route==='business--bachelor-of-business-administration-in-accounting';
   const degreeVideoSource=isSuppliedAccountingClip
-    ? '/assets/degree-clips/business--bachelor-of-business-administration-in-accounting-user.mp4'
+    ? '/assets/degree-clips/image_20261108_223153.mp4'
     : `/assets/degree-clips/${route}.mp4`;
   const academicNote=hasConfirmedCredit
     ? 'HIAU has specified a total of 179 credits for Civil Engineering. Its detailed semester-by-semester course sequence is still undergoing Registrar review and has not been published here.'

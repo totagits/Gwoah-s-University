@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BookOpen, ClipboardList, CreditCard, GraduationCap, RefreshCw } from 'lucide-react';
 import type { UserProfile } from '../../types';
 import { StudentActivityTimeline } from './StudentActivityTimeline';
+import { StudentUnifiedSearchFilter } from './StudentUnifiedSearchFilter';
 
 /** Authenticated read-only student view of the real operations database.
  *  Never use AI Studio's seed identities/grades/tuition as institutional records.
@@ -85,6 +86,7 @@ export const SecureStudentWorkspace: React.FC<{currentUser: UserProfile}> = ({cu
         <strong className="text-2xl font-bold text-[#35103b]">{value}</strong>
       </div>)}
     </div>
+    <StudentUnifiedSearchFilter source={{registrations,grades:state?.grades ?? [],invoices}} />
     <Panel title="Enrollment and published results">
       {registrations.length === 0 ? <Empty>No courses have been registered against your verified record.</Empty> :
       <div className="overflow-x-auto"><table className="w-full text-left text-sm">

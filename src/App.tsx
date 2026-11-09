@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { setSessionCsrf } from './services/session';
+import { defaultPortalModule, isPortalModuleAvailable, PORTAL_MODULES } from './portal/moduleRegistry';
 import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
@@ -155,6 +156,7 @@ export default function App() {
       if (!active) return;
       setSessionCsrf(session.csrf);
       setCurrentUser(session.user);
+      setActivePortalTab(defaultPortalModule(session.user.role) ?? 'tasks');
       if (params.has('portal')) setViewMode('portal');
     }).catch(() => {
       if (active && (params.has('portal') || params.has('activate'))) setIsLoginModalOpen(true);
@@ -180,6 +182,7 @@ export default function App() {
   const [studentSubTab, setStudentSubTab] = useState<'grades' | 'materials' | 'calendar' | 'library' | 'messages' | 'facilities' | 'classroom'>('grades');
 
   const handleSelectTabWithSubAction = (tabId: string, subAction?: string) => {
+    if (!currentUser || !isPortalModuleAvailable(currentUser.role, tabId)) return;
     setActivePortalTab(tabId);
     if (tabId === 'student_portal' && subAction) {
       if (['grades', 'materials', 'calendar', 'library', 'messages', 'facilities', 'classroom'].includes(subAction)) {
@@ -189,17 +192,16 @@ export default function App() {
   };
 
   const handleOpenPortal = (preferredTab?: string) => {
-    if (preferredTab === 'facilities' || preferredTab === 'library' || preferredTab === 'classroom') {
-      setActivePortalTab('student_portal');
-      setStudentSubTab(preferredTab);
-      setPendingPortalTab('student_portal');
-    } else if (preferredTab) {
-      setActivePortalTab(preferredTab);
-      setPendingPortalTab(preferredTab);
-    }
+    // Links on the public site cannot choose a role or silently enter an unrelated workspace.
     if (currentUser) {
+      const safeTab = preferredTab && isPortalModuleAvailable(currentUser.role, preferredTab)
+        ? preferredTab
+        : defaultPortalModule(currentUser.role);
+      if (safeTab) setActivePortalTab(safeTab);
       setViewMode('portal');
     } else {
+      // Defer any requested tab until after server authentication and role verification.
+      setPendingPortalTab(preferredTab && PORTAL_MODULES.some(m => m.id === preferredTab) ? preferredTab : null);
       setIsLoginModalOpen(true);
     }
   };
@@ -208,10 +210,11 @@ export default function App() {
     setCurrentUser(user);
     setIsLoginModalOpen(false);
     setViewMode('portal');
-    if (pendingPortalTab) {
-      setActivePortalTab(pendingPortalTab);
-      setPendingPortalTab(null);
-    }
+    const safeTab = pendingPortalTab && isPortalModuleAvailable(user.role, pendingPortalTab)
+      ? pendingPortalTab
+      : defaultPortalModule(user.role);
+    if (safeTab) setActivePortalTab(safeTab);
+    setPendingPortalTab(null);
   };
 
   const handleLogout = async () => {
@@ -326,7 +329,19 @@ export default function App() {
             onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
           />
 
-          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <main id="erp-main-content" className="flex-1 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-10 py-7">
+            <div className="mb-7 border-b border-[#e6dce7] pb-5">
+              <p className="uppercase tracking-[0.18em] text-[11px] font-bold text-[#866080]">University operations / {currentUser.role.replaceAll('_', ' ')}</p>
+              <h1 className="text-2xl md:text-3xl font-semibold text-[#35103B] mt-1">
+                {PORTAL_MODULES.find(m => m.id === activePortalTab)?.label ?? 'Workspace access'}
+              </h1>
+              <p className="text-sm text-slate-600 mt-1">Authorized records and workflows for Harvest Intercontinental American University.</p>
+            </div>
+            {!isPortalModuleAvailable(currentUser.role, activePortalTab) && (
+              <section role="status" className="rounded-xl bg-white border border-slate-200 p-6 text-slate-700">
+                This workspace is not available to your assigned role. Contact the university administrator if you need additional access.
+              </section>
+            )}
             {activePortalTab === 'tasks' && (
               <TaskManagementDashboard currentUser={currentUser} />
             )}

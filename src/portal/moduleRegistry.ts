@@ -21,8 +21,8 @@ export type PortalModuleId = (typeof PORTAL_MODULES)[number]['id'];
 export const PORTAL_MODULE_IDS: ReadonlySet<string> = new Set(PORTAL_MODULES.map(m => m.id));
 
 const visibleByRole: Record<UserRole, readonly PortalModuleId[]> = {
-  super_admin: PORTAL_MODULES.map(m => m.id),
-  registrar: ['tasks', 'academics', 'admissions', 'student_portal'],
+  super_admin: PORTAL_MODULES.filter(m => m.id !== 'student_portal').map(m => m.id),
+  registrar: ['tasks', 'academics', 'admissions'],
   dean: ['tasks', 'analytics', 'faculty_admin', 'academics', 'compliance', 'classroom'],
   lecturer: ['tasks', 'faculty_admin', 'classroom'],
   bursar: ['tasks', 'finance'],

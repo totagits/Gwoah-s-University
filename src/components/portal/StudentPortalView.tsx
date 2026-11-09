@@ -66,9 +66,10 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
   const [sendingMsg, setSendingMsg] = useState(false);
   const [msgNotification, setMsgNotification] = useState<string | null>(null);
 
-  const studentId = currentUser.role === 'student' ? currentUser.id : 'u-student';
+  const studentId = currentUser.id;
 
   const fetchStudentData = async () => {
+    if (currentUser.role !== 'student') { setLoading(false); return; }
     setLoading(true);
     try {
       const [studentRes, matRes, msgRes] = await Promise.all([
@@ -121,6 +122,13 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
       setSendingMsg(false);
     }
   };
+
+  if (currentUser.role !== 'student') {
+    return <section role="status" className="rounded-xl border border-slate-200 bg-white p-8">
+      <h2 className="text-lg font-semibold text-[#4A1249]">Student workspace</h2>
+      <p className="mt-2 text-sm text-slate-700">This portal displays records belonging to a signed-in student. Use the Registrar or Academic Planning workspace to review institutional records; a Super Administrator must not be shown a fictitious student profile.</p>
+    </section>;
+  }
 
   if (loading) {
     return (

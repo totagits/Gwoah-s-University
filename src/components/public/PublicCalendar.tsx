@@ -1,12 +1,12 @@
 import React from 'react';
 import { Calendar as CalendarIcon, Clock, CheckCircle2 } from 'lucide-react';
+import {academicTermStatus,academicWindowStatus,currentLiberiaDay} from '../../utils/publicAcademicCalendar';
 
 export const PublicCalendar: React.FC = () => {
+  const today=currentLiberiaDay();
   const semesters = [
     {
       name: 'SEMESTER I (FALL 2026)',
-      status: 'Current Active Term',
-      isCurrent: true,
       events: [
         { date: 'Oct 01 - Oct 10, 2026', title: 'Regular Course Registration & Bursar Clearance', status: 'Completed', type: 'registration' },
         { date: 'Oct 12 - Oct 26, 2026', title: 'Official Add & Drop Period (100% Refund Window)', status: 'Active Now', type: 'add_drop' },
@@ -18,8 +18,6 @@ export const PublicCalendar: React.FC = () => {
     },
     {
       name: 'SEMESTER II (SPRING 2027)',
-      status: 'Upcoming Session',
-      isCurrent: false,
       events: [
         { date: 'Feb 15 - Feb 26, 2027', title: 'Semester II Registration & Tuition Settlement', status: 'Scheduled', type: 'registration' },
         { date: 'Mar 01, 2027', title: 'Commencement of Academic Lectures (All Campuses)', status: 'Scheduled', type: 'classes' },
@@ -41,21 +39,23 @@ export const PublicCalendar: React.FC = () => {
             OFFICIAL ACADEMIC CALENDAR 2026/2027
           </h2>
           <p className="text-slate-600 mt-2 text-base leading-relaxed">
-            Harvest Intercontinental American University academic schedule approved by the University Senate in alignment with NCHE guidelines.
+            Dates are shown as listed in the HIAU academic calendar. Status labels reflect the current date in Liberia, not confirmation that an activity has taken place.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {semesters.map((sem, idx) => (
-            <div
+          {semesters.map((sem, idx) => {
+            const termStatus=academicTermStatus(sem.events,today);
+            const isCurrent=termStatus==='Current term';
+            return <div
               key={idx}
               className={`rounded-xl p-6 sm:p-8 border shadow-sm transition-all ${
-                sem.isCurrent
+                isCurrent
                   ? 'bg-white border-2 border-[#4A1249] border-t-4 border-t-[#C39A53] relative shadow-md'
                   : 'bg-white border border-purple-200/80'
               }`}
             >
-              {sem.isCurrent && (
+              {isCurrent && (
                 <div className="absolute -top-3 right-6 bg-[#4A1249] text-[#C39A53] text-xs font-bold px-3 py-1 rounded shadow border border-[#C39A53]/40 uppercase tracking-wider">
                   Current Active Term
                 </div>
@@ -67,13 +67,14 @@ export const PublicCalendar: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-collegiate font-bold text-[#4A1249] tracking-tight">{sem.name}</h3>
-                  <span className="text-xs text-[#C39A53] font-bold uppercase tracking-wider">{sem.status}</span>
+                  <span className="text-xs text-[#C39A53] font-bold uppercase tracking-wider">{termStatus}</span>
                 </div>
               </div>
 
               <div className="space-y-3">
-                {sem.events.map((ev, eIdx) => (
-                  <div
+                {sem.events.map((ev, eIdx) => {
+                  const status=academicWindowStatus(ev.date,today);
+                  return <div
                     key={eIdx}
                     className="flex items-start gap-4 p-3.5 rounded bg-[#FAF8FB] border border-purple-200/60 hover:border-[#C39A53]/60 transition-colors"
                   >
@@ -85,22 +86,22 @@ export const PublicCalendar: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                            ev.status === 'Active Now'
+                            status === 'Scheduled now'
                               ? 'bg-[#4A1249] text-[#C39A53] border border-[#C39A53]/30'
-                              : ev.status === 'Completed'
+                              : status === 'Date passed'
                               ? 'bg-slate-200 text-slate-700'
                               : 'bg-[#FAF4E8] text-[#A17A32] border border-[#E7D5B5]'
                           }`}
                         >
-                          {ev.status}
+                          {status}
                         </span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  </div>;
+                })}
               </div>
-            </div>
-          ))}
+            </div>;
+          })}
         </div>
       </div>
     </section>

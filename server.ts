@@ -6,6 +6,7 @@ import { installIdentity } from './server/identity';
 import { installPlatform } from './server/platform';
 import { installWorkspaces } from './server/workspaces';
 import { installCurriculumStudio } from './server/curriculum';
+import {installPublicWebsiteMedia} from './server/publicWebsiteMedia';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -31,6 +32,7 @@ app.get('/api/health', (_req, res) =>
 );
 installWorkspaces(app, operations);
 installCurriculumStudio(app, operations);
+installPublicWebsiteMedia(app, operations, directory);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

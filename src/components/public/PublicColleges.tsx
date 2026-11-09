@@ -15,6 +15,9 @@ import {
   Laptop,
   Globe,
   Users,
+  ArrowRight,
+  ChevronRight,
+  Search,
 } from 'lucide-react';
 
 interface ProgramDetail {
@@ -283,235 +286,187 @@ const SPECIALIZED_PROGRAMS = [
 
 export const PublicColleges: React.FC = () => {
   const [selectedCollegeId, setSelectedCollegeId] = useState<string>('business');
-
-  const activeCollege = BLEST_COLLEGES.find((c) => c.id === selectedCollegeId) || BLEST_COLLEGES[0];
+  const [query, setQuery] = useState('');
+  const activeCollege = BLEST_COLLEGES.find(college => college.id === selectedCollegeId) || BLEST_COLLEGES[0];
+  const matchingPrograms = activeCollege.programs.filter(program =>
+    [program.name, program.degreeType, program.focus].some(value =>
+      value.toLowerCase().includes(query.trim().toLowerCase()),
+    ),
+  );
+  const allPrograms = BLEST_COLLEGES.reduce((total, college) => total + college.programs.length, 0);
 
   return (
-    <section id="colleges" className="py-16 bg-[#FAF8FB] text-[#2E0F34] border-b border-purple-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header with BLEST Acronym */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#C39A53] bg-[#4A1249] px-3.5 py-1.5 rounded-full border border-[#C39A53]/30 shadow-xs">
-            Academic Offerings & Degree Programs
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-collegiate font-black mt-3 tracking-tight text-[#4A1249]">
-            THE BLEST COLLEGE FRAMEWORK
-          </h2>
-          <p className="text-slate-600 mt-2 text-base leading-relaxed">
-            Harvest Intercontinental American University organizes its degree-granting faculties under the proprietary <strong>BLEST</strong> system: Business, Liberal Arts, Education, Science & Technology, and Theology.
-          </p>
-        </div>
-
-        {/* Real Classroom & Computing Lab Feature Banner */}
-        <div className="mb-10 rounded-xl overflow-hidden border border-purple-200/80 shadow-md bg-white grid grid-cols-1 md:grid-cols-12 items-center">
-          <div className="md:col-span-5 h-64 md:h-full min-h-[250px] relative overflow-hidden bg-[#2A082C]">
-            <img
-              src="/assets/aistudio/image_51d124f3.png"
-              alt="HIAU Computer and Digital Language Lab with Students"
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute top-2 left-2 bg-[#4A1249]/95 text-[#C39A53] border border-[#C39A53]/50 px-2.5 py-1 rounded text-[10px] font-collegiate font-bold uppercase tracking-wider backdrop-blur-md shadow">
-              Interactive Digital Lab & Smart Classroom
-            </div>
-          </div>
-          <div className="md:col-span-7 p-6 sm:p-8 text-[#2E0F34] space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#C39A53] bg-[#FAF4FB] border border-[#4A1249]/20 px-2.5 py-1 rounded inline-block">
-              Applied Learning & Interactive Instruction
-            </span>
-            <h3 className="text-xl sm:text-2xl font-collegiate font-black uppercase tracking-tight text-[#4A1249]">
-              LABORATORY COMPUTING & MULTIMEDIA INSTRUCTION
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Equipped with individualized laptop stations, fast Starlink connectivity, and interactive projection, our classrooms connect scholars directly with software engineering, business case modeling, and applied clinical simulations.
+    <section id="colleges" aria-labelledby="hiau-academics-title" className="scroll-mt-28 bg-white text-[#301337]">
+      {/* Editorial header: clear information hierarchy rather than a competing mega-banner */}
+      <div className="border-b border-[#eadfeb] bg-[#faf8fb]">
+        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
+          <div className="max-w-4xl">
+            <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.18em] text-[#946b2c]">
+              Academics at HIAU
             </p>
+            <h2 id="hiau-academics-title" className="max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight text-[#4a1249] sm:text-5xl lg:text-6xl">
+              Find your academic path
+            </h2>
+            <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-700 sm:text-lg">
+              Explore the colleges, academic disciplines and proposed degree paths
+              described by Harvest Intercontinental American University.
+              Academic requirements and current program availability should be confirmed
+              with the university before applying.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#hiau-college-directory" className="inline-flex items-center gap-2 rounded-md bg-[#4a1249] px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#681a66] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">
+                Explore academic colleges <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </a>
+              <a href="#hiau-applied-learning" className="inline-flex items-center gap-2 rounded-md border border-[#cdb6d1] bg-white px-5 py-3 text-sm font-bold text-[#4a1249] hover:bg-[#f4edf5]">
+                Learning experience <ChevronRight className="h-4 w-4" aria-hidden="true"/>
+              </a>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* BLEST Segmented Tabs Control */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {BLEST_COLLEGES.map((col) => {
-            const Icon = col.icon;
-            const isSelected = selectedCollegeId === col.id;
-            return (
-              <button
-                key={col.id}
-                onClick={() => setSelectedCollegeId(col.id)}
-                className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#4A1249] text-[#C39A53] shadow-md border-2 border-[#C39A53]'
-                    : 'bg-white text-slate-700 hover:text-[#4A1249] hover:bg-purple-50 border border-purple-200/60 shadow-xs'
-                }`}
-              >
-                <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-xs ${
-                    isSelected ? 'bg-[#C39A53] text-[#2A082C]' : 'bg-purple-100 text-[#4A1249]'
-                  }`}
-                >
-                  {col.letter}
-                </span>
-                <Icon className={`w-4 h-4 ${isSelected ? 'text-[#C39A53]' : 'text-[#4A1249]'}`} />
-                <span>{col.shortTitle}</span>
-              </button>
-            );
-          })}
+      {/* Purdue-inspired discoverable academic directory, not a copy of its branding or content */}
+      <div id="hiau-college-directory" className="mx-auto max-w-7xl scroll-mt-32 px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-4 border-b border-[#e8dfe9] pb-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#936a31]">Our academic structure</p>
+            <h3 className="mt-2 text-3xl font-bold tracking-tight text-[#4a1249] sm:text-4xl">Colleges and fields of study</h3>
+          </div>
+          <span className="text-sm text-slate-600">Five colleges · {allPrograms} listed program descriptions</span>
         </div>
+        <p className="mb-8 max-w-3xl text-sm leading-relaxed text-slate-700">
+          HIAU organizes its academic vision through the BLEST framework:
+          Business, Liberal Arts, Education, Science &amp; Technology, and Theology.
+          The descriptions below are informational; they are not confirmation of
+          accreditation or admissions availability for an individual degree.
+        </p>
 
-        {/* Active BLEST College Detail Showcase */}
-        <div className="bg-white border border-purple-200/80 rounded-xl p-6 sm:p-8 shadow-sm mb-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-purple-100">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C39A53]">
-                <span className="w-5 h-5 rounded-full bg-[#4A1249] text-[#C39A53] flex items-center justify-center font-black">
-                  {activeCollege.letter}
-                </span>
-                <span>The BLEST Framework • National Commission on Higher Education Certified</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-collegiate font-black text-[#4A1249] mt-1 tracking-tight">
-                {activeCollege.name.toUpperCase()}
-              </h3>
-              <p className="text-slate-600 text-sm mt-1 max-w-3xl leading-relaxed">
-                {activeCollege.description}
-              </p>
+        <div className="grid items-start gap-8 lg:grid-cols-[270px_minmax(0,1fr)] xl:gap-12">
+          <nav aria-label="Select an academic college" className="rounded-xl border border-[#e6dce7] bg-[#faf8fb] p-3 lg:sticky lg:top-28">
+            <p className="px-3 pb-3 pt-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#946b2c]">
+              Browse by college
+            </p>
+            <div className="space-y-1">
+              {BLEST_COLLEGES.map(college => {
+                const Icon=college.icon;
+                const active=college.id===selectedCollegeId;
+                return (
+                  <button type="button" key={college.id} onClick={()=>{setSelectedCollegeId(college.id);setQuery('');}}
+                    aria-current={active?'true':undefined}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${active?'bg-[#4a1249] text-white':'text-[#39223c] hover:bg-[#efe5f0]'}`}>
+                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${active?'bg-white/15 text-white':'bg-white text-[#4a1249]'}`}>
+                      <Icon className="h-4 w-4" aria-hidden="true"/>
+                    </span>
+                    <span className="min-w-0 flex-1">{college.shortTitle}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 opacity-70" aria-hidden="true"/>
+                  </button>
+                );
+              })}
             </div>
-            <div className="bg-[#FAF4FB] text-[#4A1249] px-4 py-2 rounded text-xs font-bold border border-purple-200 shrink-0">
-              Statutory 120–132 Semester Credits
-            </div>
-          </div>
+          </nav>
 
-          {/* Departments Included in College */}
-          <div className="my-5 p-4 rounded-lg bg-[#FAF8FB] border border-purple-100">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4A1249] block mb-2">
-              Academic Departments in this Faculty:
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {activeCollege.departments.map((dept, i) => (
-                <span
-                  key={i}
-                  className="bg-white text-slate-800 px-3 py-1.5 rounded text-xs font-semibold border border-purple-200 shadow-xs flex items-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <span>{dept}</span>
-                </span>
-              ))}
+          <div className="min-w-0">
+            <div className="border-b-2 border-[#c39a53] pb-6">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-[#956a32]">Academic college</p>
+              <h4 className="mt-2 text-2xl font-bold tracking-tight text-[#4a1249] sm:text-3xl">{activeCollege.name}</h4>
+              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-700 sm:text-base">{activeCollege.description}</p>
             </div>
-          </div>
-
-          {/* Program Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
-            {activeCollege.programs.map((prog, idx) => (
-              <div
-                key={idx}
-                className="bg-[#FAF8FB] border border-purple-200/80 border-t-4 border-t-[#4A1249] hover:border-[#C39A53] rounded-lg p-5 transition-all group shadow-xs hover:shadow-md flex flex-col justify-between"
-              >
+            <div className="mt-7">
+              <h5 className="text-lg font-bold text-[#35103b]">Departments and academic areas</h5>
+              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                {activeCollege.departments.map(department=>(
+                  <li key={department} className="flex items-start gap-2 border-l-2 border-[#c39a53] bg-[#faf8fb] px-3 py-3 text-sm text-slate-700">
+                    <span>{department}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-10">
+              <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-                    <span className="flex items-center gap-1 text-[#4A1249] font-bold">
-                      <Clock className="w-3.5 h-3.5 text-[#C39A53]" /> {prog.duration}
-                    </span>
-                    <span className="bg-white px-2 py-0.5 rounded text-[11px] font-mono font-bold text-[#4A1249] border border-purple-200">
-                      {prog.degreeType}
-                    </span>
-                  </div>
-                  <h4 className="text-base font-collegiate font-bold text-[#4A1249] group-hover:text-[#661B69] transition-colors tracking-tight">
-                    {prog.name}
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                    <span className="text-[#4A1249] font-bold">Curriculum Focus:</span> {prog.focus}
-                  </p>
+                  <h5 className="text-xl font-bold text-[#35103b]">Explore degree programs</h5>
+                  <p className="mt-1 text-sm text-slate-600">Program information is subject to university verification.</p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-purple-100 flex items-center justify-between text-[11px] text-slate-500">
-                  <span className="flex items-center gap-1 text-[#4A1249] font-bold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C39A53]" /> NCHE Accredited
-                  </span>
-                  <span className="font-medium text-[#C39A53]">Semester I & II Intake</span>
-                </div>
+                <label className="relative block w-full sm:w-64">
+                  <span className="sr-only">Search programs in selected college</span>
+                  <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-500" aria-hidden="true"/>
+                  <input type="search" value={query} onChange={event=>setQuery(event.target.value)}
+                    placeholder="Search programs"
+                    className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-[#35103b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]"/>
+                </label>
               </div>
-            ))}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {matchingPrograms.map(program=>(
+                  <article key={program.name} className="flex h-full flex-col rounded-lg border border-[#e4dce5] bg-white p-5 transition-colors hover:border-[#b99abb] hover:bg-[#fcfafc]">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#916a37]">{program.degreeType} · {program.duration}</p>
+                    <h6 className="mt-3 text-lg font-semibold leading-snug text-[#35103b]">{program.name}</h6>
+                    <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{program.focus}</p>
+                    <p className="mt-5 border-t border-[#eee8ee] pt-3 text-xs font-medium text-slate-600">Confirm availability and requirements with Admissions</p>
+                  </article>
+                ))}
+              </div>
+              {matchingPrograms.length===0&&<p role="status" className="mt-5 rounded-lg bg-[#faf8fb] p-7 text-center text-sm text-slate-600">No programs match this search within the selected college.</p>}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* TVET Technical & Vocational Programs Section */}
-        <div className="mb-12">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#C39A53]">
-              Hands-On Career Skills
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-collegiate font-black text-[#4A1249] uppercase tracking-tight mt-1">
-              TECHNICAL & VOCATIONAL EDUCATION TRAINING (TVET)
+      <section id="hiau-applied-learning" aria-labelledby="hiau-learning-title" className="scroll-mt-32 border-y border-[#e7dce8] bg-[#faf8fb]">
+        <div className="mx-auto grid max-w-7xl gap-7 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-12 lg:px-10">
+          <div className="overflow-hidden rounded-lg bg-[#4a1249]">
+            <img src="/assets/aistudio/image_51d124f3.png"
+              alt="Students attending an instructional session in a computer classroom at HIAU"
+              loading="lazy" className="aspect-[4/3] w-full object-cover"/>
+          </div>
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#956a32]">Academic experience</p>
+            <h3 id="hiau-learning-title" className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[#4a1249] sm:text-4xl">
+              Learning through practice
             </h3>
-            <p className="text-slate-600 text-xs sm:text-sm mt-1">
-              Practical certificate qualifications providing market-ready vocational skills for self-employment, job creation, and micro-enterprise growth.
+            <p className="mt-5 text-base leading-relaxed text-slate-700">
+              Classroom activities, laboratory instruction and practical coursework support the academic experience.
+              Speak with the relevant college to learn which facilities, clinical placements and learning options
+              are currently available for your chosen program.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {TVET_TRACKS.map((tvet, idx) => {
-              const Icon = tvet.icon;
-              return (
-                <div
-                  key={idx}
-                  className="bg-white border border-purple-200/80 border-t-4 border-t-[#C39A53] rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="w-10 h-10 rounded-lg bg-[#FAF4E8] text-[#A17A32] border border-[#C39A53]/30 flex items-center justify-center mb-3">
-                      <Icon className="w-5 h-5 text-[#C39A53]" />
-                    </div>
-                    <h4 className="text-sm font-collegiate font-bold text-[#4A1249] uppercase tracking-tight mb-2">
-                      {tvet.name}
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                      {tvet.desc}
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-purple-100 flex items-center justify-between text-[11px]">
-                    <span className="font-semibold text-slate-500">{tvet.duration}</span>
-                    <span className="text-[#C39A53] font-bold">Certificate</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
+      </section>
 
-        {/* Specialized Academic Programs Grid */}
-        <div className="bg-[#4A1249] text-white rounded-xl p-6 sm:p-8 border-2 border-[#C39A53]/60 shadow-xl">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#C39A53]">
-              Enrichment & Global Horizons
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-collegiate font-black text-white uppercase tracking-tight mt-1">
-              SPECIALIZED ACADEMIC INITIATIVES
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {SPECIALIZED_PROGRAMS.map((prog, idx) => {
-              const Icon = prog.icon;
-              return (
-                <div
-                  key={idx}
-                  className="bg-[#2A082C] border border-[#C39A53]/40 rounded-lg p-5 flex flex-col justify-between hover:border-[#C39A53] transition-colors"
-                >
-                  <div>
-                    <div className="w-9 h-9 rounded bg-[#4A1249] text-[#C39A53] flex items-center justify-center mb-3">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-sm font-collegiate font-bold text-[#C39A53] uppercase tracking-tight mb-2">
-                      {prog.title}
-                    </h4>
-                    <p className="text-xs text-purple-100 leading-relaxed">
-                      {prog.desc}
-                    </p>
+      <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-2">
+          <section aria-labelledby="hiau-tvet-heading">
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#956a32]">Skills and professional learning</p>
+            <h3 id="hiau-tvet-heading" className="mt-2 text-2xl font-bold text-[#4a1249]">Technical and vocational pathways</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-700">Explore the vocational tracks described in HIAU's academic framework. Confirm intake dates, certificates and current availability before enrolling.</p>
+            <div className="mt-5 divide-y divide-[#e6dce7] border-y border-[#e6dce7]">
+              {TVET_TRACKS.map(track=>{
+                const Icon=track.icon;
+                return <article key={track.name} className="flex items-start gap-3 py-4">
+                  <Icon className="mt-1 h-5 w-5 shrink-0 text-[#956a32]" aria-hidden="true"/>
+                  <div><h4 className="font-semibold text-[#35103b]">{track.name}</h4>
+                    <p className="mt-1 text-sm text-slate-600">{track.desc}</p>
+                    <p className="mt-1 text-xs text-slate-500">{track.duration} · Subject to confirmation</p>
                   </div>
-                  <div className="mt-3 pt-2 border-t border-white/10 text-[10px] font-mono text-[#C39A53]">
-                    Active HIAU Track
+                </article>;
+              })}
+            </div>
+          </section>
+          <section aria-labelledby="hiau-initiatives-heading">
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#956a32]">Beyond the classroom</p>
+            <h3 id="hiau-initiatives-heading" className="mt-2 text-2xl font-bold text-[#4a1249]">Academic enrichment</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-700">HIAU's described enrichment initiatives support academic exploration and professional development. Verify active participation options with the university.</p>
+            <div className="mt-5 divide-y divide-[#e6dce7] border-y border-[#e6dce7]">
+              {SPECIALIZED_PROGRAMS.map(program=>{
+                const Icon=program.icon;
+                return <article key={program.title} className="flex items-start gap-3 py-4">
+                  <Icon className="mt-1 h-5 w-5 shrink-0 text-[#956a32]" aria-hidden="true"/>
+                  <div><h4 className="font-semibold text-[#35103b]">{program.title}</h4>
+                    <p className="mt-1 text-sm text-slate-600">{program.desc}</p>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                </article>;
+              })}
+            </div>
+          </section>
         </div>
       </div>
     </section>

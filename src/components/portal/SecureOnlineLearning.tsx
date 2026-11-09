@@ -52,7 +52,7 @@ export const SecureOnlineLearning:React.FC<{currentUser:UserProfile}>=({currentU
   },[refresh,canTeach,canAttend]);
 
   const submit=async(path:string,payload:Record<string,unknown>,message:string)=>{
-    if(busy)return;
+    if(busy)return false;
     setBusy(true);setError('');setSuccess('');
     try{
       const response=await fetch(path,{method:'POST',credentials:'same-origin',
@@ -61,7 +61,8 @@ export const SecureOnlineLearning:React.FC<{currentUser:UserProfile}>=({currentU
       if(!response.ok||!data.success)throw new Error(data.error||'Your request was not accepted.');
       setSuccess(message);
       await refresh();
-    }catch(e){setError(e instanceof Error?e.message:'Unable to save the class operation.');}
+      return true;
+    }catch(e){setError(e instanceof Error?e.message:'Unable to save the class operation.');return false;}
     finally{setBusy(false);}
   };
   if(!canTeach&&!canAttend)return <p role="alert" className={panel}>Online classes are available only to enrolled students and assigned teaching staff.</p>;
@@ -100,7 +101,7 @@ export const SecureOnlineLearning:React.FC<{currentUser:UserProfile}>=({currentU
           <form className="space-y-3" onSubmit={e=>{
             e.preventDefault();if(!starts||!ends)return;
             void submit('/api/classroom/sessions',{sectionId,title,startsAt:isoInput(starts),endsAt:isoInput(ends),meetingUrl,notes},
-              'Class scheduled for enrolled students.').then(()=>{setTitle('');setMeetingUrl('');setNotes('');});
+              'Class scheduled for enrolled students.').then(saved=>{if(saved){setTitle('');setMeetingUrl('');setNotes('');}});
           }}>
             <Field title="Class topic"><input className={inputClass} required maxLength={180} value={title} onChange={e=>setTitle(e.target.value)}/></Field>
             <Field title="Begins (local time)"><input className={inputClass} required type="datetime-local" value={starts} onChange={e=>setStarts(e.target.value)}/></Field>
@@ -116,7 +117,7 @@ export const SecureOnlineLearning:React.FC<{currentUser:UserProfile}>=({currentU
           <h3 className="mb-4 flex items-center gap-2 text-lg font-bold"><BookOpen className="h-5 w-5"/>Publish learning resource</h3>
           <form className="space-y-3" onSubmit={e=>{
             e.preventDefault();void submit('/api/classroom/resources',{sectionId,title:resourceTitle,kind:resourceKind,url:resourceUrl,description:resourceDescription},
-              'Learning resource published to students enrolled in this section.').then(()=>{setResourceTitle('');setResourceUrl('');setResourceDescription('');});
+              'Learning resource published to students enrolled in this section.').then(saved=>{if(saved){setResourceTitle('');setResourceUrl('');setResourceDescription('');}});
           }}>
             <Field title="Material title"><input className={inputClass} required maxLength={180} value={resourceTitle} onChange={e=>setResourceTitle(e.target.value)}/></Field>
             <Field title="Material category"><select className={inputClass} value={resourceKind} onChange={e=>setResourceKind(e.target.value as Resource['kind'])}>

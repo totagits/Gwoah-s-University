@@ -160,7 +160,8 @@ export function installWorkspaces(app: Express, store: Operations) {
             'SELECT a.*,u.name AS actor_name FROM audit a LEFT JOIN users u ON a.actor_id=u.id ORDER BY a.created_at DESC,a.rowid DESC LIMIT 300',
           )
         : store.all(
-            'SELECT * FROM audit WHERE actor_id=? ORDER BY created_at DESC,rowid DESC LIMIT 30',
+            // Non-auditor roles must never receive before_json/after_json snapshots.
+            'SELECT id,action,entity,created_at FROM audit WHERE actor_id=? ORDER BY created_at DESC,rowid DESC LIMIT 30',
             actor.id,
           ),
       storage: { engine: 'SQLite', schemaVersion: 1, singleInstance: true },
@@ -177,6 +178,23 @@ export function installWorkspaces(app: Express, store: Operations) {
       },
     };
   };
+  app.get('/api/workspaces/student-activity', (_req, res) => {
+    const actor = actorOf(res);
+    if (!actor || actor.role !== 'student')
+      return res.status(403).json({ error: 'Student account required.' });
+    try {
+      // Deliberately narrow: no raw audit snapshots and no staff/internal records.
+      // This is a history of the student's OWN actions, not a general activity feed.
+      const activities = store.all(
+        "SELECT id,action,created_at FROM audit WHERE actor_id=? AND action IN ('register','drop','graduationRequest','transcriptRequest') ORDER BY created_at DESC,rowid DESC LIMIT 40",
+        actor.id,
+      );
+      return res.json({ activities });
+    } catch {
+      return res.status(500).json({ error: 'Activity history unavailable.' });
+    }
+  });
+
   app.get('/api/workspaces/state', (_req, res) => {
     try {
       return res.json(state(res));

@@ -117,7 +117,7 @@ def main():
                 result.setparams(params)
                 for wavefile, _ in clips:
                     with wave.open(str(wavefile), "rb") as source:
-                        if source.getparams()[:4] != params[:4]:
+                        if source.getparams()[:3] != params[:3]:
                             raise RuntimeError("Narration segment formats differ")
                         result.writeframes(source.readframes(source.getnframes()))
             filelist = temporary / "slides.ffconcat"

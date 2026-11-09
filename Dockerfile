@@ -16,6 +16,8 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/src ./src
 COPY --from=build --chown=node:node /app/server ./server
+# Curriculum publication uses the degree route metadata at runtime.
+COPY --from=build --chown=node:node /app/scripts/hiau-degree-video-content.json ./scripts/hiau-degree-video-content.json
 COPY --from=build --chown=node:node /app/server.ts /app/package.json ./
 RUN mkdir -p /app/runtime-data && chown node:node /app/runtime-data
 USER node

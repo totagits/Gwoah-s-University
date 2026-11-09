@@ -1,0 +1,138 @@
+{
+  "disclaimer": "Educational overview only. Not a promise of program availability, outcomes or career placement.",
+  "degrees": [
+    {
+      "college": "business",
+      "name": "Bachelor of Business Administration in Accounting",
+      "learn": "Financial reporting helps organizations make responsible decisions.",
+      "today": "Digital accounting, regulatory transparency, and data-driven auditing shape financial operations.",
+      "careers": "Potential pathways include accounting support, audit, finance operations, and further professional certification."
+    },
+    {
+      "college": "business",
+      "name": "Bachelor of Business Administration in Entrepreneurship",
+      "learn": "Entrepreneurship combines business planning, customer discovery, and practical decision-making.",
+      "today": "Digital commerce, local enterprise development, and innovation make entrepreneurship an important modern discipline.",
+      "careers": "Potential directions include starting ventures, managing small businesses, and innovation roles."
+    },
+    {
+      "college": "liberal_arts",
+      "name": "Bachelor of Arts in Liberal Arts & Humanities",
+      "learn": "Humanities examine ideas, culture, language, ethical questions, and human experience.",
+      "today": "Critical thinking and clear communication matter in a world shaped by technology and complex social change.",
+      "careers": "Graduates may explore education, writing, public service, research, or additional study."
+    },
+    {
+      "college": "liberal_arts",
+      "name": "Bachelor of Arts in Strategic Communications & Media",
+      "learn": "Strategic communications studies how organizations communicate with communities and the public.",
+      "today": "Digital media, misinformation, public trust, and responsible storytelling are central challenges today.",
+      "careers": "Possible fields include public relations, communications, journalism, and media coordination."
+    },
+    {
+      "college": "liberal_arts",
+      "name": "Bachelor of Science in Social Sciences & General Studies",
+      "learn": "Social sciences investigate communities, institutions, economics, and public policy.",
+      "today": "Evidence-based decisions are essential for development, governance, and social services.",
+      "careers": "Graduates may pursue public administration, community programs, research, or policy support."
+    },
+    {
+      "college": "education",
+      "name": "Bachelor of Education in Early Childhood Education",
+      "learn": "Early childhood education focuses on how young children learn, communicate, and develop.",
+      "today": "Foundational literacy, inclusion, and family engagement shape lifelong learning opportunities.",
+      "careers": "Potential careers include early-years teaching and educational program support, subject to professional requirements."
+    },
+    {
+      "college": "education",
+      "name": "Bachelor of Education in Elementary Education (Language Arts & Social Studies)",
+      "learn": "Elementary teaching builds literacy, communication, and understanding of society.",
+      "today": "Strong reading skills and civic learning help children participate in a changing world.",
+      "careers": "Possible roles include primary teaching and curriculum support, subject to required qualifications."
+    },
+    {
+      "college": "education",
+      "name": "Bachelor of Education in Elementary Education (Math & Science)",
+      "learn": "This field develops the teaching of foundational mathematics and scientific inquiry.",
+      "today": "Numeracy, hands-on experiments, and digital learning prepare younger students for future STEM study.",
+      "careers": "Potential pathways include elementary teaching and educational resource development."
+    },
+    {
+      "college": "education",
+      "name": "Bachelor of Education in Secondary Education (Mathematics Focus)",
+      "learn": "Mathematics education combines mathematical concepts with effective classroom instruction.",
+      "today": "Data literacy, quantitative reasoning, and accessible STEM instruction are increasingly valuable.",
+      "careers": "Potential careers include secondary teaching and mathematics education support."
+    },
+    {
+      "college": "education",
+      "name": "Bachelor of Education in Secondary Education (English Focus)",
+      "learn": "English education develops language instruction, reading, literature, and effective writing.",
+      "today": "Communication skills and critical media literacy are important across modern workplaces.",
+      "careers": "Graduates may work toward secondary English teaching, tutoring, and curriculum development."
+    },
+    {
+      "college": "science_tech",
+      "name": "Bachelor of Science in Information Technology (IT)",
+      "learn": "Information technology connects software, networks, computing systems, and information security.",
+      "today": "Cloud services, cybersecurity, automation, and reliable digital infrastructure underpin modern institutions.",
+      "careers": "Potential pathways include IT support, networking, systems administration, and software-related roles."
+    },
+    {
+      "college": "science_tech",
+      "name": "Bachelor of Science in Science and Technology",
+      "learn": "Science and technology connect scientific reasoning with computing and applied innovation.",
+      "today": "Research methods, data analysis, and emerging technologies inform solutions to practical problems.",
+      "careers": "Possible paths include technical project work, laboratory support, research, and further specialization."
+    },
+    {
+      "college": "science_tech",
+      "name": "Bachelor of Science in Nursing (BSN)",
+      "learn": "Nursing studies patient care, health assessment, clinical reasoning, and community wellbeing.",
+      "today": "Preventive care, patient safety, and changing health systems make skilled nursing important.",
+      "careers": "Professional nursing practice requires applicable clinical training, licensing, and regulatory approval."
+    },
+    {
+      "college": "science_tech",
+      "name": "Bachelor of Science in Laboratory Science",
+      "learn": "Laboratory science examines diagnostic testing, measurement, samples, and scientific quality control.",
+      "today": "Reliable testing, infection surveillance, and laboratory safety support public health and research.",
+      "careers": "Possible careers include laboratory support, diagnostics, quality systems, and further technical training."
+    },
+    {
+      "college": "science_tech",
+      "name": "Bachelor of Science in Environmental Science",
+      "learn": "Environmental science explores ecosystems, natural resources, climate, and environmental measurement.",
+      "today": "Climate resilience, water quality, biodiversity, and sustainable development are important global challenges.",
+      "careers": "Potential fields include conservation, environmental monitoring, and sustainability programs."
+    },
+    {
+      "college": "science_tech",
+      "name": "Bachelor of Science in Health Administration",
+      "learn": "Health administration examines how health services are organized, financed, and improved.",
+      "today": "Digital health records, service quality, and efficient resource planning affect access to care.",
+      "careers": "Potential roles include hospital administration support, health programs, and quality coordination."
+    },
+    {
+      "college": "theology",
+      "name": "Bachelor of Theology in Christian Education",
+      "learn": "Christian education connects biblical study with teaching, mentoring, and spiritual formation.",
+      "today": "Effective educational practice and responsible community leadership matter across ministry settings.",
+      "careers": "Possible directions include religious education, youth ministry, and community programs."
+    },
+    {
+      "college": "theology",
+      "name": "Bachelor of Theology in Christian Counseling",
+      "learn": "Christian counseling explores pastoral care, supportive communication, and ethical guidance.",
+      "today": "Community wellbeing and responsible referral practices matter when people face difficult life events.",
+      "careers": "Potential paths include pastoral support and faith-based community work; clinical practice requires separate licensure."
+    },
+    {
+      "college": "theology",
+      "name": "Bachelor of Theology in Missions & Global Evangelism",
+      "learn": "Missions and evangelism examine theology, cross-cultural communication, and service.",
+      "today": "Intercultural understanding, ethical engagement, and community partnerships are important in today's connected world.",
+      "careers": "Potential work includes ministry programs, community outreach, and faith-based service."
+    }
+  ]
+}

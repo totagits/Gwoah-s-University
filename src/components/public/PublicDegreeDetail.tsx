@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, GraduationCap, PlayCircle } from 'lucide-react';
 import { resolvePublicDegree } from './PublicColleges';
+import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
 
 interface DegreeDetailProps {
   route: string;
@@ -16,6 +17,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
     <button type="button" onClick={onBack} className="mt-5 inline-flex items-center gap-2 font-semibold text-[#4a1249] underline"><ArrowLeft className="h-4 w-4"/>Return to Academics</button>
   </main>;
   const {college,program}=match;
+  const explainer=degreeExplainers.degrees.find(item=>item.college===college.id&&item.name===program.name);
   const focusAreas=program.focus.split(',').map(area=>area.trim()).filter(Boolean);
   const hasConfirmedCredit=program.name==='Bachelor of Science in Civil Engineering';
   const academicNote=hasConfirmedCredit
@@ -59,10 +61,12 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Program overview</p>
           <h2 id="degree-overview" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b] sm:text-3xl">About this degree</h2>
           <p className="mt-5 text-base leading-7 text-slate-700">
-            {program.name} is included in the academic offerings described by the {college.name}.
-            Its academic emphasis covers {program.focus.toLowerCase()}.
-            Prospective students should consult the college or Admissions Office for the
-            approved course catalog, entry requirements, academic calendar and available intake.
+            {program.name} is among the academic fields described by the {college.name}.
+            {explainer ? ' '+explainer.learn : ' Its focus includes '+program.focus.toLowerCase()+'.'}
+          </p>
+          <p className="mt-4 text-sm leading-7 text-slate-700">
+            To plan a suitable academic pathway, prospective students should verify official course
+            requirements, degree availability, the entry process, and the academic calendar with HIAU.
           </p>
         </section>
         <section aria-labelledby="degree-areas">
@@ -76,6 +80,16 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#946b2c]" aria-hidden="true"/>{area}
             </li>)}
           </ul>
+        </section>
+        <section aria-labelledby="degree-world">
+          <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Society, technology and work</p>
+          <h2 id="degree-world" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Relevance in today's world</h2>
+          <p className="mt-4 text-base leading-7 text-slate-700">{explainer?.today ?? 'The importance of this field continues to evolve alongside technology, community needs and professional practice.'}</p>
+        </section>
+        <section aria-labelledby="degree-careers">
+          <h2 id="degree-careers" className="text-2xl font-bold tracking-tight text-[#35103b]">Possible professional directions</h2>
+          <p className="mt-4 text-base leading-7 text-slate-700">{explainer?.careers ?? 'Graduates may explore opportunities in their field or pursue further study, depending on professional qualifications and applicable regulations.'}</p>
+          <p className="mt-3 text-xs leading-6 text-slate-600">Career paths are illustrative, not employment guarantees. Regulated professions may require additional training, certification or licensing.</p>
         </section>
         <section aria-labelledby="degree-video">
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Learn about this field</p>

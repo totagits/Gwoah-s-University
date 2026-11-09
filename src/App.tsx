@@ -5,7 +5,8 @@ import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
 import { PublicVirtualTour } from './components/public/PublicVirtualTour';
-import { PublicColleges } from './components/public/PublicColleges';
+import { PublicColleges, resolvePublicDegree } from './components/public/PublicColleges';
+import { PublicDegreeDetail } from './components/public/PublicDegreeDetail';
 import { PublicAdmissions } from './components/public/PublicAdmissions';
 import { PublicCalendar } from './components/public/PublicCalendar';
 import { PublicDEI } from './components/public/PublicDEI';
@@ -44,6 +45,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'public' | 'portal'>('public');
   const [activePublicSection, setActivePublicSection] = useState('hero');
   const [activeLeaderProfileId, setActiveLeaderProfileId] = useState<string | null>(null);
+  const [activeDegreeRoute, setActiveDegreeRoute] = useState<string | null>(null);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -125,6 +127,17 @@ export default function App() {
 
       // Check URL hash: #leader=chancellor or #profile=...
       const hash = window.location.hash.replace(/^#/, '');
+      if (hash.startsWith('degree=')) {
+        const route=decodeURIComponent(hash.slice('degree='.length));
+        if (resolvePublicDegree(route)) {
+          setActiveDegreeRoute(route);
+          setActiveLeaderProfileId(null);
+          setViewMode('public');
+          window.scrollTo({top:0,behavior:'instant'});
+          return;
+        }
+      }
+      setActiveDegreeRoute(null);
       if (hash.startsWith('leader=') || hash.startsWith('profile=')) {
         const leaderKey = hash.split('=')[1];
         if (leaderKey) {
@@ -236,6 +249,7 @@ export default function App() {
     const found = resolveLeaderProfile(profileId);
     const validId = found ? found.id : profileId;
     setActiveLeaderProfileId(validId);
+    setActiveDegreeRoute(null);
     setViewMode('public');
     if (window.location.hash !== `#leader=${validId}`) {
       window.history.pushState(null, '', `#leader=${validId}`);
@@ -252,17 +266,20 @@ export default function App() {
 
   const handleNavigateSection = (sectionId: string) => {
     setActiveLeaderProfileId(null);
+    setActiveDegreeRoute(null);
     setActivePublicSection(sectionId);
     setViewMode('public');
-    if (window.location.hash.startsWith('#leader=') || window.location.hash.startsWith('#profile=')) {
+    if (window.location.hash.startsWith('#leader=') || window.location.hash.startsWith('#profile=') || window.location.hash.startsWith('#degree=')) {
       window.history.pushState(null, '', window.location.pathname + window.location.search);
     }
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // When leaving a standalone degree page the directory is mounted on the next render.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
   };
 
   const handleOpenPrintModal = async (docType: 'registration_plan' | 'transcript' | 'financial_statement') => {
@@ -288,7 +305,19 @@ export default function App() {
             onOpenProfile={handleOpenProfile}
           />
 
-          {activeLeaderProfileId ? (
+          {activeDegreeRoute ? (
+            <PublicDegreeDetail route={activeDegreeRoute}
+              onBack={() => {
+                setActiveDegreeRoute(null);
+                setActivePublicSection('colleges');
+                window.history.pushState(null, '', '#hiau-college-directory');
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() =>
+                  document.getElementById('hiau-college-directory')?.scrollIntoView({behavior:'smooth'})
+                ));
+              }}
+              onNavigateSection={handleNavigateSection}
+            />
+          ) : activeLeaderProfileId ? (
             <PublicLeaderProfile
               profileId={activeLeaderProfileId}
               onClose={handleCloseProfile}

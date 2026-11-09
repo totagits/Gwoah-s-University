@@ -20,14 +20,14 @@ import {
   Search,
 } from 'lucide-react';
 
-interface ProgramDetail {
+export interface ProgramDetail {
   name: string;
   degreeType: string;
   duration: string;
   focus: string;
 }
 
-interface BlestCollege {
+export interface BlestCollege {
   id: string;
   letter: string;
   name: string;
@@ -38,7 +38,7 @@ interface BlestCollege {
   programs: ProgramDetail[];
 }
 
-const BLEST_COLLEGES: BlestCollege[] = [
+export const BLEST_COLLEGES: BlestCollege[] = [
   {
     id: 'business',
     letter: 'B',
@@ -284,6 +284,20 @@ const SPECIALIZED_PROGRAMS = [
   },
 ];
 
+export const degreeSlug = (name: string) =>
+  name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+export const resolvePublicDegree = (route: string) => {
+  for (const college of BLEST_COLLEGES) {
+    for (const program of college.programs) {
+      if (`${college.id}--${degreeSlug(program.name)}` === route)
+        return { college, program, route };
+    }
+  }
+  return null;
+};
+
 export const PublicColleges: React.FC = () => {
   const [selectedCollegeId, setSelectedCollegeId] = useState<string>('business');
   const [query, setQuery] = useState('');
@@ -294,13 +308,14 @@ export const PublicColleges: React.FC = () => {
     ),
   );
   const allPrograms = BLEST_COLLEGES.reduce((total, college) => total + college.programs.length, 0);
+  const degreeLink = (program:ProgramDetail) => '#degree=' + activeCollege.id + '--' + degreeSlug(program.name);
 
   return (
     <section id="colleges" aria-labelledby="hiau-academics-title" className="scroll-mt-28 bg-white text-[#301337]">
       {/* Editorial header: clear information hierarchy rather than a competing mega-banner */}
       <div className="border-b border-[#eadfeb] bg-[#faf8fb]">
-        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
-          <div className="max-w-4xl">
+        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)] lg:items-center lg:gap-12 lg:px-10">
+          <div className="min-w-0">
             <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.18em] text-[#946b2c]">
               Academics at HIAU
             </p>
@@ -322,6 +337,17 @@ export const PublicColleges: React.FC = () => {
               </a>
             </div>
           </div>
+          <figure className="overflow-hidden rounded-xl bg-[#2a082c] shadow-md">
+            <img
+              src="/assets/aistudio/image_51d124f3.png"
+              alt="HIAU students in an instructional computing classroom"
+              className="aspect-[4/3] w-full object-cover"
+              fetchPriority="high"
+            />
+            <figcaption className="bg-white px-4 py-2.5 text-xs font-medium text-slate-600">
+              A look inside a HIAU learning space
+            </figcaption>
+          </figure>
         </div>
       </div>
 
@@ -397,11 +423,15 @@ export const PublicColleges: React.FC = () => {
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {matchingPrograms.map(program=>(
-                  <article key={program.name} className="flex h-full flex-col rounded-lg border border-[#e4dce5] bg-white p-5 transition-colors hover:border-[#b99abb] hover:bg-[#fcfafc]">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#916a37]">{program.degreeType} · {program.duration}</p>
-                    <h6 className="mt-3 text-lg font-semibold leading-snug text-[#35103b]">{program.name}</h6>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{program.focus}</p>
-                    <p className="mt-5 border-t border-[#eee8ee] pt-3 text-xs font-medium text-slate-600">Confirm availability and requirements with Admissions</p>
+                  <article key={program.name} className="group h-full rounded-lg border border-[#e4dce5] bg-white transition-colors hover:border-[#a684aa] hover:bg-[#fcfafc] focus-within:border-[#4a1249] focus-within:ring-2 focus-within:ring-[#4a1249]/20">
+                    <a href={degreeLink(program)} className="flex h-full flex-col p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]" aria-label={`Explore ${program.name} degree details`}>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#916a37]">{program.degreeType} · {program.duration}</p>
+                      <h6 className="mt-3 text-lg font-semibold leading-snug text-[#35103b] group-hover:underline">{program.name}</h6>
+                      <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{program.focus}</p>
+                      <span className="mt-5 inline-flex items-center gap-2 border-t border-[#eee8ee] pt-3 text-sm font-bold text-[#4a1249]">
+                        Explore this degree <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                      </span>
+                    </a>
                   </article>
                 ))}
               </div>

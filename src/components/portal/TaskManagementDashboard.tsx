@@ -210,11 +210,11 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
               Institutional Task Management
             </h2>
             <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold px-2 py-0.5 rounded-full">
-              {tasks.length} Active Workflows
+              {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Track accreditation deliverables, exam moderation, admissions verification, and departmental SLAs across Gwoah's University.
+            Track accreditation deliverables, exam moderation, admissions verification, and departmental SLAs across Harvest Intercontinental American University.
           </p>
         </div>
 
@@ -263,7 +263,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
       </div>
 
       {/* Filter and Search Toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs">
+      {(tasks.length > 0 || loading) && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs">
         {/* Search */}
         <div className="relative">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
@@ -341,11 +341,23 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
             <option value="completed">Completed</option>
           </select>
         </div>
-      </div>
+      </div>}
+
+      {!loading && tasks.length === 0 && (
+        <div className="rounded-2xl border border-[#e6dce7] bg-white px-6 py-12 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#f5eff5] text-[#4a1249]"><ListTodo className="h-6 w-6" aria-hidden="true" /></div>
+          <h3 className="text-xl font-semibold text-[#35103b]">No tasks to display</h3>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Create the first institutional workflow or clear your filters to review existing work. Nothing has been added to this workspace automatically.</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <button type="button" onClick={() => setIsCreateModalOpen(true)} className="rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#661b69]">Create task</button>
+            <button type="button" onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setPriorityFilter('all'); setDepartmentFilter('all'); setStatusFilter('all'); }} className="rounded-lg border border-[#d8c9dc] px-4 py-2.5 text-sm font-semibold text-[#4a1249] hover:bg-[#f7f0f7]">Clear filters</button>
+          </div>
+        </div>
+      )}
 
       {/* KANBAN BOARD VIEW */}
-      {viewMode === 'kanban' && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
+      {viewMode === 'kanban' && tasks.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4 pb-4">
           {kanbanColumns.map((col) => {
             const columnTasks = tasks.filter((t) => t.status === col.id);
             return (
@@ -468,7 +480,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
       )}
 
       {/* TABLE LIST VIEW */}
-      {viewMode === 'list' && (
+      {viewMode === 'list' && tasks.length > 0 && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">

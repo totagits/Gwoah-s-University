@@ -168,3 +168,9 @@ body.theme-light {
 [data-theme="light"] table tr:hover td {
   background-color: #f8fafc !important;
 }
+
+/* The ERP's light-mode override must not darken white text on HIAU public
+   purple buttons, banners, and leadership cards. */
+.hiau-public-site .text-white {
+  color: #ffffff !important;
+}

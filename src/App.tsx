@@ -328,7 +328,7 @@ export default function App() {
 
       {/* RENDER PROTECTED ERP SUBSYSTEM VIEW */}
       {viewMode === 'portal' && currentUser && (
-        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
+        <div className="hiau-erp-site flex flex-col min-h-screen bg-[#FAF8FB]">
           <PortalHeader
             currentUser={currentUser}
             activeTab={activePortalTab}
@@ -340,13 +340,15 @@ export default function App() {
             onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
           />
 
-          <main id="erp-main-content" className="flex-1 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-10 py-7">
-            <div className="mb-7 border-b border-[#e6dce7] pb-5">
+          <main id="erp-main-content" className="flex-1 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-10 py-6">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-[#e6dce7] pb-4"><div>
               <p className="uppercase tracking-[0.18em] text-[11px] font-bold text-[#866080]">University operations / {currentUser.role.replaceAll('_', ' ')}</p>
               <h1 className="text-2xl md:text-3xl font-semibold text-[#35103B] mt-1">
                 {PORTAL_MODULES.find(m => m.id === activePortalTab)?.label ?? 'Workspace access'}
               </h1>
-              <p className="text-sm text-slate-600 mt-1">Authorized records and workflows for Harvest Intercontinental American University.</p>
+              <p className="text-sm text-slate-600 mt-1">Authorized university records and workflows.</p>
+              </div>
+              <PortalQuickActionsMenu currentUser={currentUser} onNavigateTab={handleSelectTabWithSubAction} onOpenPrintModal={handleOpenPrintModal} />
             </div>
             {!isPortalModuleAvailable(currentUser.role, activePortalTab) && (
               <section role="status" className="rounded-xl bg-white border border-slate-200 p-6 text-slate-700">
@@ -396,12 +398,6 @@ export default function App() {
             )}
           </main>
 
-          {/* Quick Actions Floating Action Menu */}
-          <PortalQuickActionsMenu
-            currentUser={currentUser}
-            onNavigateTab={handleSelectTabWithSubAction}
-            onOpenPrintModal={handleOpenPrintModal}
-          />
 
           <footer className="bg-[#4A1249] text-purple-100 border-t border-[#C39A53]/40 py-5 text-center text-xs">
             <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">

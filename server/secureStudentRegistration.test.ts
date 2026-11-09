@@ -19,7 +19,7 @@ test('student academic planning uses authenticated workspaces rather than legacy
   assert.match(view,/\:\{id:target\.row\.id,reason:reason\.trim\(\)\}/);
   assert.doesNotMatch(view,/u-student|\/api\/registration\/add|\/api\/registration\/drop/);
   assert.match(view,/data\.actor\?\.id!==currentUser\.id/);
-  assert.match(view,/student\.id/);
+  assert.match(view,/student\?\.id/);
 });
 
 test('student registration screen does not falsely promise refunds, enrollment or verified documents',()=>{
@@ -28,5 +28,5 @@ test('student registration screen does not falsely promise refunds, enrollment o
   assert.match(view,/Registration is available only for university-open terms/);
   assert.match(view,/Official printable registration slips require Registrar verification/);
   assert.match(view,/Enrollment alone does not confirm an online classroom is available/);
-  assert.match(view,/student\.id/);
+  assert.match(view,/student\?\.id/);
 });

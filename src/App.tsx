@@ -19,7 +19,7 @@ import { TaskManagementDashboard } from './components/portal/TaskManagementDashb
 import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsHub';
 import { FacultyAdminDashboard } from './components/portal/FacultyAdminDashboard';
 import { AcademicPlanningRegistration } from './components/portal/AcademicPlanningRegistration';
-import { StudentPortalView } from './components/portal/StudentPortalView';
+import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';
@@ -375,10 +375,7 @@ export default function App() {
             )}
 
             {activePortalTab === 'student_portal' && (
-              <StudentPortalView
-                currentUser={currentUser}
-                onOpenPrintModal={handleOpenPrintModal}
-              />
+              <SecureStudentWorkspace currentUser={currentUser} />
             )}
 
             {activePortalTab === 'classroom' && (

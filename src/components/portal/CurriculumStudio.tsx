@@ -76,6 +76,8 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
   const [error,setError]=useState('');
   const [message,setMessage]=useState('');
   const [filter,setFilter]=useState('');
+  const [sourcePreview,setSourcePreview]=useState<{code:string;name:string;page:string;sourceTotal:number;draftCourseCount:number;alreadyImported:boolean}[]>([]);
+  const [sourceOpen,setSourceOpen]=useState(false);
   const active=programs.find(p=>p.id===selected);
   const programCourses=useMemo(()=>courses.filter(c=>c.program_id===selected)
     .sort((a,b)=>a.year-b.year||a.semester-b.semester||a.code.localeCompare(b.code)),
@@ -96,6 +98,26 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
     finally{setLoading(false);}
   },[]);
   useEffect(()=>{void load();},[load]);
+  const loadSourcePreview=async()=>{
+    setError('');
+    try{
+      const response=await fetch('/api/curriculum/reference/college-science',{cache:'no-store'});
+      const result=await response.json();
+      if(!response.ok)throw new Error(messageFrom(result));
+      setSourcePreview(result.programs||[]);
+      setSourceOpen(true);
+    }catch(e){setError(e instanceof Error?e.message:'Unable to load the source preview.');}
+  };
+  const importReferenceDrafts=async()=>{
+    if(!window.confirm('Import the College of Science PDF reference records as UNVERIFIED DRAFTS only? No live course or program will be created.'))return;
+    const result=await mutate('/api/curriculum/reference/college-science/import','POST',{
+      confirmation:'IMPORT_UNVERIFIED_DRAFTS'
+    });
+    if(result){
+      setMessage(`Imported ${result.imported} draft programs and ${result.courseSamples} sample course rows; ${result.skipped} existing references skipped. All imported records require Registrar review.`);
+      await loadSourcePreview();
+    }
+  };
   const mutate=async(url:string,method:'POST'|'PATCH'|'DELETE',data?:object)=>{
     setBusy(true);setError('');setMessage('');
     try{
@@ -145,6 +167,7 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={()=>void load()} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm text-[#4a1249] hover:bg-[#faf4fa]"><RefreshCw className="h-4 w-4"/>Refresh</button>
+          <button type="button" onClick={()=>void loadSourcePreview()} className="inline-flex items-center gap-2 rounded-lg border border-[#dacbdb] px-3 py-2 text-sm font-semibold text-[#4a1249] hover:bg-[#faf4fa]"><BookOpen className="h-4 w-4"/>PDF reference drafts</button>
           <button type="button" onClick={()=>{setSelected('');setProgramInput(emptyProgram);setProgramFormOpen(true);}}
             className="inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2 text-sm font-semibold text-white"><Plus className="h-4 w-4"/>New program draft</button>
         </div>
@@ -154,6 +177,28 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
         <p>The uploaded College of Science document has conflicting program totals and course codes. Enter each value with its source page and obtain academic confirmation before approving. Draft approvals do not automatically change enrolled students or graduation policies.</p>
       </div>
     </section>
+    {sourceOpen&&<section aria-label="College of Science reference import" className="rounded-2xl border border-[#e6dce7] bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div><h3 className="text-lg font-semibold text-[#35103b]">College of Science · PDF reference intake</h3>
+          <p className="mt-1 text-sm text-slate-600">Eight source-derived program candidates with provisional REF- identifiers, sample course sequences, source pages and mandatory discrepancy reviews. No university program codes are invented.</p></div>
+        <button type="button" onClick={()=>setSourceOpen(false)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">Close preview</button>
+      </div>
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[580px] text-left text-sm">
+          <thead><tr className="border-b bg-[#faf8fb] text-slate-700"><th className="p-2">Reference program</th><th className="p-2">Source page(s)</th><th className="p-2">Credit candidate</th><th className="p-2">Course examples</th><th className="p-2">Status</th></tr></thead>
+          <tbody>{sourcePreview.map(p=><tr className="border-b last:border-0" key={p.code}>
+            <td className="p-2"><strong>{p.name}</strong><span className="block text-xs text-slate-600">{p.code}</span></td>
+            <td className="p-2">{p.page}</td><td className="p-2">{p.sourceTotal}</td><td className="p-2">{p.draftCourseCount}</td>
+            <td className="p-2">{p.alreadyImported?'Already in drafts':'Not yet imported'}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" disabled={busy||sourcePreview.every(p=>p.alreadyImported)} onClick={()=>void importReferenceDrafts()}
+          className="rounded-lg bg-[#4a1249] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Import unverified drafts</button>
+        <p className="text-xs text-amber-900">Imports are non-destructive and skipped on repeat. Drafts cannot enter review until reference codes and source conflicts are resolved.</p>
+      </div>
+    </section>}
     {error&&<p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
     {message&&<p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{message}</p>}
     {programFormOpen&&<form onSubmit={event=>void submitProgram(event)} className="rounded-2xl border border-[#e6dce7] bg-white p-5 shadow-sm">
@@ -161,7 +206,7 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {fields.map(f=><label key={f.key} className="block text-sm font-medium text-slate-700">
           {f.label}<input required={f.key!=='sourcePage'} type={f.type||'text'} min={f.type==='number'?'0':undefined} step={f.type==='number'?'0.5':undefined}
-            disabled={busy||(f.key==='code'&&!!active)} value={programInput[f.key]}
+            disabled={busy} value={programInput[f.key]}
             onChange={e=>setProgramInput(prev=>({...prev,[f.key]:e.target.value}))}
             className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-[#35103b] disabled:bg-slate-100"/>
         </label>)}

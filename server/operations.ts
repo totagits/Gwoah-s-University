@@ -1102,7 +1102,7 @@ export class Operations {
     if (
       data?.schemaVersion !== 1 ||
       !data.tables ||
-      !operationalTables.every((name) => Array.isArray(data.tables[name]))
+      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses'].includes(name)).every((name) => Array.isArray(data.tables[name]))
     )
       throw new WorkflowError(
         'Snapshot is not a relational operations snapshot.',
@@ -1117,7 +1117,7 @@ export class Operations {
         const columns = this.all(`PRAGMA table_info(${name})`).map(
           (c) => c.name,
         );
-        for (const row of data.tables[name]) {
+        for (const row of data.tables[name] ?? []) {
           if (!Object.keys(row).every((key) => columns.includes(key)))
             throw new WorkflowError('Unexpected snapshot columns.');
           this.run(

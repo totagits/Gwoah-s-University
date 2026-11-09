@@ -402,10 +402,7 @@ export default function App() {
             )}
 
             {activePortalTab === 'academics' && (
-              <SecureStudentRegistration
-                currentUser={currentUser}
-                onOpenPrintModal={handleOpenPrintModal}
-              />
+              <SecureStudentRegistration currentUser={currentUser} />
             )}
 
             {activePortalTab === 'curriculum' && (

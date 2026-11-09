@@ -349,3 +349,62 @@ test('student activity endpoint is scoped, redacted, and inaccessible to staff',
       fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+
+test('recipient notifications are persisted, private, and read state is isolated', async () => {
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-notifications-test-'));
+  const db=new Operations(directory);
+  db.saveUsers([
+    {id:'staff-one',name:'Staff One',email:'staff@example.test',role:'registrar'},
+    {id:'staff-two',name:'Staff Two',email:'other@example.test',role:'lecturer'},
+  ]);
+  const staff={id:'staff-one',name:'Staff One',role:'registrar'} as any;
+  const other={id:'staff-two',name:'Staff Two',role:'lecturer'} as any;
+  const app=express();
+  app.use(express.json());
+  app.use((req,res,next)=>{
+    const id=req.get('x-test-user')||'staff-one';
+    res.locals.actor={id,role:id==='staff-one'?'registrar':'lecturer',name:id};
+    next();
+  });
+  installWorkspaces(app,db);
+  const server=app.listen(0,'127.0.0.1');
+  await new Promise<void>(resolve=>server.once('listening',resolve));
+  const base=`http://127.0.0.1:${(server.address() as any).port}`;
+  try {
+    const task=db.execute(staff,'task',{title:'Review curriculum',description:'Check approved records',assigneeId:'staff-two',dueDate:'2027-06-01'});
+    const first=db.notificationsFor(other);
+    assert.equal(first.length,1);
+    assert.equal(first[0].title,'New task assigned');
+    assert.equal(db.notificationsFor(staff).length,0);
+    const visible=await (await fetch(base+'/api/notifications',{headers:{'x-test-user':'staff-two'}})).json();
+    assert.equal(visible.notifications.length,1);
+    assert.equal(visible.unreadCount,1);
+    const forbidden=await fetch(base+'/api/notifications/'+first[0].id+'/read',{
+      method:'PATCH',headers:{'x-test-user':'staff-one'}
+    });
+    assert.equal(forbidden.status,404);
+    assert.equal(db.notificationsFor(other)[0].read_at,null);
+    const read=await fetch(base+'/api/notifications/'+first[0].id+'/read',{
+      method:'PATCH',headers:{'x-test-user':'staff-two'}
+    });
+    assert.equal(read.status,200);
+    assert.ok(db.notificationsFor(other)[0].read_at);
+    db.execute(other,'taskStatus',{id:task.id,status:'in_progress'});
+    assert.equal(db.notificationsFor(staff)[0].title,'Task status changed');
+    assert.equal(db.notificationsFor(other).length,1);
+    const snapshot=db.exportSnapshot();
+    assert.equal(snapshot.notifications.length,2);
+    db.importSnapshot(snapshot);
+    assert.equal(db.notificationsFor(staff).length,1);
+    assert.equal(db.notificationsFor(other).length,1);
+    const all=await fetch(base+'/api/notifications/read-all',{method:'POST',headers:{'x-test-user':'staff-one'}});
+    assert.equal(all.status,200);
+    assert.ok(db.notificationsFor(staff)[0].read_at);
+  } finally {
+    await new Promise<void>(resolve=>server.close(()=>resolve()));
+    db.close();
+    if(path.dirname(directory)===os.tmpdir()&&path.basename(directory).startsWith('hiau-notifications-test-'))
+      fs.rmSync(directory,{recursive:true,force:true});
+  }
+});

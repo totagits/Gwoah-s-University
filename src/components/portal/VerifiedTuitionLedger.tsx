@@ -13,7 +13,9 @@ type Action='invoice'|'payment'|'reconcilePayment';
 const value=(v:unknown)=>typeof v==='string'?v:'';
 const dollars=(cents:unknown)=>typeof cents==='number'&&Number.isFinite(cents)
   ?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100):'—';
-const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Monrovia',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+
+const Section=({title,children}:{title:string;children:React.ReactNode})=>
+  <section className="rounded-2xl border border-[#e9dcea] bg-white p-5 shadow-sm"><h3 className="mb-4 text-lg font-bold text-[#35103b]">{title}</h3>{children}</section>;
 
 /**
  * Secure finance operations. Nothing here claims to initiate a mobile-money
@@ -97,8 +99,6 @@ export const VerifiedTuitionLedger:React.FC<{currentUser:UserProfile}>=({current
   if(!['super_admin','bursar'].includes(currentUser.role))
     return <p role="alert" className="rounded-xl border border-red-200 bg-white p-6">Only authorized Finance/Bursar administrators can manage tuition accounts.</p>;
   if(loading&&!data)return <p role="status" className="rounded-xl bg-white p-6">Loading verified tuition records…</p>;
-  const Section=({title,children}:{title:string;children:React.ReactNode})=>
-    <section className="rounded-2xl border border-[#e9dcea] bg-white p-5 shadow-sm"><h3 className="mb-4 text-lg font-bold text-[#35103b]">{title}</h3>{children}</section>;
   const label='mb-1 block text-sm font-semibold text-[#35103b]';
   const input='w-full rounded-lg border border-[#d8c8da] bg-white p-2.5 text-sm text-slate-900';
   const actionButton='rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40';
@@ -182,6 +182,9 @@ export const VerifiedTuitionLedger:React.FC<{currentUser:UserProfile}>=({current
           <td className="p-2">{dollars(received)}</td><td className="p-2 font-semibold">{dollars(i.balance_cents)}</td>
         </tr>;
       })}</tbody></table></div>}
+      {ownInvoices.some(i=>Number(i.balance_cents)<0)&&<p role="alert" className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        Some invoices have a student credit balance after course drops or adjustments. An authorized Bursar must review the credit; this system does not automatically refund cash or transfer it to another term.
+      </p>}
       {(data?.payments||[]).length>0&&<p className="mt-4 text-xs text-slate-600">{(data?.payments||[]).filter(p=>p.status==='recorded').length} unreconciled payment(s). Recorded-but-unreconciled evidence does not decrease confirmed outstanding balances.</p>}
       <p className="mt-3 text-xs text-slate-600">Payment gateway credentials, provider callbacks, transaction verification, certified receipts and official refund disbursements require separate institution-approved integrations.</p>
     </Section>

@@ -77,3 +77,66 @@ test('curriculum administration keeps drafts private and separates approval from
       fs.rmSync(dir,{recursive:true,force:true});
   }
 });
+
+test('college science PDF reference import is idempotent, isolated, and blocked from approval until reviewed',async()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-pdf-reference-'));
+  const store=new Operations(directory);
+  const app=express();app.use(express.json());
+  app.use((req,res,next)=>{
+    const role=req.get('x-test-role')||'student';
+    res.locals.actor={id:role+'-actor',role,name:role};
+    next();
+  });
+  installCurriculumStudio(app,store);
+  const server=app.listen(0,'127.0.0.1');
+  await new Promise<void>(resolve=>server.once('listening',resolve));
+  const url='http://127.0.0.1:'+(server.address() as any).port;
+  const req=async(method:string,path:string,role:string,body?:object)=>{
+    const r=await fetch(url+path,{method,headers:{'Content-Type':'application/json','x-test-role':role},body:body?JSON.stringify(body):undefined});
+    return {status:r.status,data:await r.json().catch(()=>null)};
+  };
+  try{
+    const prefix='/api/curriculum/reference/college-science';
+    assert.equal((await req('GET',prefix,'student')).status,403);
+    assert.equal((await req('POST',prefix+'/import','student',{confirmation:'IMPORT_UNVERIFIED_DRAFTS'})).status,403);
+    assert.equal((await req('POST',prefix+'/import','registrar',{confirmation:'wrong'})).status,400);
+    const preview=await req('GET',prefix,'registrar');
+    assert.equal(preview.status,200);assert.equal(preview.data.programs.length,8);
+    assert.ok(preview.data.programs.every((p:any)=>p.code.startsWith('REF-')));
+    const created=await req('POST',prefix+'/import','registrar',{confirmation:'IMPORT_UNVERIFIED_DRAFTS'});
+    assert.equal(created.status,201);
+    assert.equal(created.data.imported,8);
+    assert.ok(created.data.courseSamples>=30);
+    assert.equal(store.all('SELECT * FROM programs').length,0);
+    assert.equal(store.all('SELECT * FROM courses').length,0);
+    assert.equal(store.all('SELECT * FROM curriculum_programs').length,8);
+    const second=await req('POST',prefix+'/import','registrar',{confirmation:'IMPORT_UNVERIFIED_DRAFTS'});
+    assert.equal(second.status,201);assert.equal(second.data.imported,0);
+    assert.equal(second.data.skipped,8);assert.equal(second.data.courseSamples,0);
+    const source=store.one("SELECT * FROM curriculum_programs WHERE code='REF-HIAU-BS-IT'");
+    assert.equal(source.status,'draft');assert.ok(source.notes.includes('SOURCE_REVIEW_REQUIRED'));
+    assert.equal((await req('POST','/api/curriculum/programs/'+source.id+'/status','registrar',{status:'in_review'})).status,409);
+    const p={
+      name:source.name,code:'BS-IT-APPROVED',college:source.college,credential:source.credential,
+      generalCredits:source.general_half/2,collegeCredits:source.college_half/2,
+      majorCredits:source.major_half/2,minorCredits:source.minor_half/2,
+      electiveCredits:source.elective_half/2,requiredCredits:source.required_half/2,
+      sourceTitle:source.source_title,sourcePage:source.source_page,
+      notes:'Registrar reviewed source, still missing required courses',
+    };
+    assert.equal((await req('PATCH','/api/curriculum/programs/'+source.id,'registrar',p)).status,200);
+    const changed=store.one('SELECT * FROM curriculum_programs WHERE id=?',source.id);
+    assert.equal(changed.code,'BS-IT-APPROVED');
+    // Draft still needs the full curriculum. Sample courses do not grant approval.
+    assert.equal((await req('POST','/api/curriculum/programs/'+source.id+'/status','registrar',{status:'in_review'})).status,200);
+    assert.equal((await req('POST','/api/curriculum/programs/'+source.id+'/status','super_admin',{status:'approved'})).status,409);
+    const snapshot=store.exportSnapshot();
+    assert.equal(snapshot.tables.curriculum_programs.length,8);
+    store.importSnapshot(snapshot);
+    assert.equal(store.all('SELECT * FROM curriculum_programs').length,8);
+  }finally{
+    await new Promise<void>(resolve=>server.close(()=>resolve()));
+    store.close();
+    if(path.dirname(directory)===os.tmpdir()&&path.basename(directory).startsWith('hiau-pdf-reference-'))fs.rmSync(directory,{recursive:true,force:true});
+  }
+});

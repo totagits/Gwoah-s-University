@@ -174,21 +174,21 @@ export const PortalQuickActionsMenu: React.FC<PortalQuickActionsMenuProps> = ({
 
   return (
     <>
-      {/* Floating Action Button (FAB) anchored bottom-right */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
+      {/* Contextual action palette: in document flow, never overlaps content or footer. */}
+      <div className="relative mb-4 flex items-center justify-end gap-2">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="group flex items-center gap-2.5 px-4 py-3 bg-[#4A1249] hover:bg-[#661B69] text-white rounded-full shadow-2xl border-2 border-[#C39A53] cursor-pointer transition-all hover:scale-105 active:scale-95 ring-4 ring-[#4A1249]/20"
+          className="group inline-flex items-center gap-2 rounded-lg border border-[#d8c9dc] bg-white px-3 py-2 text-sm font-semibold text-[#4A1249] shadow-sm transition-colors hover:bg-[#f7f0f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249]"
           aria-label="Open ERP Quick Actions Menu"
           title="Quick Actions & Fast Workflow Navigation (Ctrl+K)"
         >
-          <div className="p-1 bg-[#C39A53] rounded-full text-[#2A082C] group-hover:rotate-12 transition-transform">
+          <div className="text-[#4A1249]">
             <Zap className="w-4 h-4 fill-current" />
           </div>
-          <span className="font-collegiate font-bold text-xs uppercase tracking-wider hidden sm:inline text-white">
+          <span className="hidden font-semibold sm:inline">
             Quick Actions
           </span>
-          <span className="text-[10px] font-mono font-bold bg-[#2A082C] text-[#C39A53] px-1.5 py-0.5 rounded border border-[#C39A53]/40 hidden md:inline">
+          <span className="hidden text-[10px] text-slate-500 md:inline">
             Ctrl+K
           </span>
         </button>

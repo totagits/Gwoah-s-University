@@ -174,3 +174,17 @@ body.theme-light {
 .hiau-public-site .text-white {
   color: #ffffff !important;
 }
+
+/* HIAU secure ERP shell: isolate light-theme overrides from branded controls. */
+.hiau-erp-site .bg-\\[\\#4a1249\\].text-white,
+.hiau-erp-site .bg-\\[\\#4A1249\\].text-white,
+.hiau-erp-site .bg-\\[\\#661b69\\].text-white,
+.hiau-erp-site .bg-\\[\\#661B69\\].text-white {
+  color: #fff !important;
+}
+.hiau-erp-site { min-width: 0; }
+.hiau-erp-site main { min-width: 0; }
+.hiau-erp-site :where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid #946c9e;
+  outline-offset: 2px;
+}

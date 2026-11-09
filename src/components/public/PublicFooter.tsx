@@ -151,7 +151,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
           {/* Col 4: Academic & Intranet Gateway */}
           <div className="space-y-2">
             <h4 className="text-sm font-collegiate font-bold text-white uppercase tracking-wider">
-              Academics & ERP Gateway
+              Academics & University Information
             </h4>
             <ul className="space-y-1.5 pt-1">
               <li>
@@ -177,16 +177,6 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
               <li>
                 <button onClick={() => onNavigateSection('dei')} className="hover:text-[#C39A53] transition-colors cursor-pointer text-left">
                   Spiritual Fellowship & Student Leadership
-                </button>
-              </li>
-              <li className="pt-3 border-t border-purple-800/60">
-                <button
-                  onClick={onOpenPortal}
-                  className="flex items-center gap-1.5 text-purple-300 hover:text-[#C39A53] font-medium tracking-wide cursor-pointer text-[11px] group"
-                  title="Restricted to authorized faculty, administration, and university staff"
-                >
-                  <Lock className="w-3.5 h-3.5 text-[#C39A53] group-hover:scale-110 transition-transform" />
-                  <span>Faculty & Staff Intranet Gateway (Credentials Required)</span>
                 </button>
               </li>
             </ul>

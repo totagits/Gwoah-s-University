@@ -47,3 +47,10 @@ The secure ERP's existing foundation/Curriculum Studio is preserved, but its end
 | Alumni/Guardian and other roles | Scope existence and permissions according to approved institutional requirements |
 
 Do not use live tuition transactions or real students during staging validation. Check persistence across deployments, audit trails, secure backups/restore, role tampering and negative cases. Promote to production only after explicit university sign-off.
+
+### Staging published-video persistence acceptance (2026-11-10)
+
+- User browser test: Super Administrator created an additional homepage video, uploaded a 4.4 MB MP4 as a private draft, previewed it end-to-end, published it, and confirmed carousel playback on staging.
+- This documentation-only commit deliberately updates the `staging` branch to test the existing GitHub-to-Coolify webhook. It does not update any video, account, application, or operational record.
+- **Acceptance not yet established:** after Coolify reports the commit deployed, refresh the staging homepage and play the newly published extra homepage video. If it remains available, record a passing persistence result. If missing, examine the Coolify persistent volume mounted at `/app/runtime-data`, which contains `operations.sqlite` and `public-media/`, and restore from backup; do not republish unrelated production content.
+- A duplicate unpublished extra video slot named `HIAU Campus Life – Test Video` was also visible; remove only the unused, unpublished slot from the Super Administrator Website Video Library after identifying the published slot. The test itself does not delete user data.

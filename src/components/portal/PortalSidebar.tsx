@@ -57,7 +57,7 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
 
   const group = (label: string, key: 'primary' | 'secondary',
     entries: typeof modules) => entries.length > 0 && (
-    <section aria-label={label} className="mb-4">
+    <section aria-label={label} className="mb-4 min-w-0">
       <button type="button"
         className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-xs font-bold uppercase tracking-[0.12em] text-[#7D6581] hover:bg-[#F5EEF6] ${collapsed ? 'lg:justify-center' : ''}`}
         aria-expanded={expanded[key]} onClick={() => setExpanded(open => ({...open,[key]:!open[key]}))}>
@@ -74,11 +74,11 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
                 title={collapsed ? module.label : undefined}
                 onClick={() => goTo(module.id)}
                 aria-current={selected ? 'page' : undefined}
-                className={`hiau-sidebar-item flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249] ${selected
+                className={`hiau-sidebar-item flex min-w-0 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249] ${selected
                   ? 'hiau-dashboard-selected bg-[#4A1249] text-white'
                   : 'text-[#4A1249] hover:bg-[#F4EDF4]'} ${collapsed ? 'lg:justify-center lg:px-2' : ''}`}>
                 <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
-                <span className={collapsed ? 'lg:sr-only' : ''}>{module.label}</span>
+                <span className={`min-w-0 ${collapsed ? 'lg:sr-only' : ''} `}>{module.label}</span>
               </button>
             );
           })}
@@ -88,7 +88,7 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
   );
 
   const contents = (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-w-0 flex-col">
       <div className="flex items-center justify-between gap-2 border-b border-[#EEE8F0] px-4 py-4">
         <div className={collapsed ? 'lg:sr-only' : ''}>
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#98723A]">HIAU Workspace</p>
@@ -105,7 +105,7 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
           <X className="h-5 w-5" />
         </button>
       </div>
-      <nav aria-label="ERP workspace navigation" className="flex-1 overflow-y-auto px-3 py-5">
+      <nav aria-label="ERP workspace navigation" className="min-w-0 flex-1 overflow-y-auto px-3 py-5">
         {group('University operations','primary',primary)}
         {group('Specialized workspaces','secondary',secondary)}
         {modules.length === 0 && (
@@ -135,8 +135,8 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
           onClick={() => setDrawerOpen(false)} />
       )}
       <aside id="hiau-mobile-workspace-navigation"
-        className={`z-[70] h-full shrink-0 border-r border-[#E9E1EB] bg-white transition-transform
-          fixed inset-y-0 left-0 w-[min(82vw,310px)] shadow-xl lg:sticky lg:top-0 lg:z-10 lg:h-[calc(100vh-0px)] lg:translate-x-0 lg:shadow-none
+        className={`hiau-erp-sidebar z-[70] h-full min-w-0 shrink-0 border-r border-[#E9E1EB] bg-white transition-transform
+          fixed inset-y-0 left-0 w-[min(82vw,310px)] shadow-xl lg:relative lg:inset-auto lg:z-10 lg:h-auto lg:translate-x-0 lg:shadow-none
           ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}
           ${collapsed ? 'lg:w-[76px]' : 'lg:w-[248px]'}`}>
         {contents}

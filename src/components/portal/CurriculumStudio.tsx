@@ -205,7 +205,7 @@ export const CurriculumStudio:React.FC<{currentUser:UserProfile}>=({currentUser}
           <button type="button" onClick={()=>void load()} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm text-[#4a1249] hover:bg-[#faf4fa]"><RefreshCw className="h-4 w-4"/>Refresh</button>
           <button type="button" onClick={()=>void loadSourcePreview()} className="inline-flex items-center gap-2 rounded-lg border border-[#dacbdb] px-3 py-2 text-sm font-semibold text-[#4a1249] hover:bg-[#faf4fa]"><BookOpen className="h-4 w-4"/>PDF reference drafts</button>
           <button type="button" onClick={()=>{setSelected('');setProgramInput(emptyProgram);setProgramFormOpen(true);}}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2 text-sm font-semibold text-white"><Plus className="h-4 w-4"/>New program draft</button>
+            className="hiau-dashboard-selected inline-flex items-center gap-2 rounded-lg border border-[#C39A53] bg-[#4a1249] px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#661b69]"><Plus className="h-4 w-4"/>New program draft</button>
         </div>
       </div>
       <div className="mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">

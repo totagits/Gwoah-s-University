@@ -65,13 +65,13 @@ const save=(store:Operations,slot:string,state:State)=>{
   store.run('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',KEY+slot,JSON.stringify(state));
 };
 const mediaPath=(directory:string,name:string)=>path.join(directory,'public-media',name);
-const sendMedia=(req:Request,res:Response,file:string)=>{
+const sendMedia=(req:Request,res:Response,file:string,publiclyPublished=false)=>{
   try{
     const stat=fs.statSync(file);
     const range=req.headers.range;
     res.set('Content-Type','video/mp4');
     res.set('Accept-Ranges','bytes');
-    res.set('Cache-Control','private, no-store');
+    res.set('Cache-Control',publiclyPublished?'public, max-age=60':'private, no-store');
     if(range){
       const m=/^bytes=(\d*)-(\d*)$/.exec(range);
       if(!m||(!m[1]&&!m[2]))return res.status(416).set('Content-Range',`bytes */${stat.size}`).end();
@@ -119,14 +119,28 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     const item=resolveSlot(store,req.params.slot);
     if(!item)return res.status(404).end();
     const published=parse(store,item.slot).published;
-    if(published&&fs.existsSync(mediaPath(directory,published)))return sendMedia(req,res,mediaPath(directory,published));
+    if(published&&fs.existsSync(mediaPath(directory,published)))
+      return sendMedia(req,res,mediaPath(directory,published),true);
+    // In production, stream the bundled original MP4 with HTTP ranges.
+    // Avoid the extra 302 request that delays the very first carousel frame.
+    if(item.defaultSrc&&process.env.NODE_ENV==='production'){
+      const file=path.join(process.cwd(),'dist',item.defaultSrc.slice(1));
+      if(fs.existsSync(file))return sendMedia(req,res,file,true);
+    }
     return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
   });
   app.head('/api/public/video/:slot',(req,res)=>{
     const item=resolveSlot(store,req.params.slot);
     if(!item)return res.status(404).end();
     const published=parse(store,item.slot).published;
-    if(published&&fs.existsSync(mediaPath(directory,published)))return sendMedia(req,res,mediaPath(directory,published));
+    if(published&&fs.existsSync(mediaPath(directory,published)))
+      return sendMedia(req,res,mediaPath(directory,published),true);
+    // In production, stream the bundled original MP4 with HTTP ranges.
+    // Avoid the extra 302 request that delays the very first carousel frame.
+    if(item.defaultSrc&&process.env.NODE_ENV==='production'){
+      const file=path.join(process.cwd(),'dist',item.defaultSrc.slice(1));
+      if(fs.existsSync(file))return sendMedia(req,res,file,true);
+    }
     return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
   });
   app.post('/api/admin/website-videos',(req,res)=>{

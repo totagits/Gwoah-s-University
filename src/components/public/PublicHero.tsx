@@ -53,12 +53,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const [activeVideoIndex,setActiveVideoIndex]=useState(0);
   const [isPlaying,setIsPlaying]=useState(true);
   const [isMuted,setIsMuted]=useState(true);
-  const [readyVideos,setReadyVideos]=useState<Set<string>>(()=>new Set());
   const videoRefs=useRef(new Map<string,HTMLVideoElement>());
   const currentVideo=videos[activeVideoIndex]||videos[0];
-  const heroPoster=(id:string)=>id==='hero-classroom'
-    ? '/assets/aistudio/image_51d124f3.png'
-    : '/assets/aistudio/image_29eb5504.png';
 
   // No authenticated information is returned from this public, published-only listing.
   useEffect(()=>{
@@ -114,16 +110,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
           }}
         >
-          {/* A branded still is visible immediately while the first MP4 buffers.
-              Never show a blank purple rectangle on a slow network. */}
-          <img
-            src={heroPoster(currentVideo.id)}
-            alt=""
-            aria-hidden="true"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          {/* The video is the hero: do not cover it with a photo or poster.
+              Browsers render the actual first decoded frame as soon as bytes arrive. */}
           {/* Keep mounted clips stable when the server returns the public playlist.
               The initial built-in IDs match the server IDs, avoiding video reloads. */}
           {videos.map((video,index)=>(
@@ -134,16 +122,12 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 else videoRefs.current.delete(video.id);
               }}
               src={video.src}
-              poster={heroPoster(video.id)}
-              preload={index===activeVideoIndex?'auto':'metadata'}
+              preload={index===0?'auto':'metadata'}
               autoPlay={index===activeVideoIndex&&isPlaying}
               muted={isMuted}
               playsInline
               onLoadedData={()=>{
-                setReadyVideos(previous=>{
-                  if(previous.has(video.id))return previous;
-                  const next=new Set(previous);next.add(video.id);return next;
-                });
+                // Retry when first frame is decoded, without waiting for React state.
                 if(index===activeVideoIndex&&isPlaying){
                   void videoRefs.current.get(video.id)?.play().catch(()=>{});
                 }
@@ -155,7 +139,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               }}
               onEnded={()=>{if(index===activeVideoIndex)switchVideo(index+1);}}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-                activeVideoIndex===index&&readyVideos.has(video.id)
+                activeVideoIndex===index
                   ? 'opacity-100 z-10':'opacity-0 pointer-events-none z-0'
               }`}
             />

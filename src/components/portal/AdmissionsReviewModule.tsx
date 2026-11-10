@@ -1,294 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Inbox,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Search,
-  Filter,
-  UserCheck,
-  FileText,
-  AlertCircle,
-  Eye,
-} from 'lucide-react';
-import { ApplicationRecord, UserProfile } from '../../types';
+import React, { useEffect, useState } from 'react';
+import { Inbox, Search, RefreshCw, AlertCircle, GraduationCap, Mail, Phone } from 'lucide-react';
+import type { PublicApplicationIntake, UserProfile } from '../../types';
 import { api } from '../../services/api';
 
 interface AdmissionsReviewModuleProps {
   currentUser: UserProfile;
 }
 
+/** Staging public intake only. Formal decisions are handled by the separately
+ * audited registrar/admissions ERP workflow, not by this read-only view. */
 export const AdmissionsReviewModule: React.FC<AdmissionsReviewModuleProps> = ({ currentUser }) => {
-  const [applications, setApplications] = useState<ApplicationRecord[]>([]);
+  const [applications, setApplications] = useState<PublicApplicationIntake[]>([]);
+  const [selected, setSelected] = useState<PublicApplicationIntake | null>(null);
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [selectedApp, setSelectedApp] = useState<ApplicationRecord | null>(null);
-  const [decisionNotes, setDecisionNotes] = useState('');
-  const [decisionScore, setDecisionScore] = useState(80);
-  const [savingDecision, setSavingDecision] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  const fetchApps = async () => {
+  const permitted = ['super_admin', 'registrar', 'admissions_officer'].includes(currentUser.role);
+  const load = async () => {
     setLoading(true);
+    setError('');
     try {
       const res = await api.getApplications();
-      if (res.applications) setApplications(res.applications);
-    } catch (err) {
-      console.error('Error fetching applications:', err);
+      if (!Array.isArray(res.applications)) throw new Error('The intake queue is unavailable.');
+      setApplications(res.applications);
+      setSelected(previous => previous ? res.applications.find(a => a.id === previous.id) || null : null);
+    } catch {
+      setApplications([]);
+      setSelected(null);
+      setError('Unable to load received applications. Check your staff permissions and retry.');
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => { if (permitted) void load(); else setLoading(false); }, [permitted]);
 
-  useEffect(() => {
-    fetchApps();
-  }, []);
+  if (!permitted) return (
+    <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-800">
+      Your university account is not authorized to view applicant records.
+    </div>
+  );
 
-  const handleDecision = async (status: 'admitted' | 'conditional' | 'waitlisted' | 'rejected') => {
-    if (!selectedApp) return;
-    setSavingDecision(true);
-    try {
-      const res = await api.updateApplication(selectedApp.id, {
-        status,
-        reviewerNotes: decisionNotes || selectedApp.reviewerNotes,
-        scoringTotal: Number(decisionScore),
-      });
-      if (res.success && res.application) {
-        setApplications((prev) =>
-          prev.map((a) => (a.id === selectedApp.id ? res.application : a))
-        );
-        setSelectedApp(res.application);
-      }
-    } catch (err) {
-      console.error('Failed to update decision:', err);
-    } finally {
-      setSavingDecision(false);
-    }
-  };
-
-  const filteredApps = applications.filter((a) => {
-    if (filterStatus === 'all') return true;
-    return a.status === filterStatus;
-  });
+  const filtered = applications.filter(item =>
+    [item.applicantName,item.applicationNumber,item.programDesired,item.email]
+      .some(value => value.toLowerCase().includes(query.trim().toLowerCase())));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-md">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Admissions Intake & WASSCE Review Desk
-            </h2>
-            <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold px-2 py-0.5 rounded-full">
-              {applications.length} Direct Applicants
+    <section className="space-y-6 text-[#2A1930]">
+      <header className="rounded-xl border border-[#E4DCE8] bg-white p-5 sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#98723A]">Secure admissions operations</p>
+            <h2 className="mt-2 text-2xl font-bold text-[#4A1249]">Public Application Intake</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Review received online application details and scholarship-interest requests.
+              This is an intake queue, not a decision or tuition-payment system.
+            </p>
+          </div>
+          <button type="button" onClick={() => void load()} disabled={loading}
+            className="inline-flex items-center gap-2 rounded-md border border-[#DCD2E1] px-3 py-2 text-sm font-semibold text-[#4A1249] hover:bg-[#F7F1F8] disabled:opacity-50">
+            <RefreshCw className="h-4 w-4" /> Refresh queue
+          </button>
+        </div>
+        {error && <div role="alert" className="mt-5 flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+          <AlertCircle className="h-4 w-4 shrink-0" /> {error}
+        </div>}
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.9fr)]">
+        <section aria-label="Received application list" className="rounded-xl border border-[#E4DCE8] bg-white p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-base font-bold text-[#4A1249]">Received applications ({applications.length})</h3>
+          </div>
+          <label className="mt-4 block">
+            <span className="sr-only">Search received applications</span>
+            <span className="relative block">
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-500" />
+              <input type="search" value={query} onChange={event => setQuery(event.target.value)}
+                placeholder="Search name, reference or program"
+                className="w-full rounded-md border border-[#DCD2E1] bg-white py-2.5 pl-10 pr-3 text-sm text-[#2A1930]" />
             </span>
+          </label>
+          <div className="mt-4 space-y-2">
+            {loading && <p className="py-8 text-center text-sm text-slate-600">Loading applications…</p>}
+            {!loading && filtered.length === 0 && (
+              <p className="rounded-lg bg-[#F9F6FA] p-7 text-center text-sm text-slate-600">
+                {query ? 'No matching applications.' : 'No public applications have been received yet.'}
+              </p>
+            )}
+            {!loading && filtered.map(item => (
+              <button type="button" key={item.id} onClick={() => setSelected(item)}
+                aria-pressed={selected?.id === item.id}
+                className={`w-full rounded-lg border p-4 text-left transition-colors hover:border-[#C39A53] ${
+                  selected?.id === item.id ? 'border-[#C39A53] bg-[#FCF8F0]' : 'border-[#E8E0EA] bg-white'
+                }`}>
+                <span className="flex flex-wrap items-start justify-between gap-2">
+                  <span className="font-semibold text-[#4A1249]">{item.applicantName}</span>
+                  <span className="font-mono text-xs text-slate-600">{item.applicationNumber}</span>
+                </span>
+                <span className="mt-2 block text-sm text-slate-700">{item.programDesired}</span>
+                {item.applyingForScholarship && (
+                  <span className="mt-2 inline-block rounded bg-[#F4E9D4] px-2 py-1 text-xs font-medium text-[#664519]">
+                    Requests financial-aid information
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Evaluate high school transcripts, verify WAEC index numbers, enter interview notes, and issue institutional admission offers.
-          </p>
-        </div>
+        </section>
 
-        <div className="flex items-center gap-3">
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
-          >
-            <option value="all">All Application Statuses</option>
-            <option value="under_review">Under Review</option>
-            <option value="admitted">Admitted</option>
-            <option value="conditional">Conditional Offer</option>
-            <option value="waitlisted">Waitlisted</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Applicant list (7 cols) */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-          <div className="text-xs font-bold text-slate-300 uppercase tracking-wider pb-2 border-b border-slate-800">
-            Admissions Queue ({filteredApps.length} applicants)
-          </div>
-
-          <div className="space-y-2.5 max-h-[580px] overflow-y-auto pr-1">
-            {filteredApps.map((app) => {
-              const isSelected = selectedApp?.id === app.id;
-              return (
-                <div
-                  key={app.id}
-                  onClick={() => {
-                    setSelectedApp(app);
-                    setDecisionNotes(app.reviewerNotes || '');
-                    setDecisionScore(app.scoringTotal || 75);
-                  }}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-slate-800 border-amber-500 shadow-md'
-                      : 'bg-slate-850 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-white">{app.applicantName}</span>
-                        <span className="font-mono text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">
-                          {app.applicationNumber}
-                        </span>
-                      </div>
-                      <div className="text-xs text-amber-400 font-medium mt-0.5">
-                        {app.programDesired}
-                      </div>
-                    </div>
-
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                        app.status === 'admitted'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : app.status === 'conditional'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : app.status === 'rejected'
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                      }`}
-                    >
-                      {app.status.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
-                    <span className="font-mono">WASSCE: {app.wassceIndex}</span>
-                    <span>Score: <strong className="text-white">{app.scoringTotal || 'N/A'}/100</strong></span>
-                    <span>Fee: <strong className="text-emerald-400">Paid ($25)</strong></span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Selected Applicant Details & Action Form (5 cols) */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          {selectedApp ? (
-            <div className="space-y-4">
-              <div className="pb-3 border-b border-slate-800">
-                <div className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                  Admissions Committee Review Panel
-                </div>
-                <h3 className="text-xl font-bold text-white mt-1">
-                  {selectedApp.applicantName}
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Applied for {selectedApp.programDesired}
-                </p>
-              </div>
-
-              {/* Contact info */}
-              <div className="bg-slate-850 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
-                <div>Email: <strong className="text-slate-200">{selectedApp.email}</strong></div>
-                <div>Phone: <strong className="text-slate-200">{selectedApp.phone}</strong></div>
-                <div>Faculty: <strong className="text-slate-200">{selectedApp.faculty}</strong></div>
-                <div>Application Date: <strong className="text-slate-200">{new Date(selectedApp.applicationDate).toLocaleDateString()}</strong></div>
-              </div>
-
-              {/* WASSCE Subject breakdown */}
-              <div>
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Verified WASSCE Core Subjects
-                </div>
-                <div className="space-y-1.5">
-                  {selectedApp.wassceCoreSubjects.map((sub, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between bg-slate-850 px-3 py-1.5 rounded-lg border border-slate-800 text-xs"
-                    >
-                      <span className="text-slate-300">{sub.subject}</span>
-                      <span className="font-mono font-bold text-amber-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-                        {sub.grade}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Committee Decision Form */}
-              <div className="pt-2 border-t border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Committee Scoring & Decision
-                </div>
-
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">
-                    Academic Aptitude & Interview Score (0 - 100)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={decisionScore}
-                    onChange={(e) => setDecisionScore(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs font-mono font-bold focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">
-                    Reviewer Evaluation Notes
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={decisionNotes}
-                    onChange={(e) => setDecisionNotes(e.target.value)}
-                    placeholder="Enter observations on science prerequisites, math foundation, interview demeanor..."
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                {/* 4 Decision Buttons */}
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  <button
-                    disabled={savingDecision}
-                    onClick={() => handleDecision('admitted')}
-                    className="py-2.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow cursor-pointer disabled:opacity-50"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Admit Student</span>
-                  </button>
-
-                  <button
-                    disabled={savingDecision}
-                    onClick={() => handleDecision('conditional')}
-                    className="py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow cursor-pointer disabled:opacity-50"
-                  >
-                    <span>Conditional Offer</span>
-                  </button>
-
-                  <button
-                    disabled={savingDecision}
-                    onClick={() => handleDecision('waitlisted')}
-                    className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer disabled:opacity-50"
-                  >
-                    <Clock className="w-4 h-4" />
-                    <span>Waitlist</span>
-                  </button>
-
-                  <button
-                    disabled={savingDecision}
-                    onClick={() => handleDecision('rejected')}
-                    className="py-2.5 px-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/40 cursor-pointer disabled:opacity-50"
-                  >
-                    <XCircle className="w-4 h-4" />
-                    <span>Reject</span>
-                  </button>
-                </div>
-              </div>
+        <section aria-label="Selected application details" className="rounded-xl border border-[#E4DCE8] bg-white p-5">
+          {!selected ? (
+            <div className="flex min-h-64 flex-col items-center justify-center text-center">
+              <Inbox className="h-9 w-9 text-[#98723A]" />
+              <p className="mt-4 text-sm text-slate-600">Select an applicant to inspect their received information.</p>
             </div>
           ) : (
-            <div className="text-center py-16 text-slate-500 text-xs italic">
-              Select an applicant from the queue to review WASSCE credentials and record committee decision.
+            <div className="space-y-5">
+              <div className="border-b border-[#EEE8F0] pb-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#98723A]">Application received</p>
+                <h3 className="mt-2 text-xl font-bold text-[#4A1249]">{selected.applicantName}</h3>
+                <p className="mt-1 text-sm text-slate-600">{selected.applicationNumber}</p>
+              </div>
+              <dl className="space-y-3 text-sm">
+                <div><dt className="font-semibold text-slate-700">Program</dt><dd>{selected.programDesired}</dd></div>
+                <div><dt className="font-semibold text-slate-700">College</dt><dd>{selected.faculty}</dd></div>
+                <div><dt className="font-semibold text-slate-700">County</dt><dd>{selected.county}</dd></div>
+                <div><dt className="font-semibold text-slate-700">Email</dt><dd className="break-all"><Mail className="mr-1 inline h-4 w-4 text-[#98723A]" />{selected.email}</dd></div>
+                <div><dt className="font-semibold text-slate-700">Telephone</dt><dd><Phone className="mr-1 inline h-4 w-4 text-[#98723A]" />{selected.phone}</dd></div>
+                <div><dt className="font-semibold text-slate-700">WASSCE index (self-reported)</dt><dd>{selected.wassceIndex || 'Not provided'}</dd></div>
+                <div><dt className="font-semibold text-slate-700">Grades (self-reported, not verified)</dt>
+                  <dd className="mt-1 space-y-1">{selected.wassceCoreSubjects.map(item=>
+                    <p key={item.subject}>{item.subject}: <span className="font-semibold">{item.grade}</span></p>)}
+                  </dd>
+                </div>
+                <div><dt className="font-semibold text-slate-700">Scholarship interest</dt>
+                  <dd>{selected.applyingForScholarship ? 'Yes — information requested' : 'No'}</dd>
+                </div>
+                <div><dt className="font-semibold text-slate-700">Received</dt><dd>{new Date(selected.applicationDate).toLocaleString()}</dd></div>
+              </dl>
+              <div className="flex items-start gap-2 rounded-lg border border-[#E5D7B7] bg-[#FCF7EA] p-4 text-sm leading-6 text-[#5B4627]">
+                <GraduationCap className="mt-1 h-4 w-4 shrink-0" />
+                No admissions decision, scholarship award, identity verification or fee payment is represented by this record.
+                Official evaluation and acceptance remain subject to the secure ERP workflow.
+              </div>
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </div>
+    </section>
   );
 };

@@ -39,6 +39,7 @@ import {
 import { generateIcsCalendar, filterCalendarEvents } from './src/utils/calendarSync';
 import { computeTaskAnalytics } from './src/utils/taskAnalytics';
 import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from './src/data/publicMedia';
+import { mediaAuthRouter, requireMediaAdministrator } from './src/server/mediaAuth';
 import {
   validateCourseAdd,
   validateCourseDrop,
@@ -216,6 +217,11 @@ app.use('/uploads/public-videos', express.static(MEDIA_UPLOAD_DIR, {
 }));
 
  
+// Isolated secure login controls only the public-website media console.
+// All other ERP endpoints remain closed until full university RBAC is implemented.
+app.use('/api/auth', mediaAuthRouter);
+app.use('/api/admin/public-media', requireMediaAdministrator);
+
 // SECURITY HOLD: This prototype has no verified credential store, session validation,
 // or role-based authorization. Fail closed on restricted ERP endpoints until a
 // separately tested authentication/authorization implementation is introduced.
@@ -225,7 +231,9 @@ app.use('/api', (req: Request, res: Response, next) => {
     req.method === 'GET' &&
     (req.path === '/calendar/events' || req.path === '/calendar/export.ics');
   const publicApplication = req.method === 'POST' && req.path === '/applications';
-  if (publicCalendar || publicApplication) return next();
+  const mediaAdmin = req.path.startsWith('/admin/public-media/') ||
+    req.path === '/admin/public-media';
+  if (publicCalendar || publicApplication || mediaAdmin) return next();
   res.setHeader('Cache-Control', 'no-store');
   return res.status(503).json({
     success: false,
@@ -353,46 +361,6 @@ app.post('/api/admin/public-media/videos/:id/upload',
 /* ==========================================================================
    AUTHENTICATION ENDPOINTS
    ========================================================================== */
-app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { email, password, role } = req.body;
-
-  let matchedUser: UserProfile | undefined;
-
-  // Support quick demo sign-in via role or by email
-  if (role) {
-    matchedUser = db.users.find((u) => u.role === role);
-  } else if (email) {
-    matchedUser = db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-  }
-
-  if (!matchedUser) {
-    // Default to Super Admin for demo if neither matched
-    matchedUser = db.users[0];
-  }
-
-  // Simulated session token
-  const token = `token-${matchedUser.id}-${Date.now()}`;
-
-  recordAudit(
-    matchedUser,
-    'USER_LOGIN_SUCCESS',
-    'Session',
-    matchedUser.id,
-    `Signed in as ${matchedUser.title} (${matchedUser.role})`,
-    req
-  );
-
-  return res.json({
-    success: true,
-    token,
-    user: matchedUser,
-  });
-});
-
-app.get('/api/auth/users', (_req: Request, res: Response) => {
-  return res.json({ users: db.users });
-});
-
 /* ==========================================================================
    USER PREFERENCES & THEME PERSISTENCE ENDPOINTS
    ========================================================================== */

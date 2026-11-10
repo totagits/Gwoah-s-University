@@ -11,6 +11,14 @@
 - **Accepted** requires passing functional, accessibility, content, mobile, privacy and deployment-persistence checks. Do not silently replace test records with real university data.
 - Never promote staging to production main or enable real student/tuition transactions without explicit authorization.
 
+## Public imagery quality standard — enterprise presentation
+- Use **authentic, institution-approved** photographs for named leaders, actual facilities, public events and students. Never use AI-generated substitute faces or depict synthetic campus scenes as verified real facilities.
+- Leadership portrait targets: clear face, natural skin tone, sharp focus, professional lighting, uncluttered background, consistent 3:4 portrait crops, and balanced headroom. Preserve identity and original image proportions; do not stretch, beautify, or misrepresent people.
+- Academic program and campus images: high-resolution, subject-relevant, consistent color/white balance, realistic captions and rights clearance; avoid generic, mismatched, watermarked or blurry stock photos.
+- Serving targets: optimized modern image formats where appropriate with fallback, no visible stretching or distortion, lazy loading below the fold, and stable display dimensions to reduce layout shifts. Don't arbitrarily upscale low-resolution originals.
+- Presentation: restrained HIAU purple-and-gold accents around photographs, not heavy gold frames, black gradients over faces, or decorative animation that distracts from the content. Readable names and titles should be separate from photographs.
+- Review each actual image **visually and individually**. The asset-existence test does not certify authenticity, clarity, compression quality, institutional approval or legal usage rights. Replace inadequate assets only with approved originals.
+
 ## A1 — Public identity, leadership and photos (IN PROGRESS)
 - [x] University renamed HIAU in public component and leadership data.
 - [x] Leadership directory, 19 profile entries, navigation shortcuts and formal portrait UI present in source.

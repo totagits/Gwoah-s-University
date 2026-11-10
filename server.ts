@@ -154,6 +154,24 @@ let db = loadDatabase();
 
 const app = express();
 app.use(express.json());
+ 
+// SECURITY HOLD: This prototype has no verified credential store, session validation,
+// or role-based authorization. Fail closed on restricted ERP endpoints until a
+// separately tested authentication/authorization implementation is introduced.
+// The public application form and read-only academic calendar remain available.
+app.use('/api', (req: Request, res: Response, next) => {
+  const publicCalendar =
+    req.method === 'GET' &&
+    (req.path === '/calendar/events' || req.path === '/calendar/export.ics');
+  const publicApplication = req.method === 'POST' && req.path === '/applications';
+  if (publicCalendar || publicApplication) return next();
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(503).json({
+    success: false,
+    error: 'Restricted university ERP services are unavailable until secure authentication is configured.',
+  });
+});
+
 
 // Helper to record audit logs
 function recordAudit(

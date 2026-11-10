@@ -122,7 +122,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 else videoRefs.current.delete(video.id);
               }}
               src={video.src}
-              preload={index===0?'auto':'none'}
+              preload={index===0?'auto':'metadata'}
               autoPlay={index===activeVideoIndex&&isPlaying}
               muted={isMuted}
               playsInline

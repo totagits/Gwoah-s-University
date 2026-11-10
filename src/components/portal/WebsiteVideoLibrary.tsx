@@ -175,7 +175,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           onChange={e=>setNewHeroTitle(e.target.value)} placeholder="Video title"
           className="min-w-[220px] flex-1 rounded-lg border border-slate-300 p-2 text-sm"/>
         <button type="button" disabled={!newHeroTitle.trim()||!!busy||extras.length>=10}
-          onClick={()=>void createHero()} className="rounded-lg bg-[#4a1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-40">
+          onClick={()=>void createHero()} className="hiau-dashboard-selected rounded-lg bg-[#4a1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-40">
           Add as draft
         </button>
       </div>
@@ -190,7 +190,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
             aria-current={selected===item.slot?'true':undefined}
             className={`block w-full rounded-lg border p-3 text-left text-sm ${selected===item.slot?'border-[#4a1249] bg-[#faf2fb]':'border-slate-200 hover:bg-slate-50'}`}>
             <span className="block font-semibold text-[#35103b]">{item.label}</span>
-            <span className="mt-1 block text-xs text-slate-600">{item.published?'Custom published video':'Original video'}{item.draft?' · Unpublished draft':''}</span>
+            <span className="mt-1 block text-xs text-slate-600">{item.published?'Custom published video':item.slot.startsWith('hero-extra-')?'Not yet published':'Original video'}{item.draft?' · Unpublished draft':''}</span>
           </button>)}
         </div>
       </div>
@@ -198,12 +198,16 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
         {!active?<p className="text-sm text-slate-600">Choose a video to manage.</p>:<>
           <h3 className="text-lg font-bold text-[#35103b]">{active.label}</h3>
           <p className="text-sm text-slate-600">
-            {active.published?'Custom version '+active.version+' is publicly visible.':'Currently using the original HIAU video.'}
+            {active.published?'Custom version '+active.version+' is publicly visible.':active.slot.startsWith('hero-extra-')?'This additional homepage slot is not published yet.':'Currently using the original HIAU video.'}
           </p>
-          <div className="overflow-hidden rounded-xl bg-[#2a082c]">
-            <video key={active.slot+'-'+previewVersion} controls preload="metadata" playsInline className="aspect-video w-full object-contain"
-              aria-label={'Preview for '+active.label} src={active.draft?active.previewSrc+'?v='+previewVersion:active.publicSrc+'?v='+previewVersion}/>
-          </div>
+          {active.slot.startsWith('hero-extra-')&&!active.draft&&!active.published
+            ? <div className="flex aspect-video items-center justify-center rounded-xl bg-[#2a082c] px-5 text-center text-white">
+                Upload an MP4 as a private draft to preview it here.
+              </div>
+            : <div className="overflow-hidden rounded-xl bg-[#2a082c]">
+                <video key={active.slot+'-'+previewVersion} controls preload="metadata" playsInline className="aspect-video w-full object-contain"
+                  aria-label={'Preview for '+active.label} src={active.draft?active.previewSrc+'?v='+previewVersion:active.publicSrc+'?v='+previewVersion}/>
+              </div>}
           {active.draft&&<p className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
             <AlertTriangle className="h-4 w-4"/>Private draft ready to review — not yet visible to visitors.
           </p>}
@@ -222,7 +226,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           </div>}
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={!file||!!busy} onClick={()=>void run('upload')}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+              className="hiau-dashboard-selected inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
               <Upload className="h-4 w-4"/>Upload private draft
             </button>
             <button type="button" disabled={!active.draft||!!busy} onClick={()=>void run('publish')}

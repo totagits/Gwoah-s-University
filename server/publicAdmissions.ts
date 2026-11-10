@@ -128,9 +128,19 @@ export function installPublicAdmissions(app: Express, operations: Operations) {
               scholarship_interest,status,created_at
        FROM public_admissions_intake ORDER BY created_at DESC LIMIT 200`
     ).map(row => ({
-      ...row,
-      scholarship_interest: row.scholarship_interest === 1,
-      grades: JSON.parse(row.grades_json)
+      id: row.id,
+      applicationNumber: row.application_number,
+      applicantName: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      programDesired: row.program_requested,
+      faculty: row.faculty_requested,
+      county: row.county,
+      wassceIndex: row.wassce_index,
+      wassceCoreSubjects: JSON.parse(row.grades_json),
+      applyingForScholarship: row.scholarship_interest === 1,
+      status: row.status,
+      applicationDate: row.created_at,
     }));
     res.set('Cache-Control','no-store');
     return res.json({applications});

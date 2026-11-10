@@ -39,12 +39,16 @@
 - [ ] Confirm duplicate unpublished homepage test entry removed, without deleting the published clip.
 - [ ] Verify video manager denies unauthenticated, Registrar and Student accounts.
 
-## A3 — Academic program pages and navigation (PENDING)
-- [x] Public degree pages and route resolver are present in source.
-- [ ] Open each of the 19 degree pages, check headings, images, MP4 narration, Back navigation, deep links and available programs.
-- [ ] Check desktop menu hover/click and keyboard Escape/Tab handling; test mobile menus at 375 px and 768 px.
+## A3 — Academic program pages and navigation (IN PROGRESS)
+- [x] Public degree-page layouts and a reversible degree deep-link route resolver are present in the source.
+- [x] Automated acceptance guard added for all **19 degree routes** across **five colleges**, unique slugs, narrated explainer metadata and four supplied local MP4 assets. Passing CI is source validation, **not** proof of browser playback.
+- [x] Adjusted the repeated public degree hero image caption so illustrative campus media is not presented as documentation of any particular program facility.
+- [ ] Open **all 19 individual degree pages** in staging, including deep links, navigation back to the catalog, duration, focus areas, published-curriculum state and responsive layout.
+- [ ] Verify each degree video loads, renders, controls/narration work, and no misleading static poster is shown in place of a playable video.
+- [ ] Replace any repetitive generic campus artwork with real, high-resolution, university-approved program photographs, one by one, after approval of subject, identity and usage rights. Do not invent or silently substitute photographs.
+- [ ] Check desktop hover/click and keyboard Escape/Tab navigation; test mobile menus at 375 px and 768 px.
 - [ ] Check navigation items and CTA destinations for missing pages/dead ends.
-- [ ] Validate all claims about degree status, accreditation, institutional charter and admissions availability against approved documentation.
+- [ ] Confirm claims about degree availability, accreditation, curriculum, clinical facilities and admissions against institution-approved documentation.
 
 ## A4 — Admissions and communications (PENDING)
 - [ ] Verify application workflow end-to-end with explicitly marked staging/test applicant; no real tuition charge.

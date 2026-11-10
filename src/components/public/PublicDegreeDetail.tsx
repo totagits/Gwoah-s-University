@@ -89,10 +89,10 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
         </div>
         <figure className="overflow-hidden rounded-xl bg-[#2a082c] shadow-md">
           <img src="/assets/aistudio/image_29eb5504.png"
-            className="aspect-[4/3] w-full object-cover" alt="HIAU university campus environment"
-            loading="eager"/>
+            className="aspect-[4/3] w-full object-cover" alt="Illustrative university campus scene"
+            loading="eager" decoding="async"/>
           <figcaption className="bg-white px-4 py-3 text-xs font-medium text-slate-600">
-            University campus photography · Illustrative of HIAU, not a program-specific facility
+            Illustrative campus imagery · Not documentation of a specific degree facility
           </figcaption>
         </figure>
       </div>

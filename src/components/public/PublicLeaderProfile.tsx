@@ -416,12 +416,18 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                                 isCurrent ? 'border-[#C39A53] ring-1 ring-white' : 'border-purple-200'
                               } bg-purple-900 shadow-xs`}
                             >
+                              <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                                {member.name.replace(/^(Bishop|Dr\.?|Asst\.?|Prof\.?|Rev\.?|Hon\.?|Cllr\.?|Mr\.?|Ms\.?)\s+/gi,'').split(/\s+/).slice(0,2).map(part=>part.charAt(0)).join('').toUpperCase()}
+                              </span>
                               <img
                                 src={member.avatar}
-                                alt={member.name}
-                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
                                 onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
+                                  // The readable initials underneath remain visible if the image fails.
+                                  e.currentTarget.style.display = 'none';
                                 }}
                               />
                             </div>

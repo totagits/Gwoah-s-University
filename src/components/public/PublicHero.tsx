@@ -66,7 +66,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
         const safe=data.videos.filter((v:HeroVideoSlide)=>
           typeof v.id==='string'&&typeof v.title==='string'&&
           typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&/^[a-z0-9_-]+$/.test(v.src.slice(18)));
-        if(safe.length>=2){setVideos(safe);setActiveVideoIndex(0);}
+        if(safe.length>=2){setVideos(safe);}
       }).catch(()=>{/* Preserve two original videos if dynamic listing is unavailable. */});
     return ()=>controller.abort();
   },[]);
@@ -82,11 +82,22 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     window.setTimeout(()=>outgoing?.pause(),750);
   };
 
+  // isPlaying represents the visitor's intention to play, NOT the result of a
+  // premature play() attempt. A pending media request can reject play() with
+  // AbortError; turning the intention off prevented all onCanPlay retries.
+  const tryPlay=(video:HTMLVideoElement)=>{
+    if(!isPlaying)return;
+    video.muted=isMuted;
+    void video.play().catch(()=>{
+      // Keep autoplay requested. The next media-ready event can retry, and
+      // visitors retain the manual Play control if their browser blocks it.
+    });
+  };
   useEffect(()=>{
     const current=videoRefs.current.get(currentVideo?.id);
     if(!current)return;
     current.muted=isMuted;
-    if(isPlaying)void current.play().catch(()=>setIsPlaying(false));
+    if(isPlaying)tryPlay(current);
     else current.pause();
   },[currentVideo?.id,isMuted,isPlaying]);
 
@@ -122,20 +133,18 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 else videoRefs.current.delete(video.id);
               }}
               src={video.src}
-              preload={index===0?'auto':'metadata'}
+              preload={index===activeVideoIndex?'auto':'metadata'}
               autoPlay={index===activeVideoIndex&&isPlaying}
               muted={isMuted}
               playsInline
-              onLoadedData={()=>{
-                // Retry when first frame is decoded, without waiting for React state.
-                if(index===activeVideoIndex&&isPlaying){
-                  void videoRefs.current.get(video.id)?.play().catch(()=>{});
-                }
+              onLoadedMetadata={event=>{
+                if(index===activeVideoIndex)tryPlay(event.currentTarget);
               }}
-              onCanPlay={()=>{
-                if(index===activeVideoIndex&&isPlaying){
-                  void videoRefs.current.get(video.id)?.play().catch(()=>{});
-                }
+              onLoadedData={event=>{
+                if(index===activeVideoIndex)tryPlay(event.currentTarget);
+              }}
+              onCanPlay={event=>{
+                if(index===activeVideoIndex)tryPlay(event.currentTarget);
               }}
               onEnded={()=>{if(index===activeVideoIndex)switchVideo(index+1);}}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${

@@ -224,7 +224,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
             <button
               onClick={() => setViewMode('kanban')}
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                viewMode === 'kanban' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                viewMode === 'kanban' ? 'hiau-dashboard-selected bg-[#4A1249] text-white font-bold' : 'text-slate-300 hover:text-white'
               }`}
               aria-label="Kanban View"
             >
@@ -234,7 +234,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
             <button
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                viewMode === 'list' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                viewMode === 'list' ? 'hiau-dashboard-selected bg-[#4A1249] text-white font-bold' : 'text-slate-300 hover:text-white'
               }`}
               aria-label="Table List View"
             >
@@ -254,7 +254,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer"
+            className="hiau-dashboard-selected px-4 py-2.5 bg-[#4A1249] hover:bg-[#661B69] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-purple-900/20 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Task</span>
@@ -349,7 +349,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
           <h3 className="text-xl font-semibold text-[#35103b]">No tasks to display</h3>
           <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Create the first institutional workflow or clear your filters to review existing work. Nothing has been added to this workspace automatically.</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <button type="button" onClick={() => setIsCreateModalOpen(true)} className="rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#661b69]">Create task</button>
+            <button type="button" onClick={() => setIsCreateModalOpen(true)} className="hiau-dashboard-selected rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#661b69]">Create task</button>
             <button type="button" onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setPriorityFilter('all'); setDepartmentFilter('all'); setStatusFilter('all'); }} className="rounded-lg border border-[#d8c9dc] px-4 py-2.5 text-sm font-semibold text-[#4a1249] hover:bg-[#f7f0f7]">Clear filters</button>
           </div>
         </div>

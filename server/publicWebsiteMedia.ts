@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {pipeline} from 'node:stream/promises';
 import {Transform} from 'node:stream';
-import type {Express,Request,Response} from 'express';
+import express, {type Express,type Request,type Response} from 'express';
 import {actorOf} from './identity';
 import {Operations} from './operations';
 import degreeContent from '../scripts/hiau-degree-video-content.json';

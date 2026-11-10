@@ -29,6 +29,7 @@ import { VirtualClassroomCollab } from './components/portal/VirtualClassroomColl
 
 import { UserProfile, UserRole, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
 import { api } from './services/api';
+import { restoreMediaSession, logoutMediaSession, clearMediaCsrf } from './services/mediaAuthClient';
 import { DEMO_USERS, DEMO_STUDENT, DEMO_REGISTRATIONS, DEMO_FINANCIAL_ACCOUNT } from './data/seedData';
 import {
   ThemeMode,
@@ -48,6 +49,17 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  // A full reload rechecks the signed session with the server; no localStorage tokens.
+  useEffect(() => {
+    let mounted = true;
+    restoreMediaSession().then(session => {
+      if (mounted && session.success && session.user?.role === 'super_admin') {
+        setCurrentUser(session.user as UserProfile);
+      }
+    }).catch(() => { /* Public website remains accessible without a session. */ });
+    return () => { mounted = false; };
+  }, []);
+
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
 
   // Active ERP Tab
@@ -191,6 +203,8 @@ export default function App() {
   };
 
   const handleLoginSuccess = (user: UserProfile, _token: string) => {
+    if (user.role !== 'super_admin') return;
+    setActivePortalTab('tasks');
     setCurrentUser(user);
     setIsLoginModalOpen(false);
     setViewMode('portal');
@@ -208,8 +222,10 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    // Clear the privileged client view immediately, then revoke the server session.
     setCurrentUser(null);
     setViewMode('public');
+    void logoutMediaSession().catch(() => clearMediaCsrf());
   };
 
   const handleOpenProfile = (profileId: string) => {
@@ -303,84 +319,27 @@ export default function App() {
         </div>
       )}
 
-      {/* RENDER PROTECTED ERP SUBSYSTEM VIEW */}
-      {viewMode === 'portal' && currentUser && (
-        <div className="flex flex-col min-h-screen bg-[#FAF8FB]">
-          <PortalHeader
-            currentUser={currentUser}
-            activeTab={activePortalTab}
-            onSelectTab={handleSelectTabWithSubAction}
-            onSwitchRole={handleSwitchRole}
-            onLogout={handleLogout}
-            onBackToPublic={() => setViewMode('public')}
-            currentTheme={theme}
-            onToggleTheme={handleToggleTheme}
-            onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
-            onOpenPrintModal={handleOpenPrintModal}
-          />
-
-          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            {activePortalTab === 'tasks' && (
-              <>
-                <TaskManagementDashboard currentUser={currentUser} />
-                {currentUser.role === 'super_admin' && <AdminPublicVideoManager />}
-              </>
-            )}
-
-            {activePortalTab === 'analytics' && (
-              <IntegratedAnalyticsHub />
-            )}
-
-            {activePortalTab === 'faculty_admin' && (
-              <FacultyAdminDashboard currentUser={currentUser} />
-            )}
-
-            {activePortalTab === 'academics' && (
-              <AcademicPlanningRegistration
-                currentUser={currentUser}
-                onOpenPrintModal={handleOpenPrintModal}
-              />
-            )}
-
-            {activePortalTab === 'student_portal' && (
-              <StudentPortalView
-                currentUser={currentUser}
-                onOpenPrintModal={handleOpenPrintModal}
-                initialTab={studentSubTab}
-              />
-            )}
-
-            {activePortalTab === 'classroom' && (
-              <VirtualClassroomCollab currentUser={currentUser} />
-            )}
-
-            {activePortalTab === 'admissions' && (
-              <AdmissionsReviewModule currentUser={currentUser} />
-            )}
-
-            {activePortalTab === 'finance' && (
-              <FinanceBursarModule currentUser={currentUser} />
-            )}
-
-            {activePortalTab === 'compliance' && (
-              <PolicyComplianceRegister currentUser={currentUser} />
-            )}
-          </main>
-
-          {/* Quick Actions Floating Action Menu */}
-          <PortalQuickActionsMenu
-            currentUser={currentUser}
-            onNavigateTab={handleSelectTabWithSubAction}
-            onOpenPrintModal={handleOpenPrintModal}
-          />
-
-          <footer className="bg-[#4A1249] text-purple-100 border-t border-[#C39A53]/40 py-5 text-center text-xs">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-              <span className="text-[#C39A53] font-semibold">Harvest Intercontinental American University ERP Subsystem • Republic of Liberia</span>
-              <span className="text-purple-200">NCHE Statutory Accreditation: NCHE/ACCR/2026-HIAU</span>
-              <span className="text-amber-200 font-mono text-[11px]">ISO 27001 & EMIS Encrypted</span>
+      {/* Only website media management is enabled in this security phase.
+          The separate university ERP modules remain disabled until RBAC acceptance. */}
+      {viewMode === 'portal' && currentUser?.role === 'super_admin' && (
+        <div className="min-h-screen bg-[#FAF8FB]">
+          <header className="bg-[#4A1249] text-white px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="font-bold text-lg">HIAU Website Media Administration</h1>
+              <p className="text-xs text-purple-100">Public videos and publishing only</p>
             </div>
-          </footer>
+            <div className="flex gap-3">
+              <button className="border border-[#C39A53] rounded px-3 py-2" onClick={() => setViewMode('public')}>
+                View public website
+              </button>
+              <button className="bg-[#C39A53] text-[#2A082C] font-semibold rounded px-3 py-2" onClick={handleLogout}>
+                Sign out
+              </button>
+            </div>
+          </header>
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <AdminPublicVideoManager />
+          </main>
         </div>
       )}
 

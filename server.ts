@@ -39,6 +39,8 @@ import {
 import { generateIcsCalendar, filterCalendarEvents } from './src/utils/calendarSync';
 import { computeTaskAnalytics } from './src/utils/taskAnalytics';
 import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from './src/data/publicMedia';
+import { mediaAuthRouter, requireMediaAdministrator } from './src/server/mediaAuth';
+import { checkMp4Upload } from './src/server/mp4Validation';
 import {
   validateCourseAdd,
   validateCourseDrop,
@@ -51,7 +53,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
-const DB_FILE = path.join(__dirname, 'data', 'university-db.json');
+const DATA_ROOT = process.env.HIAU_DATA_DIR ? path.resolve(process.env.HIAU_DATA_DIR) : path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_ROOT, 'university-db.json');
 
 // In-memory working database structure
 interface AppDatabase {
@@ -159,8 +162,8 @@ app.use(express.json());
  
 // Public website media are persisted independently of seeded ERP demonstration data.
 // Mounted persistent storage is required before production publication.
-const MEDIA_FILE = path.join(__dirname, 'data', 'public-videos.json');
-const MEDIA_UPLOAD_DIR = path.join(__dirname, 'data', 'public-media-uploads');
+const MEDIA_FILE = path.join(DATA_ROOT, 'public-videos.json');
+const MEDIA_UPLOAD_DIR = path.join(DATA_ROOT, 'public-media-uploads');
 const MEDIA_CATEGORIES = ['campus', 'academics', 'events', 'student-life', 'other'] as const;
 function validVideo(value: unknown): value is PublicVideo {
   if (!value || typeof value !== 'object') return false;
@@ -216,6 +219,11 @@ app.use('/uploads/public-videos', express.static(MEDIA_UPLOAD_DIR, {
 }));
 
  
+// Isolated secure login controls only the public-website media console.
+// All other ERP endpoints remain closed until full university RBAC is implemented.
+app.use('/api/auth', mediaAuthRouter);
+app.use('/api/admin/public-media', requireMediaAdministrator);
+
 // SECURITY HOLD: This prototype has no verified credential store, session validation,
 // or role-based authorization. Fail closed on restricted ERP endpoints until a
 // separately tested authentication/authorization implementation is introduced.
@@ -225,7 +233,9 @@ app.use('/api', (req: Request, res: Response, next) => {
     req.method === 'GET' &&
     (req.path === '/calendar/events' || req.path === '/calendar/export.ics');
   const publicApplication = req.method === 'POST' && req.path === '/applications';
-  if (publicCalendar || publicApplication) return next();
+  const mediaAdmin = req.path.startsWith('/admin/public-media/') ||
+    req.path === '/admin/public-media';
+  if (publicCalendar || publicApplication || mediaAdmin) return next();
   res.setHeader('Cache-Control', 'no-store');
   return res.status(503).json({
     success: false,
@@ -264,8 +274,8 @@ function recordAudit(
   return entry;
 }
 
-// Draft-only routes: the fail-closed /api middleware blocks every operation here.
-// They must remain unreachable until authenticated administrator RBAC exists.
+// Only website-media administrator sessions pass the authorization middleware above.
+// The unrelated university ERP APIs remain fail-closed.
 app.get('/api/admin/public-media/videos', (_req: Request, res: Response) =>
   res.json({ videos: readPublicVideos() }));
 
@@ -338,61 +348,30 @@ app.post('/api/admin/public-media/videos/:id/upload',
     const videos = readPublicVideos();
     if (!videos.some(v => v.id === id)) return res.status(404).json({ error: 'Unknown video.' });
     const bytes = req.body;
-    if (!Buffer.isBuffer(bytes) || bytes.length < 12 || bytes.length > 50 * 1024 * 1024 ||
-        bytes.toString('ascii', 4, 8) !== 'ftyp')
-      return res.status(415).json({ error: 'Valid MP4 under 50 MB required.' });
-    fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
+    const validation = checkMp4Upload(bytes);
+    if (!validation.ok) return res.status(415).json({ error: validation.message });
     const name = randomUUID() + '.mp4';
-    fs.writeFileSync(path.join(MEDIA_UPLOAD_DIR, name), bytes, { flag: 'wx' });
-    const updated = videos.map(v => v.id === id ? { ...v, src: '/uploads/public-videos/' + name } : v);
-    savePublicVideos(updated);
-    return res.json({ success: true, videos: updated });
+    const destination = path.join(MEDIA_UPLOAD_DIR, name);
+    try {
+      fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
+      fs.writeFileSync(destination, bytes, { flag: 'wx' });
+      const updated = videos.map(v => v.id === id
+        ? { ...v, src: '/uploads/public-videos/' + name }
+        : v);
+      savePublicVideos(updated);
+      return res.json({ success: true, videos: updated });
+    } catch (error) {
+      // Do not leave an unreferenced MP4 behind when the library update fails.
+      try { fs.unlinkSync(destination); } catch { /* No new upload to remove. */ }
+      console.error('Failed to persist website video upload:', error);
+      return res.status(500).json({ error: 'Unable to save video. Existing library unchanged.' });
+    }
   }
 );
 
 /* ==========================================================================
    AUTHENTICATION ENDPOINTS
    ========================================================================== */
-app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { email, password, role } = req.body;
-
-  let matchedUser: UserProfile | undefined;
-
-  // Support quick demo sign-in via role or by email
-  if (role) {
-    matchedUser = db.users.find((u) => u.role === role);
-  } else if (email) {
-    matchedUser = db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-  }
-
-  if (!matchedUser) {
-    // Default to Super Admin for demo if neither matched
-    matchedUser = db.users[0];
-  }
-
-  // Simulated session token
-  const token = `token-${matchedUser.id}-${Date.now()}`;
-
-  recordAudit(
-    matchedUser,
-    'USER_LOGIN_SUCCESS',
-    'Session',
-    matchedUser.id,
-    `Signed in as ${matchedUser.title} (${matchedUser.role})`,
-    req
-  );
-
-  return res.json({
-    success: true,
-    token,
-    user: matchedUser,
-  });
-});
-
-app.get('/api/auth/users', (_req: Request, res: Response) => {
-  return res.json({ users: db.users });
-});
-
 /* ==========================================================================
    USER PREFERENCES & THEME PERSISTENCE ENDPOINTS
    ========================================================================== */
@@ -1741,4 +1720,6 @@ async function startServer() {
   });
 }
 
-startServer();
+if (process.env.HIAU_DISABLE_AUTOSTART !== '1') startServer();
+
+export { app };

@@ -34,15 +34,15 @@ The actual Coolify application mount path, runtime user, deployment type (Docker
 9. Only then prepare an approved production release, monitoring, rollback and storage quota.
 
 ## Evidence from repository CI
-GitHub Actions run #18, commit `2731dfd271546c9d882c77109bade56853bc2a78`:
+GitHub Actions run #28, commit `a673adf92d27a4be1ace59d893349b05d155103f`:
 - TypeScript check passed
-- 23 automated tests passed (14 unit/security checks plus 9 real Express API integration tests)
+- 28 automated tests passed (security, real Express API integration, MP4 container screening, and public video behavior)
 - Vite build passed
 
 There are still non-fatal Vite configuration/bundle-size warnings; production performance needs a separate pass.
 
 ## Security and durability remaining
 - In-memory sessions and rate limits are single-process. A shared session store and perimeter-level throttling are required for horizontally scaled production.
-- Media upload verification currently checks the MP4 header only; implement full parsing, malware checks, transcode/poster workflow and capacity limits.
+- Media upload verification checks basic ISO BMFF box structure, but this does not prove a playable video or replace codec inspection, malware checks, transcoding/poster generation, and capacity limits.
 - App-local synchronous JSON writes are suitable for a prototype, not concurrent multi-instance writes; a database/object storage layer is required for larger deployments.
 - No live Hostinger deployment or browser acceptance was performed by these repository tests.

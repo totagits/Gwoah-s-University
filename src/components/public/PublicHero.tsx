@@ -154,8 +154,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           </div>}
 
           {/* The video remains an unclipped hardware-decoded layer. A separate
-              mask draws the exact diagonal with a single thin gold accent:
-              no extra vertical strip at the right edge. */}
+              mask creates a single clean diagonal edge, without decorative strokes.
+              Keep the video itself unclipped for Chrome hardware rendering. */}
           <svg
             aria-hidden="true"
             viewBox="0 0 100 100"
@@ -163,8 +163,6 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             className="pointer-events-none absolute inset-0 z-[15] hidden h-full w-full lg:block"
           >
             <polygon points="100,0 100,100 80,100" fill="#FFFFFF" />
-            <line x1="100" y1="0" x2="80" y2="100"
-              stroke="#C39A53" strokeWidth="2" vectorEffect="non-scaling-stroke" />
           </svg>
 
           {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}

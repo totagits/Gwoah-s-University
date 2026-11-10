@@ -15,6 +15,7 @@ import { PublicLeaderProfile } from './components/public/PublicLeaderProfile';
 import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
+import { PortalSidebar } from './components/portal/PortalSidebar';
 import { PortalLoginModal } from './components/portal/PortalLoginModal';
 import { TaskManagementDashboard } from './components/portal/TaskManagementDashboard';
 import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsHub';
@@ -374,7 +375,10 @@ export default function App() {
             onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
           />
 
-          <main id="erp-main-content" className="flex-1 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-10 py-6">
+          <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+            <PortalSidebar currentUser={currentUser} activeTab={activePortalTab}
+              onSelectTab={handleSelectTabWithSubAction} />
+            <main id="erp-main-content" className="min-w-0 flex-1 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-10 py-6">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-[#e6dce7] pb-4"><div>
               <p className="uppercase tracking-[0.18em] text-[11px] font-bold text-[#866080]">University operations / {currentUser.role.replaceAll('_', ' ')}</p>
               <h1 className="text-2xl md:text-3xl font-semibold text-[#35103B] mt-1">
@@ -389,6 +393,7 @@ export default function App() {
                 This workspace is not available to your assigned role. Contact the university administrator if you need additional access.
               </section>
             )}
+            {isPortalModuleAvailable(currentUser.role, activePortalTab) && <>
             {activePortalTab === 'tasks' && (
               <TaskManagementDashboard currentUser={currentUser} />
             )}
@@ -434,8 +439,9 @@ export default function App() {
             {activePortalTab === 'compliance' && (
               <PolicyComplianceRegister currentUser={currentUser} />
             )}
-          </main>
-
+            </>}
+            </main>
+          </div>
 
           <footer className="bg-[#4A1249] text-purple-100 border-t border-[#C39A53]/40 py-5 text-center text-xs">
             <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">

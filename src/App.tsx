@@ -29,6 +29,7 @@ import { VirtualClassroomCollab } from './components/portal/VirtualClassroomColl
 
 import { UserProfile, UserRole, StudentProfileData, StudentRegistrationItem, FinancialAccount } from './types';
 import { api } from './services/api';
+import { restoreMediaSession, logoutMediaSession, clearMediaCsrf } from './services/mediaAuthClient';
 import { DEMO_USERS, DEMO_STUDENT, DEMO_REGISTRATIONS, DEMO_FINANCIAL_ACCOUNT } from './data/seedData';
 import {
   ThemeMode,
@@ -48,6 +49,17 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  // A full reload rechecks the signed session with the server; no localStorage tokens.
+  useEffect(() => {
+    let mounted = true;
+    restoreMediaSession().then(session => {
+      if (mounted && session.success && session.user?.role === 'super_admin') {
+        setCurrentUser(session.user as UserProfile);
+      }
+    }).catch(() => { /* Public website remains accessible without a session. */ });
+    return () => { mounted = false; };
+  }, []);
+
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
 
   // Active ERP Tab
@@ -191,6 +203,8 @@ export default function App() {
   };
 
   const handleLoginSuccess = (user: UserProfile, _token: string) => {
+    if (user.role !== 'super_admin') return;
+    setActivePortalTab('tasks');
     setCurrentUser(user);
     setIsLoginModalOpen(false);
     setViewMode('portal');
@@ -208,8 +222,10 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    // Clear the privileged client view immediately, then revoke the server session.
     setCurrentUser(null);
     setViewMode('public');
+    void logoutMediaSession().catch(() => clearMediaCsrf());
   };
 
   const handleOpenProfile = (profileId: string) => {
@@ -322,7 +338,6 @@ export default function App() {
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             {activePortalTab === 'tasks' && (
               <>
-                <TaskManagementDashboard currentUser={currentUser} />
                 {currentUser.role === 'super_admin' && <AdminPublicVideoManager />}
               </>
             )}

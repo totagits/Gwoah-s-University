@@ -144,6 +144,23 @@ export interface ApplicationRecord {
   applyingForScholarship?: boolean;
 }
 
+/** Secure public intake record. Received is not an admissions decision. */
+export interface PublicApplicationIntake {
+  id: string;
+  applicationNumber: string;
+  applicantName: string;
+  email: string;
+  phone: string;
+  programDesired: string;
+  faculty: string;
+  county: string;
+  wassceIndex: string;
+  wassceCoreSubjects: { subject: string; grade: string }[];
+  applyingForScholarship: boolean;
+  applicationDate: string;
+  status: 'received' | 'under_review' | 'closed';
+}
+
 export interface FinancialAccount {
   studentId: string;
   studentNumber: string;

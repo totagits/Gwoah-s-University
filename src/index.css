@@ -223,3 +223,18 @@ html.theme-light .hiau-erp-site .hiau-dashboard-selected {
   outline: 2px solid #F0CE8D;
   outline-offset: 3px;
 }
+
+/* HIAU ERP navigation is a normal-width sibling of the content on desktop.
+   Mobile off-canvas translate must never shift or crop the desktop sidebar. */
+@media (min-width: 1024px) {
+  .hiau-erp-site .hiau-erp-sidebar {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    flex-shrink: 0;
+    overflow-wrap: anywhere;
+  }
+}
+.hiau-erp-site .hiau-erp-sidebar nav {
+  scrollbar-width: thin;
+}

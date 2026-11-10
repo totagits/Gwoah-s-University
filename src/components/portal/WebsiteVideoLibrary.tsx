@@ -3,7 +3,7 @@ import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle} from 'lucide-rea
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
-  version:number;draft?:string;published?:string;updatedAt?:string;
+  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;
 };
 type RoleProps={currentUser:{role:string}};
 
@@ -14,6 +14,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const [error,setError]=useState('');
   const [selected,setSelected]=useState('');
   const [file,setFile]=useState<File|null>(null);
+  const [newHeroTitle,setNewHeroTitle]=useState('');
   const [previewVersion,setPreviewVersion]=useState(0);
   const load=useCallback(async()=>{
     const r=await fetch('/api/admin/website-videos',{cache:'no-store'});
@@ -26,6 +27,57 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
     void load().catch(e=>setError(e instanceof Error?e.message:'Could not load website video library.'));
   },[load]);
   const active=slots.find(s=>s.slot===selected);
+  const extras=slots.filter(s=>s.slot.startsWith('hero-extra-')).sort((a,b)=>(a.order??0)-(b.order??0));
+  const createHero=async()=>{
+    const title=newHeroTitle.trim();
+    if(!title||busy)return;
+    setBusy('create');setError('');setMessage('');
+    try{
+      const r=await fetch('/api/admin/website-videos',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title}),
+      });
+      const result=await r.json();
+      if(!r.ok)throw new Error(result.error||'Unable to add video.');
+      setNewHeroTitle('');await load();
+      setSelected(result.slot);
+      setMessage('Homepage video created as a private slot. Upload and publish an MP4 to show it to visitors.');
+    }catch(e){setError(e instanceof Error?e.message:'Unable to create homepage video.');}
+    finally{setBusy(null);}
+  };
+  const removeHero=async()=>{
+    if(!active?.slot.startsWith('hero-extra-')||busy)return;
+    if(!window.confirm('Remove this additional homepage video from the carousel? The media file will be retained for recovery.'))return;
+    setBusy('remove');setError('');setMessage('');
+    try{
+      const r=await fetch('/api/admin/website-video/'+encodeURIComponent(active.slot)+'/extra',{
+        method:'DELETE',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({confirmation:'REMOVE_ADDITIONAL_HOME_VIDEO'}),
+      });
+      const result=await r.json();
+      if(!r.ok)throw new Error(result.error||'Unable to remove video.');
+      setMessage('Additional homepage video removed from the carousel.');
+      await load();
+    }catch(e){setError(e instanceof Error?e.message:'Unable to remove homepage video.');}
+    finally{setBusy(null);}
+  };
+  const moveHero=async(step:number)=>{
+    if(!active?.slot.startsWith('hero-extra-')||busy)return;
+    const index=extras.findIndex(v=>v.slot===active.slot), next=index+step;
+    if(next<0||next>=extras.length)return;
+    const ids=extras.map(v=>v.slot);
+    [ids[index],ids[next]]=[ids[next],ids[index]];
+    setBusy('order');setError('');setMessage('');
+    try{
+      const r=await fetch('/api/admin/website-videos/reorder',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids}),
+      });
+      const result=await r.json();
+      if(!r.ok)throw new Error(result.error||'Could not reorder homepage videos.');
+      setMessage('Additional homepage video order updated.');
+      await load();
+    }catch(e){setError(e instanceof Error?e.message:'Could not reorder videos.');}
+    finally{setBusy(null);}
+  };
   const run=async(kind:'upload'|'publish'|'restore')=>{
     if(!active||busy)return;
     const id=active.slot;
@@ -65,10 +117,24 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
       <p className="text-xs font-bold uppercase tracking-widest text-[#956a32]">Protected public website administration</p>
       <h2 className="mt-2 text-2xl font-bold text-[#35103b]">HIAU Website Video Library</h2>
       <p className="mt-2 max-w-3xl text-sm text-slate-700">
-        Manage videos on public degree pages and the two homepage carousel slots. Upload an MP4, preview it privately,
+        Manage videos on public degree pages and the homepage carousel. Add more homepage videos, upload an MP4, preview it privately,
         and publish it only when you approve. You can restore the original video at any time.
         Student records and ERP academic operations are not affected.
       </p>
+    </div>
+    <div className="rounded-xl border border-purple-200 bg-white p-5 space-y-3">
+      <h3 className="font-bold text-[#35103b]">Add another homepage video</h3>
+      <p className="text-sm text-slate-600">Keep the campus and classroom videos, and add up to ten more clips. New videos stay unpublished until you approve them.</p>
+      <div className="flex flex-wrap gap-3">
+        <input aria-label="Additional homepage video title" maxLength={100} value={newHeroTitle}
+          onChange={e=>setNewHeroTitle(e.target.value)} placeholder="Video title"
+          className="min-w-[220px] flex-1 rounded-lg border border-slate-300 p-2 text-sm"/>
+        <button type="button" disabled={!newHeroTitle.trim()||!!busy||extras.length>=10}
+          onClick={()=>void createHero()} className="rounded-lg bg-[#4a1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-40">
+          Add as draft
+        </button>
+      </div>
+      {extras.length>=10&&<p className="text-xs text-amber-800">Maximum of ten additional homepage videos reached.</p>}
     </div>
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
       <div className="rounded-xl border border-[#e3d5e6] bg-white p-4">
@@ -101,6 +167,14 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
             onChange={e=>setFile(e.target.files?.[0]||null)}
             className="block w-full rounded-lg border border-slate-300 p-2 text-sm"/>
           {file&&<p className="text-xs text-slate-600">Selected: {file.name} ({(file.size/1024/1024).toFixed(1)} MB)</p>}
+          {active.slot.startsWith('hero-extra-')&&<div className="flex flex-wrap gap-2">
+            <button type="button" disabled={!!busy||extras.findIndex(v=>v.slot===active.slot)===0}
+              onClick={()=>void moveHero(-1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-40">Move up</button>
+            <button type="button" disabled={!!busy||extras.findIndex(v=>v.slot===active.slot)===extras.length-1}
+              onClick={()=>void moveHero(1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-40">Move down</button>
+            <button type="button" disabled={!!busy} onClick={()=>void removeHero()}
+              className="rounded-lg border border-red-300 px-3 py-2 text-sm text-red-800 disabled:opacity-40">Remove extra video</button>
+          </div>}
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={!file||!!busy} onClick={()=>void run('upload')}
               className="inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">

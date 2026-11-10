@@ -65,7 +65,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
         if(!Array.isArray(data.videos)||data.videos.length<2)return;
         const safe=data.videos.filter((v:HeroVideoSlide)=>
           typeof v.id==='string'&&typeof v.title==='string'&&
-          typeof v.src==='string'&&/^\\/api\\/public\\/video\\/[a-z0-9_-]+$/.test(v.src));
+          typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&/^[a-z0-9_-]+$/.test(v.src.slice(18)));
         if(safe.length>=2){setVideos(safe);setActiveVideoIndex(0);}
       }).catch(()=>{/* Preserve two original videos if dynamic listing is unavailable. */});
     return ()=>controller.abort();

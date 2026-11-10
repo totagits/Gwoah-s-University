@@ -969,18 +969,19 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
 
               {/* DYNAMIC FORMAL PORTRAIT PANEL (5 cols on xl) */}
               <div className="xl:col-span-5 space-y-5">
-                <div className="bg-white border-2 border-[#4A1249] rounded-2xl p-5 sm:p-6 shadow-[0_25px_50px_-12px_rgba(74,18,73,0.35)] ring-4 ring-[#C39A53]/25 transition-all">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-[0_12px_36px_-22px_rgba(30,14,32,0.25)]">
                   {/* Photo Frame with high-contrast shadow and border styling */}
-                  <div className="relative rounded-xl overflow-hidden bg-[#1A051C] border-4 border-[#C39A53] shadow-[0_16px_36px_rgba(26,5,28,0.55)] ring-2 ring-[#4A1249] group aspect-[3/4] w-full max-w-[420px] mx-auto flex items-center justify-center">
+                  <div className="relative rounded-lg overflow-hidden bg-slate-100 border border-slate-200 aspect-[3/4] w-full max-w-[420px] mx-auto flex items-center justify-center">
                     {portraitUnavailable ? (
-                      <div role="img" aria-label={`Portrait unavailable for ${profile.name}`} className="w-full h-full flex items-center justify-center text-center px-8 text-white font-bold text-sm">
+                      <div role="img" aria-label={`Portrait unavailable for ${profile.name}`} className="w-full h-full flex items-center justify-center text-center px-8 text-[#4A1249] bg-slate-100 font-semibold text-sm">
                         Official portrait unavailable
                       </div>
                     ) : (
                       <img
                         src={currentDisplayedImage}
-                        alt={profile.name}
-                        className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                        alt={`Portrait of ${profile.name}`}
+                        decoding="async"
+                        className="w-full h-full object-cover object-top"
                         style={{ objectPosition: 'center 12%' }}
                         referrerPolicy="no-referrer"
                         onError={() => {
@@ -992,21 +993,21 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
                         }}
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
+
 
                     {/* Corner official badge */}
-                    <div className="absolute top-3.5 left-3.5 bg-[#4A1249] text-[#FCD34D] border-2 border-[#C39A53] px-3.5 py-1.5 rounded-md text-[11px] font-collegiate font-black uppercase tracking-wider shadow-lg backdrop-blur-xs flex items-center gap-1.5 z-10">
+                    <div className="absolute top-3 left-3 bg-white/95 text-[#4A1249] border border-slate-200 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm flex items-center gap-1.5 z-10">
                       <Award className="w-3.5 h-3.5 text-[#FCD34D]" />
                       <span>{profile.roleBadge}</span>
                     </div>
 
                     {/* Secondary Photo Switcher if available */}
                     {profile.secondaryImage && (
-                      <div className="absolute bottom-3.5 right-3.5 z-10">
+                      <div className="absolute bottom-3 right-3 z-10">
                         <button
                           onClick={() => setUseSecondaryPhoto(!useSecondaryPhoto)}
-                          className="px-3 py-1.5 bg-[#1F0620]/90 hover:bg-[#4A1249] text-white text-[10px] font-black uppercase tracking-wider rounded-md border-2 border-[#C39A53] backdrop-blur-sm transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95"
-                          title="Toggle between formal studio portrait and campus photograph"
+                          className="px-3 py-2 bg-white/95 hover:bg-white text-[#4A1249] text-[10px] font-semibold rounded-md border border-slate-200 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                          title="Switch between approved leadership photographs"
                         >
                           <Camera className="w-3.5 h-3.5 text-[#FCD34D]" />
                           <span>

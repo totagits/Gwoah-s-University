@@ -371,6 +371,7 @@ export function installIdentity(
     const endpoint = req.originalUrl.split('?')[0];
     if (
       endpoint === '/api/health' ||
+      (req.method === 'GET' && endpoint === '/api/public/hero-videos') ||
       ((req.method === 'GET' || req.method === 'HEAD') && /^\/api\/public\/video\/[a-z0-9_-]+$/.test(endpoint)) ||
       (req.method === 'GET' && /^\/api\/public\/degree-curriculum\/[a-z0-9-]+$/.test(endpoint)) ||
       endpoint.startsWith('/api/campus/integrations/') ||

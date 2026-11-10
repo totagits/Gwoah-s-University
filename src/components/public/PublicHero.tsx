@@ -49,96 +49,55 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   onNavigateSection,
   onOpenApplicationModal,
 }) => {
-  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [videos,setVideos]=useState<HeroVideoSlide[]>(HERO_VIDEOS);
+  const [activeVideoIndex,setActiveVideoIndex]=useState(0);
+  const [isPlaying,setIsPlaying]=useState(true);
+  const [isMuted,setIsMuted]=useState(true);
+  const videoRefs=useRef(new Map<string,HTMLVideoElement>());
+  const currentVideo=videos[activeVideoIndex]||videos[0];
 
-  // Only two authentic HIAU MP4 videos belong in the homepage carousel. No photo slides or poster stills.
-  // Both videos stay mounted for an uninterrupted transition.
-  const campusVideoRef = useRef<HTMLVideoElement>(null);
-  const classroomVideoRef = useRef<HTMLVideoElement>(null);
+  // No authenticated information is returned from this public, published-only listing.
+  useEffect(()=>{
+    const controller=new AbortController();
+    fetch('/api/public/hero-videos',{signal:controller.signal,cache:'no-store'})
+      .then(r=>r.ok?r.json():Promise.reject(new Error('Media listing unavailable')))
+      .then(data=>{
+        if(!Array.isArray(data.videos)||data.videos.length<2)return;
+        const safe=data.videos.filter((v:HeroVideoSlide)=>
+          typeof v.id==='string'&&typeof v.title==='string'&&
+          typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&/^[a-z0-9_-]+$/.test(v.src.slice(18)));
+        if(safe.length>=2){setVideos(safe);setActiveVideoIndex(0);}
+      }).catch(()=>{/* Preserve two original videos if dynamic listing is unavailable. */});
+    return ()=>controller.abort();
+  },[]);
 
-  const currentVideo = HERO_VIDEOS[activeVideoIndex];
-
-  // Seamless instant handoff between the two videos with crossfade
-  const switchVideo = (nextIndex: number) => {
-    if (nextIndex === activeVideoIndex) return;
-
-    const incoming = nextIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
-    const outgoing = activeVideoIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
-
-    if (incoming) {
-      incoming.currentTime = 0;
-      incoming.muted = isMuted;
-      if (isPlaying) {
-        incoming.play().catch(() => {});
-      }
-    }
-
-    setActiveVideoIndex(nextIndex);
-
-    // Pause outgoing video only after incoming crossfade completes to prevent blank gaps
-    setTimeout(() => {
-      if (outgoing && outgoing !== incoming) {
-        outgoing.pause();
-      }
-    }, 750);
-  };
-
-  // Sync play / pause state to active video
-  useEffect(() => {
-    const current = activeVideoIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
-    if (!current) return;
-    if (isPlaying) {
-      current.play().catch(() => {});
-    } else {
-      current.pause();
-    }
-  }, [isPlaying, activeVideoIndex]);
-
-  // Sync mute state to both video elements
-  useEffect(() => {
-    if (campusVideoRef.current) campusVideoRef.current.muted = isMuted;
-    if (classroomVideoRef.current) classroomVideoRef.current.muted = isMuted;
-  }, [isMuted]);
-
-  // Initial autoplay attempt on mount
-  useEffect(() => {
-    if (campusVideoRef.current && isPlaying) {
-      campusVideoRef.current.play().catch(() => {});
-    }
-  }, []);
-
-  const togglePlayback = () => {
-    const current = activeVideoIndex === 0 ? campusVideoRef.current : classroomVideoRef.current;
-    if (!current) return;
-    if (isPlaying) {
-      current.pause();
-      setIsPlaying(false);
-    } else {
-      current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
-    }
-  };
-
-  const toggleMute = () => {
-    const nextMuted = !isMuted;
-    setIsMuted(nextMuted);
-    if (campusVideoRef.current) campusVideoRef.current.muted = nextMuted;
-    if (classroomVideoRef.current) classroomVideoRef.current.muted = nextMuted;
-  };
-
-  const handleNextVideo = () => {
-    switchVideo((activeVideoIndex + 1) % HERO_VIDEOS.length);
+  const switchVideo=(index:number)=>{
+    if(!videos.length)return;
+    const next=(index+videos.length)%videos.length;
+    if(next===activeVideoIndex)return;
+    const outgoing=videoRefs.current.get(currentVideo.id);
+    setActiveVideoIndex(next);
     setIsPlaying(true);
+    // Maintain the signature crossfade before retiring the previous player.
+    window.setTimeout(()=>outgoing?.pause(),750);
   };
 
-  const handlePrevVideo = () => {
-    switchVideo((activeVideoIndex - 1 + HERO_VIDEOS.length) % HERO_VIDEOS.length);
-    setIsPlaying(true);
+  useEffect(()=>{
+    const current=videoRefs.current.get(currentVideo?.id);
+    if(!current)return;
+    current.muted=isMuted;
+    if(isPlaying)void current.play().catch(()=>setIsPlaying(false));
+    else current.pause();
+  },[currentVideo?.id,isMuted,isPlaying]);
+
+  const togglePlayback=()=>{
+    const current=videoRefs.current.get(currentVideo.id);
+    if(isPlaying){current?.pause();setIsPlaying(false);}
+    else void current?.play().then(()=>setIsPlaying(true)).catch(()=>setIsPlaying(false));
   };
+  const toggleMute=()=>setIsMuted(value=>!value);
+  const handleNextVideo=()=>switchVideo(activeVideoIndex+1);
+  const handlePrevVideo=()=>switchVideo(activeVideoIndex-1);
 
   return (
     <div className="relative w-full bg-white text-[#4A1249] overflow-hidden border-b border-purple-100">
@@ -151,31 +110,24 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
           }}
         >
-          {/* Video 0: Campus Complex (Preloaded & Always Mounted for Seamless Crossfade) */}
-          <video
-            ref={campusVideoRef}
-            src={HERO_VIDEOS[0].src}
-            preload="auto"
-            muted={isMuted}
-            playsInline
-            onEnded={() => switchVideo(1)}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-              activeVideoIndex === 0 ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
-            }`}
-          />
-
-          {/* Video 1: Smart Classroom & Lab (Preloaded & Always Mounted for Seamless Crossfade) */}
-          <video
-            ref={classroomVideoRef}
-            src={HERO_VIDEOS[1].src}
-            preload="auto"
-            muted={isMuted}
-            playsInline
-            onEnded={() => switchVideo(0)}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-              activeVideoIndex === 1 ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
-            }`}
-          />
+          {/* Keep each published clip mounted for an uninterrupted carousel crossfade. */}
+          {videos.map((video,index)=>(
+            <video
+              key={video.id}
+              ref={node=>{
+                if(node)videoRefs.current.set(video.id,node);
+                else videoRefs.current.delete(video.id);
+              }}
+              src={video.src}
+              preload={index===activeVideoIndex?'auto':'metadata'}
+              muted={isMuted}
+              playsInline
+              onEnded={()=>{if(index===activeVideoIndex)switchVideo(index+1);}}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
+                activeVideoIndex===index?'opacity-100 z-10':'opacity-0 pointer-events-none z-0'
+              }`}
+            />
+          ))}
 
           {/* Diagonal HIAU Heritage Gold Accent Slash (Exact Slanted Divider Line) */}
           <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-1.5 bg-[#C39A53] shadow-md z-20 pointer-events-none" />
@@ -235,7 +187,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 <button
                   onClick={handlePrevVideo}
                   className="w-7 h-7 rounded-full bg-[#4A1249] hover:bg-[#661B69] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
-                  aria-label="Previous video (Campus)"
+                  aria-label="Previous homepage video"
                   title="Previous video"
                 >
                   <ChevronLeft className="w-3.5 h-3.5 text-[#C39A53]" />
@@ -243,16 +195,16 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 <button
                   onClick={handleNextVideo}
                   className="w-7 h-7 rounded-full bg-[#4A1249] hover:bg-[#661B69] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
-                  aria-label="Next video (Classroom)"
+                  aria-label="Next homepage video"
                   title="Next video"
                 >
                   <ChevronRight className="w-3.5 h-3.5 text-[#C39A53]" />
                 </button>
               </div>
 
-              {/* 2-Slide Tabs (01 Campus / 02 Classroom) */}
+              {/* Dynamic homepage video selector: originals plus published additions. */}
               <div className="flex items-center gap-1.5 ml-1">
-                {HERO_VIDEOS.map((vid, idx) => {
+                {videos.map((vid, idx) => {
                   const isActive = activeVideoIndex === idx;
                   return (
                     <button

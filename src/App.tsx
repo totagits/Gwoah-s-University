@@ -44,14 +44,7 @@ export default function App() {
   const [activeLeaderProfileId, setActiveLeaderProfileId] = useState<string | null>(null);
 
   // Authentication State
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
-    // Check if auto-start or default demo user
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('autostart') === '1' || params.get('portal') === '1') {
-      return DEMO_USERS[0]; // Super Admin
-    }
-    return null;
-  });
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
@@ -114,10 +107,9 @@ export default function App() {
     const handleUrlRouting = () => {
       const params = new URLSearchParams(window.location.search);
       if (params.get('autostart') === '1' || params.get('portal') === '1') {
-        setViewMode('portal');
-        if (params.get('tab')) {
-          setActivePortalTab(params.get('tab')!);
-        }
+        // A URL may request the sign-in screen, but may never authenticate a user.
+        setViewMode('public');
+        setIsLoginModalOpen(true);
         return;
       }
 
@@ -207,21 +199,11 @@ export default function App() {
     }
   };
 
-  const handleSwitchRole = (role: UserRole) => {
-    const found = DEMO_USERS.find((u) => u.role === role);
-    if (found) {
-      setCurrentUser(found);
-      // Route role conveniently to default relevant dashboard tab
-      if (role === 'student') {
-        setActivePortalTab('student_portal');
-      } else if (role === 'lecturer' || role === 'dean') {
-        setActivePortalTab('faculty_admin');
-      } else if (role === 'bursar') {
-        setActivePortalTab('finance');
-      } else if (role === 'admissions_officer') {
-        setActivePortalTab('admissions');
-      }
-    }
+  const handleSwitchRole = (_role: UserRole) => {
+    // Role changes must be authorized by the server in a future authenticated session.
+    setCurrentUser(null);
+    setViewMode('public');
+    setIsLoginModalOpen(true);
   };
 
   const handleLogout = () => {

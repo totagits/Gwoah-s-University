@@ -94,3 +94,11 @@ Review of `staging` source establishes the components and image references exist
 - Only authenticated super administrators, registrars and admissions officers may read the intake queue. The staff portal lists self-reported grades, but no mock fee or admission decision.
 - Staff approval/rejection, email notifications, document verification, scholarships awards and reconciliation belong to ERP-1 and ERP-2 and are deliberately not enabled here.
 - Public privacy/consent copy, data retention/deletion policy, acceptable document uploads, anti-bot measures beyond per-IP throttling, and institution-approved fee disclosure still need acceptance before general public launch.
+
+### Public admissions deployment checks — staging
+- [x] Fix public form contract: include the `county` field required by the validated server intake endpoint (and guard with a source regression test).
+- [ ] Verify `APP_URL=https://hiau-staging.totag.network` or an equivalent exact staging origin is configured for the staging runtime; identity middleware requires the request's `Origin` to equal configured origin. Do not weaken this security check to accept arbitrary hosts.
+- [ ] Verify staging's `DATA_DIR` is a persistent volume and that `operations.sqlite` and `identity.sqlite` survive a restart/redeploy with a tested backup.
+- [ ] Use fictional applicant information only for the staged browser submission acceptance; verify reference issuance, staff queue and scholarship flag. Do not submit actual applicant data before university privacy policies are approved.
+- [ ] Verify both scholarship opt-in and opt-out, rejected missing fields, failed network/save errors, and denial of public `GET /api/applications`.
+- [ ] Confirm an institution-approved privacy notice, record retention/deletion process and data access policy before broad public availability.

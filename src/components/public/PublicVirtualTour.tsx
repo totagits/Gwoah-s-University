@@ -182,7 +182,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   const campusTourRef = useRef<HTMLVideoElement>(null);
   const classroomTourRef = campusTourRef;
 
-  const currentVideo = tourVideos[selectedIndex];
+  const currentVideo = tourVideos[selectedIndex] || tourVideos[0];
 
   // Seamless instant handoff between the two videos with crossfade
   const switchTourVideo = (nextIndex: number) => {
@@ -270,6 +270,13 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
     switchTourVideo((selectedIndex - 1 + tourVideos.length) % tourVideos.length);
     setIsPlaying(true);
   };
+
+  if (!currentVideo) {
+    return <section id="tour" className="py-16 text-center text-[#4A1249]">
+      <h2 className="text-2xl font-bold">University Video Library</h2>
+      <p>No public videos have been published yet.</p>
+    </section>;
+  }
 
   return (
     <section id="tour" className="py-16 bg-[#FAF8FB] border-b border-purple-100 text-[#2E0F34] relative overflow-hidden">

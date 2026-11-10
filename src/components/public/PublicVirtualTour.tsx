@@ -17,6 +17,7 @@ import {
   VolumeX,
   RotateCcw,
 } from 'lucide-react';
+import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from '../../data/publicMedia';
 
 export interface TourVideoItem {
   id: string;
@@ -136,22 +137,59 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   onOpenApplicationModal,
   onOpenPortal,
 }) => {
+  const [managedVideos, setManagedVideos] = useState<PublicVideo[]>(DEFAULT_PUBLIC_VIDEOS);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/public-media/videos', { signal: controller.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('Media unavailable')))
+      .then((data: { videos?: PublicVideo[] }) => {
+        if (Array.isArray(data.videos) &&
+          data.videos.every(item => typeof item.src === 'string' && item.src.startsWith('/'))) {
+          setManagedVideos(data.videos);
+        }
+      })
+      .catch(() => { /* Keep existing videos if public media service is unavailable. */ });
+    return () => controller.abort();
+  }, []);
+  const tourVideos: TourVideoItem[] = managedVideos
+    .filter(video => video.status === 'published' && video.src)
+    .sort((a, b) => a.order - b.order)
+    .map((video, index) => {
+      const template = TOUR_VIDEOS[index < 2 ? index : 0];
+      return {
+        ...template,
+        id: video.id,
+        name: video.title,
+        shortName: video.label || video.title,
+        badge: video.badge || 'HIAU Video',
+        headline: video.title,
+        description: video.subtitle,
+        videoUrl: video.src,
+        posterImage: video.poster,
+        // New videos should not inherit campus-specific achievements and claims.
+        stats: index < 2 ? template.stats : [],
+        highlights: index < 2 ? template.highlights : [],
+        hotspots: index < 2 ? template.hotspots : [],
+        campusName: index < 2 ? template.campusName : 'University Media Library',
+        location: index < 2 ? template.location : 'HIAU Liberia',
+      };
+    });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
 
   // Dual video refs: keep both permanently mounted & preloaded to eliminate any blank gap
   const campusTourRef = useRef<HTMLVideoElement>(null);
-  const classroomTourRef = useRef<HTMLVideoElement>(null);
+  const classroomTourRef = campusTourRef;
 
-  const currentVideo = TOUR_VIDEOS[selectedIndex];
+  const currentVideo = tourVideos[selectedIndex] || tourVideos[0];
 
   // Seamless instant handoff between the two videos with crossfade
   const switchTourVideo = (nextIndex: number) => {
     if (nextIndex === selectedIndex) return;
 
-    const incoming = nextIndex === 0 ? campusTourRef.current : classroomTourRef.current;
-    const outgoing = selectedIndex === 0 ? campusTourRef.current : classroomTourRef.current;
+    const incoming = campusTourRef.current;
+    const outgoing = campusTourRef.current;
 
     if (incoming) {
       incoming.currentTime = 0;
@@ -173,7 +211,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
 
   // Sync play / pause state to active video
   useEffect(() => {
-    const current = selectedIndex === 0 ? campusTourRef.current : classroomTourRef.current;
+    const current = campusTourRef.current;
     if (!current) return;
     if (isPlaying) {
       current.play().catch(() => {});
@@ -196,7 +234,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   }, []);
 
   const togglePlayback = () => {
-    const current = selectedIndex === 0 ? campusTourRef.current : classroomTourRef.current;
+    const current = campusTourRef.current;
     if (!current) return;
     if (isPlaying) {
       current.pause();
@@ -217,21 +255,28 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   };
 
   const handleRestart = () => {
-    const current = selectedIndex === 0 ? campusTourRef.current : classroomTourRef.current;
+    const current = campusTourRef.current;
     if (!current) return;
     current.currentTime = 0;
     current.play().then(() => setIsPlaying(true)).catch(() => {});
   };
 
   const handleNext = () => {
-    switchTourVideo((selectedIndex + 1) % TOUR_VIDEOS.length);
+    switchTourVideo((selectedIndex + 1) % tourVideos.length);
     setIsPlaying(true);
   };
 
   const handlePrev = () => {
-    switchTourVideo((selectedIndex - 1 + TOUR_VIDEOS.length) % TOUR_VIDEOS.length);
+    switchTourVideo((selectedIndex - 1 + tourVideos.length) % tourVideos.length);
     setIsPlaying(true);
   };
+
+  if (!currentVideo) {
+    return <section id="tour" className="py-16 text-center text-[#4A1249]">
+      <h2 className="text-2xl font-bold">University Video Library</h2>
+      <p>No public videos have been published yet.</p>
+    </section>;
+  }
 
   return (
     <section id="tour" className="py-16 bg-[#FAF8FB] border-b border-purple-100 text-[#2E0F34] relative overflow-hidden">
@@ -273,7 +318,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
 
         {/* 2-Slide Video Carousel Selector Tabs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-          {TOUR_VIDEOS.map((video, idx) => {
+          {tourVideos.map((video, idx) => {
             const isSelected = selectedIndex === idx;
             return (
               <button
@@ -355,34 +400,14 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
             <div className="lg:col-span-7 relative bg-[#2A082C] min-h-[380px] sm:min-h-[460px] lg:min-h-[580px] flex flex-col justify-between overflow-hidden">
               {/* Dual Preloaded HTML5 Video Elements for Continuous Zero-Gap Playback */}
               <div className="absolute inset-0 w-full h-full hero-diagonal-clip overflow-hidden bg-black">
-                {/* Video 0: Campus Complex (Preloaded & Always Mounted) */}
-                <video
-                  ref={campusTourRef}
-                  src={TOUR_VIDEOS[0].videoUrl}
-                  poster={TOUR_VIDEOS[0].posterImage}
-                  preload="auto"
-                  muted={isMuted}
-                  playsInline
-                  onEnded={() => switchTourVideo(1)}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-                    selectedIndex === 0 ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
-                  }`}
-                />
-
-                {/* Video 1: Smart Classroom & Lab (Preloaded & Always Mounted) */}
-                <video
-                  ref={classroomTourRef}
-                  src={TOUR_VIDEOS[1].videoUrl}
-                  poster={TOUR_VIDEOS[1].posterImage}
-                  preload="auto"
-                  muted={isMuted}
-                  playsInline
-                  onEnded={() => switchTourVideo(0)}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-                    selectedIndex === 1 ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
-                  }`}
-                />
-
+                {currentVideo && <video
+                  key={currentVideo.id + currentVideo.videoUrl}
+                  ref={campusTourRef} src={currentVideo.videoUrl}
+                  poster={currentVideo.posterImage}
+                  preload="metadata" muted={isMuted} playsInline
+                  onEnded={() => switchTourVideo((selectedIndex + 1) % tourVideos.length)}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />}
                 {/* Dynamic Vignette & Purple Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2A082C]/90 via-transparent to-black/30 pointer-events-none z-10" />
               </div>
@@ -486,7 +511,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
                     </button>
 
                     <span className="text-white/80 text-xs font-mono ml-1">
-                      Video {selectedIndex + 1} of {TOUR_VIDEOS.length}
+                      Video {selectedIndex + 1} of {tourVideos.length}
                     </span>
                   </div>
 

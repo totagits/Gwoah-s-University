@@ -12,6 +12,7 @@ import { PublicLeaderProfile } from './components/public/PublicLeaderProfile';
 import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
+import { AdminPublicVideoManager } from './components/portal/AdminPublicVideoManager';
 import { PortalLoginModal } from './components/portal/PortalLoginModal';
 import { TaskManagementDashboard } from './components/portal/TaskManagementDashboard';
 import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsHub';
@@ -320,7 +321,10 @@ export default function App() {
 
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             {activePortalTab === 'tasks' && (
-              <TaskManagementDashboard currentUser={currentUser} />
+              <>
+                <TaskManagementDashboard currentUser={currentUser} />
+                {currentUser.role === 'super_admin' && <AdminPublicVideoManager />}
+              </>
             )}
 
             {activePortalTab === 'analytics' && (

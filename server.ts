@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import {
   DEMO_USERS,
@@ -37,6 +38,7 @@ import {
 } from './src/types';
 import { generateIcsCalendar, filterCalendarEvents } from './src/utils/calendarSync';
 import { computeTaskAnalytics } from './src/utils/taskAnalytics';
+import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from './src/data/publicMedia';
 import {
   validateCourseAdd,
   validateCourseDrop,
@@ -155,6 +157,65 @@ let db = loadDatabase();
 const app = express();
 app.use(express.json());
  
+// Public website media are persisted independently of seeded ERP demonstration data.
+// Mounted persistent storage is required before production publication.
+const MEDIA_FILE = path.join(__dirname, 'data', 'public-videos.json');
+const MEDIA_UPLOAD_DIR = path.join(__dirname, 'data', 'public-media-uploads');
+const MEDIA_CATEGORIES = ['campus', 'academics', 'events', 'student-life', 'other'] as const;
+function validVideo(value: unknown): value is PublicVideo {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as PublicVideo;
+  return typeof v.id === 'string' && /^[a-zA-Z0-9_-]{1,90}$/.test(v.id) &&
+    typeof v.title === 'string' && v.title.length > 0 && v.title.length <= 160 &&
+    typeof v.subtitle === 'string' && v.subtitle.length <= 240 &&
+    typeof v.src === 'string' && (v.src === '' || safeMediaPath(v.src)) &&
+    typeof v.poster === 'string' && (v.poster === '' || safeMediaPath(v.poster)) &&
+    (v.status === 'draft' || v.status === 'published') &&
+    typeof v.featured === 'boolean' && typeof v.order === 'number' &&
+    Number.isSafeInteger(v.order) && v.order >= 0 &&
+    MEDIA_CATEGORIES.includes(v.category);
+}
+function safeMediaPath(value: string): boolean {
+  return /^\/(assets|uploads)\/[a-zA-Z0-9_./-]+$/.test(value) &&
+    !value.includes('..') && !value.includes('//');
+}
+function readPublicVideos(): PublicVideo[] {
+  try {
+    if (!fs.existsSync(MEDIA_FILE)) return DEFAULT_PUBLIC_VIDEOS;
+    const items = JSON.parse(fs.readFileSync(MEDIA_FILE, 'utf8')) as unknown;
+    // Migrate the original two-video registry without discarding customizations.
+    if (!Array.isArray(items)) return DEFAULT_PUBLIC_VIDEOS;
+    return items.map((value, index) => {
+      const original = DEFAULT_PUBLIC_VIDEOS.find(video => video.id === value?.id);
+      return {
+        ...original, ...value,
+        category: MEDIA_CATEGORIES.includes(value?.category) ? value.category : 'other',
+        status: value?.status === 'draft' ? 'draft' : 'published',
+        featured: typeof value?.featured === 'boolean' ? value.featured : true,
+        order: Number.isSafeInteger(value?.order) && value.order >= 0 ? value.order : index,
+      };
+    }).filter(validVideo);
+  } catch {
+    return DEFAULT_PUBLIC_VIDEOS;
+  }
+}
+function savePublicVideos(videos: PublicVideo[]) {
+  fs.mkdirSync(path.dirname(MEDIA_FILE), { recursive: true });
+  const temporaryPath = MEDIA_FILE + '.' + randomUUID() + '.tmp';
+  fs.writeFileSync(temporaryPath, JSON.stringify(videos, null, 2), 'utf8');
+  fs.renameSync(temporaryPath, MEDIA_FILE);
+}
+app.get('/api/public-media/videos', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  return res.json({ videos: readPublicVideos()
+    .filter(video => video.status === 'published' && video.src)
+    .sort((a,b) => a.order - b.order) });
+});
+app.use('/uploads/public-videos', express.static(MEDIA_UPLOAD_DIR, {
+  dotfiles: 'deny', index: false, fallthrough: false, maxAge: '1h',
+}));
+
+ 
 // SECURITY HOLD: This prototype has no verified credential store, session validation,
 // or role-based authorization. Fail closed on restricted ERP endpoints until a
 // separately tested authentication/authorization implementation is introduced.
@@ -202,6 +263,92 @@ function recordAudit(
   saveDatabase(db);
   return entry;
 }
+
+// Draft-only routes: the fail-closed /api middleware blocks every operation here.
+// They must remain unreachable until authenticated administrator RBAC exists.
+app.get('/api/admin/public-media/videos', (_req: Request, res: Response) =>
+  res.json({ videos: readPublicVideos() }));
+
+app.post('/api/admin/public-media/videos', (req: Request, res: Response) => {
+  const { title, subtitle = '', category = 'other' } = req.body || {};
+  if (typeof title !== 'string' || !title.trim() || title.length > 160 ||
+      typeof subtitle !== 'string' || subtitle.length > 240 ||
+      !MEDIA_CATEGORIES.includes(category))
+    return res.status(400).json({ error: 'Invalid video metadata.' });
+  const videos = readPublicVideos();
+  const video: PublicVideo = {
+    id: randomUUID(), title: title.trim(), subtitle, category, status: 'draft',
+    featured: false, order: videos.length, src: '', poster: '',
+    badge: 'University Video', label: title.trim(),
+  };
+  videos.push(video);
+  savePublicVideos(videos);
+  return res.status(201).json({ success: true, video, videos });
+});
+
+app.patch('/api/admin/public-media/videos/:id', (req: Request, res: Response) => {
+  const videos = readPublicVideos();
+  const index = videos.findIndex(v => v.id === req.params.id);
+  if (index < 0) return res.status(404).json({ error: 'Unknown video.' });
+  const original = videos[index];
+  const changes = req.body || {};
+  const next: PublicVideo = {
+    ...original,
+    title: changes.title ?? original.title,
+    subtitle: changes.subtitle ?? original.subtitle,
+    poster: changes.poster ?? original.poster,
+    category: changes.category ?? original.category,
+    status: changes.status ?? original.status,
+    featured: changes.featured ?? original.featured,
+    order: changes.order ?? original.order,
+  };
+  if (!validVideo(next) || (next.status === 'published' && !next.src))
+    return res.status(400).json({ error: 'Invalid video data or missing MP4.' });
+  videos[index] = next;
+  savePublicVideos(videos);
+  return res.json({ success: true, videos });
+});
+
+app.post('/api/admin/public-media/videos/reorder', (req: Request, res: Response) => {
+  const ids: unknown = req.body?.ids;
+  const videos = readPublicVideos();
+  if (!Array.isArray(ids) || ids.length !== videos.length ||
+      new Set(ids).size !== videos.length ||
+      ids.some(id => typeof id !== 'string' || !videos.some(v => v.id === id)))
+    return res.status(400).json({ error: 'Order must contain each library video exactly once.' });
+  const sorted = ids.map((id, order) => ({ ...videos.find(v => v.id === id)!, order }));
+  savePublicVideos(sorted);
+  return res.json({ success: true, videos: sorted });
+});
+
+app.delete('/api/admin/public-media/videos/:id', (req: Request, res: Response) => {
+  const videos = readPublicVideos();
+  if (!videos.some(v => v.id === req.params.id)) return res.status(404).json({ error: 'Unknown video.' });
+  // Remove the library entry, not the underlying media file: other references
+  // and backups must be reviewed before a separate cleanup operation.
+  const remaining = videos.filter(v => v.id !== req.params.id);
+  savePublicVideos(remaining);
+  return res.json({ success: true, videos: remaining });
+});
+
+app.post('/api/admin/public-media/videos/:id/upload',
+  express.raw({ type: 'video/mp4', limit: '50mb' }),
+  (req: Request, res: Response) => {
+    const id = req.params.id;
+    const videos = readPublicVideos();
+    if (!videos.some(v => v.id === id)) return res.status(404).json({ error: 'Unknown video.' });
+    const bytes = req.body;
+    if (!Buffer.isBuffer(bytes) || bytes.length < 12 || bytes.length > 50 * 1024 * 1024 ||
+        bytes.toString('ascii', 4, 8) !== 'ftyp')
+      return res.status(415).json({ error: 'Valid MP4 under 50 MB required.' });
+    fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
+    const name = randomUUID() + '.mp4';
+    fs.writeFileSync(path.join(MEDIA_UPLOAD_DIR, name), bytes, { flag: 'wx' });
+    const updated = videos.map(v => v.id === id ? { ...v, src: '/uploads/public-videos/' + name } : v);
+    savePublicVideos(updated);
+    return res.json({ success: true, videos: updated });
+  }
+);
 
 /* ==========================================================================
    AUTHENTICATION ENDPOINTS

@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import {
   Lock,
   X,
-  Sparkles,
   ChevronRight,
   AlertCircle,
 } from 'lucide-react';
-import { UserProfile, UserRole } from '../../types';
+import { UserProfile } from '../../types';
 import { api } from '../../services/api';
 
 interface PortalLoginModalProps {
@@ -27,92 +26,13 @@ export const PortalLoginModal: React.FC<PortalLoginModalProps> = ({
 
   if (!isOpen) return null;
 
-  const demoRoles = [
-    {
-      role: 'super_admin' as UserRole,
-      title: 'Dr. Kona-Facia Freeman-Nepay',
-      badge: 'President',
-      dept: 'Office of the President',
-      desc: 'Executive university governance, Senate oversight, accreditation & institutional management',
-      avatar: '👩🏾‍🏫',
-      avatarImg: '/assets/hiau/president_kona_facia_nepay.jpg',
-    },
-    {
-      role: 'registrar' as UserRole,
-      title: 'Mrs. Patricia Tweh',
-      badge: 'Registrar',
-      dept: 'Office of the Registrar',
-      desc: 'Academic records, course catalog, graduation & NCHE self-study',
-      avatar: '👩🏾‍💼',
-    },
-    {
-      role: 'dean' as UserRole,
-      title: 'Prof. Mamawa M. Freeman-Moore',
-      badge: 'Dean of Education',
-      dept: 'College of Education',
-      desc: 'Faculty workload, room allocations, syllabus & exam moderation',
-      avatar: '👩🏾‍🎓',
-      avatarImg: '/assets/hiau/prof_mamawa_freeman_moore.png',
-    },
-    {
-      role: 'lecturer' as UserRole,
-      title: 'Dr. Jacob Meiporkoyah',
-      badge: 'Professor of Theology',
-      dept: 'College of Theology',
-      desc: 'Course roster, gradebook submission, continuous assessments & attendance',
-      avatar: '👨🏾‍💻',
-      avatarImg: '/assets/hiau/dr_jacob_meiporkoyah.png',
-    },
-    {
-      role: 'student' as UserRole,
-      title: 'Sando Fahnbulleh',
-      badge: 'Continuing Student',
-      dept: 'B.Sc. CompSci (Year 3)',
-      desc: 'Course registration, Add/Drop, fee statement, GPA audit & transcript',
-      avatar: '🧑🏾‍🎓',
-    },
-    {
-      role: 'bursar' as UserRole,
-      title: 'Mr. Samuel Barclay',
-      badge: 'Chief Bursar',
-      dept: 'Finance & Accounts',
-      desc: 'Tuition billing, EcoBank & Mobile Money reconciliations, fee holds',
-      avatar: '👨🏾‍💼',
-    },
-    {
-      role: 'admissions_officer' as UserRole,
-      title: 'Ms. Helena Kollie',
-      badge: 'Admissions Officer',
-      dept: 'Admissions & Outreach',
-      desc: 'WASSCE credential verification, scoring rubrics & admit decisions',
-      avatar: '👩🏾‍🏫',
-    },
-  ];
-
-  const handleDemoLogin = async (role: UserRole) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.login({ role });
-      if (res.success && res.user) {
-        onLoginSuccess(res.user, res.token);
-      } else {
-        setError('Login failed. Please try again.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Network error during authentication');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCredentialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await api.login({ email, password });
-      if (res.success && res.user) {
+      const res = await api.login({ email: email.trim(), password });
+      if (res.success && res.user && res.token) {
         onLoginSuccess(res.user, res.token);
       } else {
         setError('Invalid university credentials.');
@@ -182,60 +102,9 @@ export const PortalLoginModal: React.FC<PortalLoginModalProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
-          {/* Left: 1-Click Role Switcher for instant evaluator access */}
-          <div className="lg:col-span-7 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#4A1249] uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#C39A53]" />
-                Select Demo Role to Evaluate Workflows:
-              </span>
-              <span className="text-[11px] text-slate-500 font-medium">All 7 roles pre-configured</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[360px] overflow-y-auto pr-1">
-              {demoRoles.map((dr) => (
-                <button
-                  key={dr.role}
-                  type="button"
-                  disabled={loading}
-                  onClick={() => handleDemoLogin(dr.role)}
-                  className="text-left p-3.5 rounded-lg bg-[#FAF4FB] hover:bg-purple-50/60 border border-purple-100 hover:border-[#4A1249] transition-all flex flex-col justify-between group cursor-pointer disabled:opacity-50"
-                >
-                  <div className="flex items-center justify-between w-full mb-1">
-                    <div className="flex items-center gap-2">
-                      {dr.avatarImg ? (
-                        <img
-                          src={dr.avatarImg}
-                          alt={dr.title}
-                          className="w-7 h-7 rounded-full object-cover border border-[#C39A53]/60 shadow-xs"
-                        />
-                      ) : (
-                        <span className="text-base">{dr.avatar}</span>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white group-hover:bg-[#4A1249] group-hover:text-[#C39A53] text-slate-700 border border-slate-200 transition-colors uppercase">
-                      {dr.badge}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#4A1249] group-hover:text-[#661B69] transition-colors">
-                      {dr.title}
-                    </div>
-                    <div className="text-[11px] text-[#C39A53] font-bold">
-                      {dr.dept}
-                    </div>
-                    <div className="text-[10px] text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-                      {dr.desc}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Right: Manual Login Form */}
-          <div className="lg:col-span-5 bg-[#FAF4FB] border border-purple-100 rounded-xl p-5 flex flex-col justify-between shadow-sm">
+        <div className="mt-6 max-w-lg mx-auto">
+          {/* Institutional credentials only; demo access is disabled. */}
+          <div className="bg-[#FAF4FB] border border-purple-100 rounded-xl p-5 flex flex-col justify-between shadow-sm">
             <form onSubmit={handleCredentialSubmit} className="space-y-4">
               <div className="text-xs font-bold text-[#4A1249] uppercase tracking-wider">
                 Direct Account Sign-In

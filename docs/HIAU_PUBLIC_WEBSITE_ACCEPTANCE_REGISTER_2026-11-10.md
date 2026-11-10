@@ -50,6 +50,16 @@
 - [ ] Check navigation items and CTA destinations for missing pages/dead ends.
 - [ ] Confirm claims about degree availability, accreditation, curriculum, clinical facilities and admissions against institution-approved documentation.
 
+## A4 — Public Financial Aid & Scholarships (IN PROGRESS)
+- [x] Added a concise, accessible Financial Aid & Scholarships information section linked from the Admissions navigation menu.
+- [x] Removed unverified GPA cutoffs, scholarship award guarantees, funding availability promises and payment-channel representations from the public financial-aid panel.
+- [x] Added `applyingForScholarship` to the client submission payload and optional application type. **This does not mean the request is persisted:** the current staging server has no public `POST /api/applications` handler, and the authenticated workspaces admission workflow is separate.
+- [ ] Confirm institution-approved policies, contact emails, deadlines, award eligibility and currently funded schemes before publishing promises.
+- [ ] Design and implement a privacy-safe public admissions application endpoint with rate-limits, validation, persistence, auditable workflow and test data isolation. Do not accept sensitive banking/financial documents until an approved secure upload service exists.
+- [ ] Wire scholarship-interest into the secure admissions record, committee screening, student correspondence and access-controlled review. Confirm with end-to-end tests using a staging applicant.
+- [ ] Implement scholarship award approvals, financial credit postings, renewals and reconciliation only during ERP-2, with separation of duties and audit history.
+- [ ] Verify financial-aid menu scroll, mobile accessibility, and clear distinction between **inquiry**, **application**, and **award**.
+
 ## A4 — Admissions and communications (PENDING)
 - [ ] Verify application workflow end-to-end with explicitly marked staging/test applicant; no real tuition charge.
 - [ ] Verify contact emails, office addresses, data protection notices, receipt/acknowledgment and errors.

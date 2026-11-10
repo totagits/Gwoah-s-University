@@ -31,7 +31,10 @@ test('newly created draft videos never appear publicly', () => {
   assert.equal(featuredPublicVideos(videos).length,2);
 });
 test('published additional videos are selectable and sorted by saved order', () => {
-  const videos = [...DEFAULT_PUBLIC_VIDEOS, {...newVideo, status: 'published' as const, order: 0}];
+  const videos = [
+    ...DEFAULT_PUBLIC_VIDEOS.map(video => ({ ...video, order: video.order + 1 })),
+    { ...newVideo, status: 'published' as const, order: 0 },
+  ];
   const results = featuredPublicVideos(videos);
   assert.equal(results.length,3);
   assert.equal(results[0].id, 'graduation-2026');

@@ -7,6 +7,7 @@ import { installPlatform } from './server/platform';
 import { installWorkspaces } from './server/workspaces';
 import { installCurriculumStudio } from './server/curriculum';
 import {installPublicWebsiteMedia} from './server/publicWebsiteMedia';
+import { installPublicAdmissions } from './server/publicAdmissions';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -15,8 +16,8 @@ operations.migrateLegacy();
 let users = operations.users();
 const app = express();
 app.use((req, res, next) => {
-  if (/^\/api\/auth\//.test(req.path))
-    return express.json({ limit: '64kb' })(req, res, next);
+  if (/^\/api\/auth\//.test(req.path) || (req.path === '/api/applications' && req.method === 'POST'))
+    return express.json({ limit: req.path === '/api/applications' ? '12kb' : '64kb' })(req, res, next);
   next();
 });
 const identity = installIdentity(app, {
@@ -30,6 +31,7 @@ const identity = installIdentity(app, {
 app.get('/api/health', (_req, res) =>
   res.json({ status: 'ok', version: '0.4.0', schemaVersion: 1 }),
 );
+installPublicAdmissions(app, operations);
 installWorkspaces(app, operations);
 installCurriculumStudio(app, operations);
 installPublicWebsiteMedia(app, operations, directory);

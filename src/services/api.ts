@@ -1,3 +1,4 @@
+import { setMediaCsrf } from './mediaAuthClient';
 import {
   UniversityTask,
   StudentProfileData,
@@ -66,13 +67,16 @@ const API_BASE = '/api';
 
 export const api = {
   // Auth
-  async login(roleOrEmail: { role?: string; email?: string; password?: string }) {
+  async login(credentials: { email: string; password: string }) {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(roleOrEmail),
+      body: JSON.stringify(credentials),
     });
-    return res.json();
+    const data = await res.json();
+    if (res.ok && data.success && data.csrf) setMediaCsrf(data.csrf);
+    return data;
   },
 
   async getUsers(): Promise<{ users: UserProfile[] }> {

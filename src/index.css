@@ -207,3 +207,19 @@ html.theme-light .hiau-erp-site .hiau-dashboard-selected {
   color: #ffffff !important;
   stroke: currentColor;
 }
+
+
+/* Public footer has a permanent dark brand surface, even when the secure ERP
+   light-theme preference is active. Override the older global slate/white
+   palette rules only within the HIAU footer (not in any ERP workspace). */
+[data-theme="light"] .hiau-public-footer :is(.text-white),
+[data-theme="light"] .hiau-public-footer :is(.text-\[\#EEE6EE\]) {
+  color: #EEE6EE !important;
+}
+[data-theme="light"] .hiau-public-footer :is(.text-\[\#F0CE8D\]) {
+  color: #F0CE8D !important;
+}
+.hiau-public-footer :is(a, button):focus-visible {
+  outline: 2px solid #F0CE8D;
+  outline-offset: 3px;
+}

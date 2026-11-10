@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, MapPin, Phone, Mail, Globe, Lock, GraduationCap } from 'lucide-react';
+import { ArrowRight, GraduationCap, Mail, MapPin, Phone, ShieldCheck, Globe } from 'lucide-react';
 
 interface PublicFooterProps {
   onOpenPortal: () => void;
@@ -7,196 +7,145 @@ interface PublicFooterProps {
   onOpenProfile?: (profileId: string) => void;
 }
 
+const offices = [
+  { title: 'Main academic campus', address: 'Old Road, Chugbor, Monrovia, Montserrado County, Liberia' },
+  { title: 'Administrative office', address: 'Tubman Boulevard, 6th Street, Sinkor, Monrovia, Liberia' },
+  { title: 'United States liaison office', address: 'Olney, Maryland, USA' },
+];
+
+const phones = [
+  { label: '(+231) 888-655-544', href: 'tel:+231888655544' },
+  { label: '(+231) 770-458-547', href: 'tel:+231770458547' },
+  { label: '(+231) 886-259-509', href: 'tel:+231886259509' },
+  { label: '(+231) 770-413-069', href: 'tel:+231770413069' },
+];
+
+const academicLinks = [
+  { label: 'Colleges and degree programs', target: 'colleges' },
+  { label: 'Vocational and certificate programs', target: 'colleges' },
+  { label: 'Admissions', target: 'admissions' },
+  { label: 'Campus and classroom tour', target: 'tour' },
+  { label: 'Student life and fellowship', target: 'dei' },
+];
+
 export const PublicFooter: React.FC<PublicFooterProps> = ({
-  onOpenPortal,
   onNavigateSection,
   onOpenProfile,
-}) => {
-  return (
-    <footer className="bg-[#4A1249] text-purple-100 border-t-2 border-[#C39A53] text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-          {/* Col 1: Brand & Charter */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-white">
-              <img
-                src="/assets/aistudio/image_bfcc4a11.png"
-                alt="Harvest Intercontinental American University Seal"
-                className="w-12 h-12 object-contain bg-white rounded-full p-1"
-              />
-              <div>
-                <span className="text-lg font-collegiate font-black tracking-tight text-white block uppercase">
-                  Harvest Intercontinental
-                </span>
-                <span className="text-xs font-collegiate font-bold text-[#C39A53] block uppercase">
-                  American University
-                </span>
-              </div>
+}) => (
+  <footer className="hiau-public-footer border-t-[3px] border-[#C39A53] bg-[#4A1249] text-white"
+    aria-label="Harvest Intercontinental American University footer">
+    <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:py-14">
+      <div className="grid gap-x-10 gap-y-10 md:grid-cols-2 xl:grid-cols-[1.25fr_1.15fr_1fr_1fr]">
+        <section aria-label="About HIAU" className="min-w-0">
+          <div className="flex items-center gap-3">
+            <img src="/assets/aistudio/image_bfcc4a11.png"
+              alt="HIAU university seal" loading="lazy" decoding="async"
+              className="h-14 w-14 shrink-0 rounded-full bg-white p-1 object-contain" />
+            <div className="min-w-0">
+              <p className="text-base font-bold leading-snug tracking-tight text-white">
+                Harvest Intercontinental
+              </p>
+              <p className="text-sm font-semibold text-[#F0CE8D]">American University</p>
             </div>
-            <p className="text-slate-300 text-xs leading-relaxed">
-              Chartered degree-granting higher education institution in the Republic of Liberia. Founded by Harvest Intercontinental Ministries Unlimited (HIM-U) under the visionary leadership of Bishop Dr. Darlingston G. Johnson.
+          </div>
+          <p className="mt-5 max-w-sm text-sm leading-7 text-[#EEE6EE]">
+            A Christ-centered university in Liberia dedicated to academic excellence,
+            leadership, entrepreneurship and service.
+          </p>
+          <div className="mt-5 space-y-3 text-sm">
+            <p className="flex items-start gap-2 text-[#EEE6EE]">
+              <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#F0CE8D]" />
+              <span>Institutional charter and licensure information</span>
             </p>
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center gap-1.5 text-emerald-300 font-bold text-[11px] uppercase tracking-wide">
-                <ShieldCheck className="w-4 h-4 text-[#C39A53]" />
-                <span>NCHE Statutory Licensure & Charter</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-amber-200 font-bold text-[11px] uppercase tracking-wide">
-                <GraduationCap className="w-4 h-4 text-[#C39A53]" />
-                <span>Academic Partner: Oral Roberts University (USA)</span>
-              </div>
-            </div>
-            <div className="pt-2 flex flex-wrap gap-2 text-[11px]">
-              <button
-                onClick={() => onOpenProfile?.('chancellor')}
-                className="text-[#C39A53] hover:text-amber-200 underline cursor-pointer"
-              >
-                Founder & Chancellor Profile →
-              </button>
-              <button
-                onClick={() => onOpenProfile?.('president')}
-                className="text-purple-200 hover:text-white underline cursor-pointer"
-              >
-                President's Message →
-              </button>
-            </div>
+            <p className="flex items-start gap-2 text-[#EEE6EE]">
+              <GraduationCap aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#F0CE8D]" />
+              <span>Academic and institutional partnerships</span>
+            </p>
           </div>
-
-          {/* Col 2: Official Campus Locations & Offices */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-collegiate font-bold text-white uppercase tracking-wider">
-              Campus & Office Locations
-            </h4>
-            <div className="space-y-3 pt-1">
-              <div>
-                <div className="font-bold text-[#C39A53] text-xs uppercase tracking-wide">
-                  Main Academic Campus
-                </div>
-                <div className="text-[11px] text-slate-300 flex items-start gap-1.5 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#C39A53] shrink-0 mt-0.5" />
-                  <span>Old Road, Chugbor, Monrovia, Montserrado County, Republic of Liberia</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="font-bold text-[#C39A53] text-xs uppercase tracking-wide">
-                  Corporate / Administrative Office
-                </div>
-                <div className="text-[11px] text-slate-300 flex items-start gap-1.5 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-purple-300 shrink-0 mt-0.5" />
-                  <span>Tubman Boulevard, 6th Street, Sinkor, Monrovia, Liberia</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="font-bold text-[#C39A53] text-xs uppercase tracking-wide">
-                  United States Liaison Office
-                </div>
-                <div className="text-[11px] text-slate-300 flex items-start gap-1.5 mt-0.5">
-                  <Globe className="w-3.5 h-3.5 text-purple-300 shrink-0 mt-0.5" />
-                  <span>Olney, Maryland, United States of America</span>
-                </div>
-              </div>
-            </div>
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm">
+            <button type="button" onClick={() => onOpenProfile?.('chancellor')}
+              className="inline-flex items-center gap-1.5 font-semibold text-[#F0CE8D] underline-offset-4 hover:underline">
+              Chancellor <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => onOpenProfile?.('president')}
+              className="inline-flex items-center gap-1.5 font-semibold text-[#F0CE8D] underline-offset-4 hover:underline">
+              President <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </button>
           </div>
+        </section>
 
-          {/* Col 3: Official Directory & Communications */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-collegiate font-bold text-white uppercase tracking-wider">
-              Contact Directory
-            </h4>
-            <div className="space-y-2 pt-1 text-slate-300 text-xs">
-              <div className="font-bold text-[#C39A53] text-[11px] uppercase tracking-wide">
-                Direct Telephone Lines:
+        <section aria-labelledby="hiau-footer-locations" className="min-w-0">
+          <h2 id="hiau-footer-locations" className="text-sm font-bold uppercase tracking-[0.08em] text-white">
+            Campus and offices
+          </h2>
+          <div className="mt-5 space-y-5">
+            {offices.map(office => (
+              <div key={office.title}>
+                <p className="text-sm font-semibold text-[#F0CE8D]">{office.title}</p>
+                <p className="mt-1.5 flex items-start gap-2 text-sm leading-6 text-[#EEE6EE]">
+                  {office.title.includes('United States')
+                    ? <Globe aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />
+                    : <MapPin aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />}
+                  <span>{office.address}</span>
+                </p>
               </div>
-              <ul className="space-y-1 font-mono text-[11px]">
-                <li className="flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <span>(+231) 888-655-544</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <span>(+231) 770-458-547</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <span>(+231) 886-259-509</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <span>(+231) 770-413-069</span>
-                </li>
-              </ul>
-
-              <div className="font-bold text-[#C39A53] text-[11px] uppercase tracking-wide pt-1">
-                Official Inquiries:
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <a href="mailto:info@hiau.org.lr" className="hover:text-[#C39A53] transition-colors">
-                    info@hiau.org.lr
-                  </a>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-[#C39A53]" />
-                  <a href="mailto:info@hiauniversity.org" className="hover:text-[#C39A53] transition-colors">
-                    info@hiauniversity.org
-                  </a>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
+        </section>
 
-          {/* Col 4: Academic & Intranet Gateway */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-collegiate font-bold text-white uppercase tracking-wider">
-              Academics & University Information
-            </h4>
-            <ul className="space-y-1.5 pt-1">
-              <li>
-                <button onClick={() => onNavigateSection('colleges')} className="hover:text-[#C39A53] transition-colors cursor-pointer text-left">
-                  The BLEST College Framework
+        <section aria-labelledby="hiau-footer-contact" className="min-w-0">
+          <h2 id="hiau-footer-contact" className="text-sm font-bold uppercase tracking-[0.08em] text-white">
+            Contact
+          </h2>
+          <p className="mt-5 text-sm font-semibold text-[#F0CE8D]">Telephone</p>
+          <ul className="mt-2 space-y-2">
+            {phones.map(phone => (
+              <li key={phone.href}>
+                <a href={phone.href}
+                  className="inline-flex items-center gap-2 text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline">
+                  <Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-[#F0CE8D]" />
+                  {phone.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 text-sm font-semibold text-[#F0CE8D]">Email inquiries</p>
+          <ul className="mt-2 space-y-2">
+            {['info@hiau.org.lr', 'info@hiauniversity.org'].map(email => (
+              <li key={email}>
+                <a href={`mailto:${email}`} className="inline-flex min-w-0 items-start gap-2 break-all text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline">
+                  <Mail aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />
+                  {email}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <nav aria-labelledby="hiau-footer-academics" className="min-w-0">
+          <h2 id="hiau-footer-academics" className="text-sm font-bold uppercase tracking-[0.08em] text-white">
+            Explore HIAU
+          </h2>
+          <ul className="mt-5 space-y-3">
+            {academicLinks.map(item => (
+              <li key={item.label}>
+                <button type="button" onClick={() => onNavigateSection(item.target)}
+                  className="text-left text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline">
+                  {item.label}
                 </button>
               </li>
-              <li>
-                <button onClick={() => onNavigateSection('colleges')} className="hover:text-[#C39A53] transition-colors cursor-pointer text-left">
-                  TVET Vocational Certificate Tracks
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigateSection('admissions')} className="hover:text-[#C39A53] transition-colors cursor-pointer text-left">
-                  Undergraduate Admissions ($10 Exam)
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigateSection('tour')} className="hover:text-[#C39A53] transition-colors cursor-pointer text-left">
-                  Campus & Smart Classroom Video Tour
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigateSection('dei')} className="hover:text-[#C39A53] transition-colors cursor-pointer text-left">
-                  Spiritual Fellowship & Student Leadership
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Strip */}
-        <div className="pt-8 border-t border-[#C39A53]/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-purple-200">
-          <div>
-            © {new Date().getFullYear()} Harvest Intercontinental American University (HIAU). All rights reserved.
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-slate-300">
-            <span className="text-[#C39A53] font-bold">HIAU Purple (#4A1249), Gold (#C39A53) & White</span>
-            <span>•</span>
-            <span>National Commission on Higher Education (NCHE) Chartered</span>
-            <span>•</span>
-            <span>Oral Roberts University Partner</span>
-          </div>
-        </div>
+            ))}
+          </ul>
+        </nav>
       </div>
-    </footer>
-  );
-};
+
+      <div className="mt-10 flex flex-col gap-3 border-t border-white/25 pt-6 text-sm text-[#EEE6EE] sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} Harvest Intercontinental American University. All rights reserved.</p>
+        <button type="button" onClick={() => onNavigateSection('about')}
+          className="self-start font-semibold text-[#F0CE8D] underline-offset-4 hover:underline">
+          About HIAU
+        </button>
+      </div>
+    </div>
+  </footer>
+);

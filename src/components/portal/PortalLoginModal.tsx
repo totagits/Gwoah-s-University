@@ -27,26 +27,19 @@ export function PortalLoginModal({
   const [message, setMessage] = useState('');
   if (!isOpen) return null;
   return (
-    <div className="campus-modal">
-      <section className="campus-panel" style={{ maxWidth: 480 }}>
-        <div className="campus-eyebrow">HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY</div>
-        <h2
-          style={{
-            fontFamily: 'Georgia,serif',
-            fontSize: 32,
-            margin: '18px 0',
-          }}
-        >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#1A071E]/75 p-4 backdrop-blur-sm">
+      <section role="dialog" aria-modal="true" aria-labelledby="hiau-login-title" className="w-full max-w-[490px] overflow-hidden rounded-xl border-2 border-[#C39A53] bg-white text-[#2A082C] shadow-2xl">\n        <div className="h-2 bg-[#C39A53]" />\n        <div className="p-6 sm:p-9">
+        <div className="text-xs font-black tracking-[0.16em] uppercase text-[#8C662B]">HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY</div>
+        <h2 id="hiau-login-title" className="my-5 font-black text-3xl uppercase tracking-tight text-[#4A1249] sm:text-4xl">
           {activation ? 'Activate your account' : 'Welcome back.'}
         </h2>
-        <p className="campus-muted">
+        <p className="text-sm leading-6 text-slate-700">
           {activation
             ? 'Choose a private password of at least 12 characters. This activation link can only be used once.'
             : 'Sign in with your university account. Your access is determined by your assigned role.'}
         </p>
         <form
-          className="campus-form"
-          style={{ gridTemplateColumns: '1fr' }}
+          className="mt-6 grid grid-cols-1 gap-4"
           onSubmit={async (e) => {
             e.preventDefault();
             setBusy(true);
@@ -86,10 +79,11 @@ export function PortalLoginModal({
           }}
         >
           {!activation && (
-            <label>
+            <label className="grid gap-2 text-sm font-semibold text-[#4A1249]">
               University email
               <input
                 type="email"
+                className="w-full rounded-md border border-slate-400 bg-white p-3 text-slate-900 outline-none focus:border-[#4A1249] focus:ring-2 focus:ring-[#C39A53]"
                 autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -97,10 +91,11 @@ export function PortalLoginModal({
               />
             </label>
           )}
-          <label>
+          <label className="grid gap-2 text-sm font-semibold text-[#4A1249]">
             {activation ? 'Choose password' : 'Password'}
             <input
               type="password"
+              className="w-full rounded-md border border-slate-400 bg-white p-3 text-slate-900 outline-none focus:border-[#4A1249] focus:ring-2 focus:ring-[#C39A53]"
               autoComplete={activation ? 'new-password' : 'current-password'}
               minLength={activation ? 12 : undefined}
               maxLength={128}
@@ -110,10 +105,11 @@ export function PortalLoginModal({
             />
           </label>
           {activation && (
-            <label>
+            <label className="grid gap-2 text-sm font-semibold text-[#4A1249]">
               Confirm password
               <input
                 type="password"
+              className="w-full rounded-md border border-slate-400 bg-white p-3 text-slate-900 outline-none focus:border-[#4A1249] focus:ring-2 focus:ring-[#C39A53]"
                 autoComplete="new-password"
                 minLength={12}
                 maxLength={128}
@@ -123,28 +119,31 @@ export function PortalLoginModal({
               />
             </label>
           )}
-          <button className="campus-button" disabled={busy}>
+          <button type="submit" className="mt-1 rounded-md bg-[#4A1249] px-5 py-3 font-bold text-white transition-colors hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53] disabled:opacity-50" disabled={busy}>
             {busy
               ? 'Please wait…'
               : activation
                 ? 'Activate account'
                 : 'Sign in'}
           </button>
-          <p role="status" className="campus-status">
+          <p role="status" aria-live="polite" className="text-sm text-[#4A1249]">
             {message}
           </p>
         </form>
-        {!activation && <button className="campus-button secondary" disabled={busy} onClick={async()=>{
+        <div className="mt-3 flex flex-wrap gap-3">
+        {!activation && <button type="button" className="rounded-md border border-[#C39A53] bg-[#FFF9ED] px-4 py-2.5 text-sm font-semibold text-[#4A1249] hover:bg-[#FBE9C7] disabled:opacity-50" disabled={busy} onClick={async()=>{
           if(!email.trim()){setMessage('Enter your university email above first.');return;}
           setBusy(true);
           try{const response=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const result=await response.json();if(!response.ok)throw Error(result.error);setMessage('If your account can receive recovery email, a private link will be sent. Otherwise contact the university administrator.');}catch(error){setMessage(error instanceof Error?error.message:'Could not request account recovery.');}finally{setBusy(false);}
         }}>Request password recovery</button>}
-        <button className="campus-button secondary" onClick={onClose}>
+        <button type="button" className="rounded-md border border-[#4A1249] px-4 py-2.5 text-sm font-semibold text-[#4A1249] hover:bg-purple-50" onClick={onClose}>
           Back to university website
         </button>
-        <p className="campus-muted" style={{ marginTop: 18 }}>
+        </div>
+        <p className="mt-6 text-xs leading-5 text-slate-600">
           Need access or a password reset? Contact the university administrator.
         </p>
+        </div>
       </section>
     </div>
   );

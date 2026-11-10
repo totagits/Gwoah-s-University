@@ -188,3 +188,22 @@ body.theme-light {
   outline: 2px solid #946c9e;
   outline-offset: 2px;
 }
+
+/* HIAU's branded administrator controls must not inherit generic green/amber
+   palette overrides or dark text on purple under the accessibility theme. */
+.hiau-erp-site .hiau-dashboard-selected,
+[data-theme="light"] .hiau-erp-site .hiau-dashboard-selected,
+html.theme-light .hiau-erp-site .hiau-dashboard-selected {
+  background-color: #4a1249 !important;
+  color: #ffffff !important;
+  border-color: #c39a53 !important;
+}
+.hiau-erp-site .hiau-dashboard-selected:hover {
+  background-color: #661b69 !important;
+  color: #ffffff !important;
+}
+.hiau-erp-site .hiau-dashboard-selected svg,
+.hiau-erp-site .hiau-dashboard-icon svg {
+  color: #ffffff !important;
+  stroke: currentColor;
+}

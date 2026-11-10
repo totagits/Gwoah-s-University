@@ -52,7 +52,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
-const DB_FILE = path.join(__dirname, 'data', 'university-db.json');
+const DATA_ROOT = process.env.HIAU_DATA_DIR ? path.resolve(process.env.HIAU_DATA_DIR) : path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_ROOT, 'university-db.json');
 
 // In-memory working database structure
 interface AppDatabase {
@@ -160,8 +161,8 @@ app.use(express.json());
  
 // Public website media are persisted independently of seeded ERP demonstration data.
 // Mounted persistent storage is required before production publication.
-const MEDIA_FILE = path.join(__dirname, 'data', 'public-videos.json');
-const MEDIA_UPLOAD_DIR = path.join(__dirname, 'data', 'public-media-uploads');
+const MEDIA_FILE = path.join(DATA_ROOT, 'public-videos.json');
+const MEDIA_UPLOAD_DIR = path.join(DATA_ROOT, 'public-media-uploads');
 const MEDIA_CATEGORIES = ['campus', 'academics', 'events', 'student-life', 'other'] as const;
 function validVideo(value: unknown): value is PublicVideo {
   if (!value || typeof value !== 'object') return false;
@@ -1709,4 +1710,6 @@ async function startServer() {
   });
 }
 
-startServer();
+if (process.env.HIAU_DISABLE_AUTOSTART !== '1') startServer();
+
+export { app };

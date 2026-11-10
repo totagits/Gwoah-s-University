@@ -114,3 +114,14 @@ Review of `staging` source establishes the components and image references exist
 - [ ] Browser-test sidebar expanded/compact states at desktop widths, and drawer operation, focus movement, Escape, scrolling and content overflow on 375px and 768px layouts.
 - [ ] Complete separate RBAC permission-matrix audit: server CRUD, financial approvals, admissions decisions, notifications and protected exports; do not treat menu hiding as a complete permissions review.
 - [ ] Verify role-appropriate initial tab, theme contrast and reauthentication after session expiry; capture acceptance screenshots before production merge.
+
+
+## ERP-RBAC-2 — Sidebar visual correction and server role verification (2026-11-10)
+- [x] Corrected the left-clipped sidebar seen in the university administrator screenshot: the mobile off-canvas transform is now disabled at desktop widths, the desktop sidebar stays in normal flow, and text/icons use bounded flex widths.
+- [x] Added server-executed role-matrix checks covering all currently supported roles for admissions, finance, audit, accounts and student-only access.
+- [x] Added negative tests for spoofed admissions/application and program-creation actions; server permission checks must reject non-authorized roles even when a request is sent directly.
+- [ ] Check staging in Chrome at 1440px and 1600px: university name, first icon, selected menu label, and both accordion headings must be fully visible without horizontal clipping.
+- [ ] Verify the expanded/collapsed sidebar, 375px mobile drawer, keyboard navigation and screen-reader labels.
+- [ ] Run authorized role-based browser acceptance for registrar, admissions officer, bursar, lecturer, dean, student and alumni accounts.
+- [ ] Complete a complete API-by-API matrix covering create/view/update/approve/delete/export and record ownership, especially billing, grades, scholarship awards and financial reporting before production release.
+- [ ] Confirm any new HR, executive, scholarship committee or auditor roles only after defining distinct server-side permissions and authentication; their navigation is not enabled here.

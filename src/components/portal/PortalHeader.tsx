@@ -1,12 +1,10 @@
 import React from 'react';
 import {
-  ArrowLeft, BarChart3, BookOpen, ChevronDown, CreditCard, GraduationCap,
-  Inbox, ListTodo, LogOut, Moon, Settings, ShieldCheck, Sun, User, Users
+  ArrowLeft, GraduationCap, LogOut, Moon, Settings, Sun
 } from 'lucide-react';
 import type { UserProfile } from '../../types';
 import type { ThemeMode } from '../../utils/themeManager';
-import { portalModulesForRole, type PortalModuleId } from '../../portal/moduleRegistry';
-import { LanguagePicker, useLocalization } from '../../i18n/Localization';
+import { LanguagePicker } from '../../i18n/Localization';
 import { GlobalSearch } from './CampusServices';
 import { PortalNotificationsPopover } from './PortalNotificationsPopover';
 
@@ -21,23 +19,10 @@ interface PortalHeaderProps {
   onOpenThemeSettings: () => void;
 }
 
-const icons: Record<PortalModuleId, React.ElementType> = {
-  tasks: ListTodo, analytics: BarChart3, faculty_admin: Users,
-  academics: BookOpen, curriculum: BookOpen, admissions: Inbox, finance: CreditCard,
-  compliance: ShieldCheck, student_portal: User, classroom: GraduationCap,
-  website_media: Settings,
-};
-
 export const PortalHeader: React.FC<PortalHeaderProps> = ({
   currentUser, activeTab, onSelectTab, onLogout, onBackToPublic,
   currentTheme, onToggleTheme, onOpenThemeSettings,
 }) => {
-  const { t } = useLocalization();
-  const [moreOpen, setMoreOpen] = React.useState(false);
-  const modules = portalModulesForRole(currentUser.role);
-  const primary = modules.filter(m => m.group === 'primary');
-  const secondary = modules.filter(m => m.group === 'secondary');
-  const label = (moduleId: string) => modules.find(m => m.id === moduleId)?.label ?? 'University workspace';
 
   return (
     <header className="relative z-30 border-b border-[#e8e0ec] bg-white text-[#35103b]">
@@ -85,41 +70,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           </div>
         </div>
 
-        <nav aria-label="ERP workspace navigation" className="flex items-center gap-2 border-t border-[#eee8ee] py-2">
-          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overscroll-x-contain whitespace-nowrap pb-1">
-            {primary.map(module => {
-              const Icon = icons[module.id];
-              const selected = activeTab === module.id;
-              return (
-                <button key={module.id} type="button"
-                  onClick={() => { setMoreOpen(false); onSelectTab(module.id); }}
-                  aria-current={selected ? 'page' : undefined}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${selected ? 'bg-[#4a1249] text-white hiau-dashboard-selected' : 'text-slate-650 hover:bg-[#f4edf4] hover:text-[#4a1249]'}`}>
-                  <Icon className="h-4 w-4" aria-hidden="true"/> {t(label(module.id))}
-                </button>
-              );
-            })}
-          </div>
-          {secondary.length > 0 && (
-            <div className="relative shrink-0">
-              <button type="button" onClick={() => setMoreOpen(!moreOpen)} aria-expanded={moreOpen}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6dce7] bg-white px-3 py-2 text-sm font-medium text-[#4a1249]">
-                More <ChevronDown className="h-4 w-4" aria-hidden="true"/>
-              </button>
-              {moreOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 min-w-[210px] rounded-xl border border-[#e6dce7] bg-white p-2 shadow-xl">
-                  {secondary.map(module => {
-                    const Icon = icons[module.id];
-                    return <button key={module.id} type="button" onClick={() => { onSelectTab(module.id); setMoreOpen(false); }}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#35103b] hover:bg-[#f4edf4]">
-                      <Icon className="h-4 w-4" aria-hidden="true"/>{t(module.label)}
-                    </button>;
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </nav>
+
       </div>
     </header>
   );

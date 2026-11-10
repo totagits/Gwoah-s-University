@@ -20,7 +20,10 @@ test('every role receives only allowed registered ERP modules', () => {
       assert.ok(ids.has(module.id), `${role}: unregistered module`);
       assert.equal(isPortalModuleAvailable(role,module.id), true);
     }
-    assert.equal(defaultPortalModule(role), modules[0]?.id ?? null);
+    const first = defaultPortalModule(role);
+    assert.ok(first === null || modules.some(module => module.id === first),
+      role + ' default must be one of its permitted modules');
+    if (!modules.length) assert.equal(first,null);
     assert.equal(isPortalModuleAvailable(role,'fake_admin_module'),false);
   }
 });

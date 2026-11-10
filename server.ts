@@ -40,6 +40,7 @@ import { generateIcsCalendar, filterCalendarEvents } from './src/utils/calendarS
 import { computeTaskAnalytics } from './src/utils/taskAnalytics';
 import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from './src/data/publicMedia';
 import { mediaAuthRouter, requireMediaAdministrator } from './src/server/mediaAuth';
+import { checkMp4Upload } from './src/server/mp4Validation';
 import {
   validateCourseAdd,
   validateCourseDrop,
@@ -273,8 +274,8 @@ function recordAudit(
   return entry;
 }
 
-// Draft-only routes: the fail-closed /api middleware blocks every operation here.
-// They must remain unreachable until authenticated administrator RBAC exists.
+// Only website-media administrator sessions pass the authorization middleware above.
+// The unrelated university ERP APIs remain fail-closed.
 app.get('/api/admin/public-media/videos', (_req: Request, res: Response) =>
   res.json({ videos: readPublicVideos() }));
 
@@ -347,15 +348,24 @@ app.post('/api/admin/public-media/videos/:id/upload',
     const videos = readPublicVideos();
     if (!videos.some(v => v.id === id)) return res.status(404).json({ error: 'Unknown video.' });
     const bytes = req.body;
-    if (!Buffer.isBuffer(bytes) || bytes.length < 12 || bytes.length > 50 * 1024 * 1024 ||
-        bytes.toString('ascii', 4, 8) !== 'ftyp')
-      return res.status(415).json({ error: 'Valid MP4 under 50 MB required.' });
-    fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
+    const validation = checkMp4Upload(bytes);
+    if (!validation.ok) return res.status(415).json({ error: validation.message });
     const name = randomUUID() + '.mp4';
-    fs.writeFileSync(path.join(MEDIA_UPLOAD_DIR, name), bytes, { flag: 'wx' });
-    const updated = videos.map(v => v.id === id ? { ...v, src: '/uploads/public-videos/' + name } : v);
-    savePublicVideos(updated);
-    return res.json({ success: true, videos: updated });
+    const destination = path.join(MEDIA_UPLOAD_DIR, name);
+    try {
+      fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
+      fs.writeFileSync(destination, bytes, { flag: 'wx' });
+      const updated = videos.map(v => v.id === id
+        ? { ...v, src: '/uploads/public-videos/' + name }
+        : v);
+      savePublicVideos(updated);
+      return res.json({ success: true, videos: updated });
+    } catch (error) {
+      // Do not leave an unreferenced MP4 behind when the library update fails.
+      try { fs.unlinkSync(destination); } catch { /* No new upload to remove. */ }
+      console.error('Failed to persist website video upload:', error);
+      return res.status(500).json({ error: 'Unable to save video. Existing library unchanged.' });
+    }
   }
 );
 

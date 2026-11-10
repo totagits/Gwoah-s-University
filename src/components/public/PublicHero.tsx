@@ -164,7 +164,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           >
             <polygon points="100,0 100,100 80,100" fill="#FFFFFF" />
             <line x1="100" y1="0" x2="80" y2="100"
-              stroke="#C39A53" strokeWidth="0.32" vectorEffect="non-scaling-stroke" />
+              stroke="#C39A53" strokeWidth="2" vectorEffect="non-scaling-stroke" />
           </svg>
 
           {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}
@@ -176,7 +176,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           </div>
 
           {/* Compact controls, safely inside the diagonal cutout at its base. */}
-          <div className="absolute bottom-5 left-4 right-[23%] z-20 flex flex-col gap-2 sm:left-6 lg:right-[24%]">
+          <div className="absolute bottom-5 left-4 right-4 z-20 flex flex-col gap-2 sm:left-6 lg:right-[24%]">
             <div className="max-w-[390px] rounded-md bg-[#2A082C]/80 px-3 py-2 text-[#C39A53] backdrop-blur-sm">
               <span className="block truncate text-xs font-bold uppercase tracking-wide">{currentVideo.title}</span>
             </div>

@@ -6,6 +6,18 @@ type VideoSlot={
   version:number;draft?:string;published?:string;updatedAt?:string;order?:number;
 };
 type RoleProps={currentUser:{role:string}};
+const parseApiResponse=async(response:Response)=>{
+  const contentType=response.headers.get('content-type')||'';
+  if(!contentType.includes('application/json')){
+    const kind=response.status===413?'Upload was rejected as too large by the hosting proxy.':
+      response.status===401||response.status===403?'Session expired or proxy access was denied. Please sign in again.':
+      'Hosting server returned an HTML/non-JSON response during the request.';
+    throw new Error(kind+' (HTTP '+response.status+').');
+  }
+  const data=await response.json();
+  if(!response.ok)throw new Error((data.error||'Request failed')+' (HTTP '+response.status+').');
+  return data;
+};
 
 export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const [slots,setSlots]=useState<VideoSlot[]>([]);
@@ -16,6 +28,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const [file,setFile]=useState<File|null>(null);
   const [newHeroTitle,setNewHeroTitle]=useState('');
   const [previewVersion,setPreviewVersion]=useState(0);
+  const [uploadProgress,setUploadProgress]=useState<number|null>(null);
   const load=useCallback(async()=>{
     const r=await fetch('/api/admin/website-videos',{cache:'no-store'});
     if(!r.ok)throw new Error('Video library is unavailable to this account.');
@@ -36,8 +49,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
       const r=await fetch('/api/admin/website-videos',{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title}),
       });
-      const result=await r.json();
-      if(!r.ok)throw new Error(result.error||'Unable to add video.');
+      const result=await parseApiResponse(r);
       setNewHeroTitle('');await load();
       setSelected(result.slot);
       setMessage('Homepage video created as a private slot. Upload and publish an MP4 to show it to visitors.');
@@ -92,22 +104,55 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
     setBusy(id);setError('');setMessage('');
     try{
       const url='/api/admin/website-video/'+encodeURIComponent(id);
-      const response=await fetch(kind==='upload'?url:kind==='publish'?url+'/publish':url,{
-        method:kind==='upload'?'PUT':kind==='publish'?'POST':'DELETE',
-        headers:kind==='upload'?{'Content-Type':'video/mp4'}:{'Content-Type':'application/json'},
-        body:kind==='upload'?file!:JSON.stringify({
-          confirmation:kind==='publish'?'PUBLISH_WEBSITE_VIDEO':'RESTORE_DEFAULT_WEBSITE_VIDEO',
-        }),
-      });
-      const result=await response.json();
-      if(!response.ok)throw new Error(result.error||'The video update was not saved.');
+      if(kind==='upload'){
+        const bytes=file!;
+        // The original single 4.4MB PUT received an HTML proxy response in staging.
+        // Use sequential 256KB POST requests to stay below typical proxy body limits.
+        const begin=await fetch(url+'/uploads',{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({size:bytes.size}),
+        });
+        const {uploadId,chunkSize}=await parseApiResponse(begin);
+        if(typeof uploadId!=='string'||!Number.isSafeInteger(chunkSize)||chunkSize<1||chunkSize>256*1024)
+          throw new Error('Invalid upload session response.');
+        setUploadProgress(0);
+        try{
+          let uploaded=0;
+          for(let index=0;uploaded<bytes.size;index++){
+            const piece=bytes.slice(uploaded,Math.min(uploaded+chunkSize,bytes.size));
+            const response=await fetch(url+'/uploads/'+encodeURIComponent(uploadId)+'/chunk',{
+              method:'POST',
+              headers:{'Content-Type':'application/octet-stream','X-HIAU-Chunk-Index':String(index)},
+              body:piece,
+            });
+            await parseApiResponse(response);
+            uploaded+=piece.size;
+            setUploadProgress(Math.round(uploaded*100/bytes.size));
+          }
+          const final=await fetch(url+'/uploads/'+encodeURIComponent(uploadId)+'/complete',{
+            method:'POST',headers:{'Content-Type':'application/json'},body:'{}',
+          });
+          await parseApiResponse(final);
+        }catch(error){
+          void fetch(url+'/uploads/'+encodeURIComponent(uploadId),{method:'DELETE'}).catch(()=>{});
+          throw error;
+        }
+      }else{
+        const response=await fetch(kind==='publish'?url+'/publish':url,{
+          method:kind==='publish'?'POST':'DELETE',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            confirmation:kind==='publish'?'PUBLISH_WEBSITE_VIDEO':'RESTORE_DEFAULT_WEBSITE_VIDEO',
+          }),
+        });
+        await parseApiResponse(response);
+      }
       setMessage(kind==='upload'?'Video uploaded as a private draft. Preview it before publishing.':
         kind==='publish'?'Replacement video published successfully.':'Original video restored.');
       setFile(null);
       setPreviewVersion(n=>n+1);
       await load();
     }catch(e){setError(e instanceof Error?e.message:'Video update failed.');}
-    finally{setBusy(null);}
+    finally{setBusy(null);setUploadProgress(null);}
   };
   if(currentUser.role!=='super_admin')return <section role="alert" className="rounded-xl bg-white p-6">
     Website video management is restricted to the Super Administrator.
@@ -189,6 +234,12 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
               <RotateCcw className="h-4 w-4"/>Restore original
             </button>
           </div>
+          {uploadProgress!==null&&<div role="status" className="text-sm text-[#4a1249] font-semibold">
+            Uploading securely in small parts: {uploadProgress}%
+            <div className="mt-2 h-2 w-full overflow-hidden rounded bg-purple-100">
+              <div className="h-full bg-[#4a1249]" style={{width:uploadProgress+'%'}}/>
+            </div>
+          </div>}
           {message&&<p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">{message}</p>}
           {error&&<p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">{error}</p>}
           <p className="flex items-start gap-2 text-xs text-slate-600">

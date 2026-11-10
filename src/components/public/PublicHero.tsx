@@ -153,18 +153,6 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             {videoError}
           </div>}
 
-          {/* The video remains an unclipped hardware-decoded layer. A separate
-              mask creates a single clean diagonal edge, without decorative strokes.
-              Keep the video itself unclipped for Chrome hardware rendering. */}
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            className="pointer-events-none absolute inset-0 z-[15] hidden h-full w-full lg:block"
-          >
-            <polygon points="100,0 100,100 80,100" fill="#FFFFFF" />
-          </svg>
-
           {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}
           <div className="absolute top-4 left-4 right-12 z-20 flex items-center justify-between pointer-events-none">
             <span className="bg-[#4A1249]/90 text-[#C39A53] border border-[#C39A53]/70 px-3 py-1 rounded text-xs font-collegiate font-bold uppercase tracking-wider backdrop-blur-md flex items-center gap-1.5 shadow-md">
@@ -233,6 +221,18 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             </div>
           </div>
         </div>
+
+        {/* One seamless white diagonal mask on the hero canvas, not on the
+            hardware-decoded player. It extends two pixels beyond the video
+            column so no antialiased right-hand seam remains visible. */}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute inset-y-0 left-0 z-[15] hidden h-full lg:block lg:w-[calc(52%+2px)] xl:w-[calc(51%+2px)]"
+        >
+          <polygon points="100,0 100,100 80,100" fill="#FFFFFF" />
+        </svg>
 
         {/* Right Column: Clean White Canvas in HIAU Imperial Purple & Gold */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 xl:py-20 relative z-20">

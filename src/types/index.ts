@@ -140,6 +140,8 @@ export interface ApplicationRecord {
   reviewerNotes?: string;
   scoringTotal?: number;
   applicationFeePaid: boolean;
+  /** Expression of interest only; does not imply an aid application or award. */
+  applyingForScholarship?: boolean;
 }
 
 export interface FinancialAccount {

@@ -189,6 +189,32 @@ const PROFESSORS_AND_FACULTY: LeaderItem[] = [
   },
 ];
 
+// The same portrait treatment is used throughout the public directory.
+// A clear placeholder is preferable to a broken image or a misleading
+// substitute for an actual HIAU official.
+const LeadershipPortrait: React.FC<{ leader: LeaderItem }> = ({ leader }) => {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="relative aspect-[4/5] overflow-hidden bg-[#F2F0F3]">
+      {failed ? (
+        <div role="img" aria-label={`Photograph unavailable for ${leader.name}`}
+          className="flex h-full items-center justify-center px-5 text-center text-sm font-medium text-[#4A1249]">
+          Photograph unavailable
+        </div>
+      ) : (
+        <img
+          src={leader.image}
+          alt={`Portrait of ${leader.name}`}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover object-top"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
+  );
+};
+
 const CORE_PRINCIPLES = [
   {
     title: 'Integrity',
@@ -290,292 +316,121 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile }) => {
           </div>
         </div>
 
-        {/* Foundational Origin & Real Campus Visuals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          {/* Main Campus Complex Card with Real Photo */}
-          <div className="bg-white rounded-xl overflow-hidden border border-purple-200/80 border-t-4 border-t-[#4A1249] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-            <div>
-              <div className="relative h-52 sm:h-60 w-full overflow-hidden bg-[#2A082C]">
-                <img
-                  src="/assets/aistudio/image_29eb5504.png"
-                  alt="Harvest Intercontinental American University Campus Building in Monrovia, Liberia"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2A082C]/85 via-transparent to-black/20" />
-                <div className="absolute top-3 left-3 bg-[#4A1249]/95 text-[#C39A53] border border-[#C39A53]/50 px-2.5 py-1 rounded text-[11px] font-collegiate font-bold uppercase tracking-wider backdrop-blur-md flex items-center gap-1.5 shadow">
-                  <Camera className="w-3 h-3 text-[#C39A53]" />
-                  <span>Actual Campus Facility</span>
-                </div>
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <span className="text-xs font-bold uppercase tracking-wide text-[#C39A53] block">
-                    Main Academic Complex & Headquarters
-                  </span>
-                  <span className="text-sm font-semibold block truncate">
-                    Old Road, Chugbor, Monrovia, Republic of Liberia
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-center gap-3.5 mb-3">
-                  <div className="p-2.5 rounded-lg bg-[#4A1249] text-[#C39A53]">
-                    <Building className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-collegiate font-bold text-[#4A1249] tracking-tight">
-                      FOUNDATIONAL ORIGIN & CAMPUS
-                    </h3>
-                    <span className="text-xs text-[#C39A53] font-bold flex items-center gap-1 mt-0.5 uppercase tracking-wide">
-                      <MapPin className="w-3.5 h-3.5 text-[#C39A53]" /> Old Road, Chugbor • Montserrado County
-                    </span>
-                  </div>
-                </div>
-                <p className="text-slate-700 text-sm leading-relaxed mb-4">
-                  In 2020, Bishop Dr. Darlingston G. Johnson (Presiding Bishop of Harvest Intercontinental Ministries Unlimited) mandated an international task force led by Dr. Kona-Facia Freeman-Nepay to establish an American-style, Christ-centered, entrepreneurship-focused university in Liberia. Today, our Old Road complex houses executive offices, registrar chambers, bursar counters, and modern lecture halls.
-                </p>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="bg-[#FAF4FB] text-[#4A1249] px-3 py-1.5 rounded border border-purple-200 font-semibold">Founded 2020 by HIM-U Task Force</span>
-                  <span className="bg-[#FAF4FB] text-[#4A1249] px-3 py-1.5 rounded border border-purple-200 font-semibold">Parent: Harvest Intercontinental Ministries Unlimited</span>
-                  <span className="bg-[#FAF4FB] text-[#4A1249] px-3 py-1.5 rounded border border-purple-200 font-semibold">Monrovia & Olney, MD Offices</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Governance & Leadership Card with Real Photo */}
-          <div className="bg-white rounded-xl overflow-hidden border border-purple-200/80 border-t-4 border-t-[#C39A53] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-            <div>
-              <div className="relative h-52 sm:h-60 w-full overflow-hidden bg-[#2A082C]">
-                <img
-                  src="/assets/aistudio/image_73fb8933.png"
-                  alt="HIAU Convocation, Chancellor Bishop Darlingston G. Johnson, and University Senate"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2A082C]/85 via-transparent to-black/20" />
-                <div className="absolute top-3 left-3 bg-[#4A1249]/95 text-[#C39A53] border border-[#C39A53]/50 px-2.5 py-1 rounded text-[11px] font-collegiate font-bold uppercase tracking-wider backdrop-blur-md flex items-center gap-1.5 shadow">
-                  <Camera className="w-3 h-3 text-[#C39A53]" />
-                  <span>Actual Leadership Assembly</span>
-                </div>
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <span className="text-xs font-bold uppercase tracking-wide text-[#C39A53] block">
-                    Institutional Governance & Leadership
-                  </span>
-                  <span className="text-sm font-semibold block truncate">
-                    Chancellor, Founding President & University Senate
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-center gap-3.5 mb-3">
-                  <div className="p-2.5 rounded-lg bg-[#C39A53] text-[#2A082C]">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-collegiate font-bold text-[#4A1249] tracking-tight">
-                      EXECUTIVE LEADERSHIP & GOVERNANCE
-                    </h3>
-                    <span className="text-xs text-[#C39A53] font-bold flex items-center gap-1 mt-0.5 uppercase tracking-wide">
-                      <Users className="w-3.5 h-3.5 text-[#C39A53]" /> Chancellor Bishop Dr. Darlingston G. Johnson
-                    </span>
-                  </div>
-                </div>
-                <p className="text-slate-700 text-sm leading-relaxed mb-4">
-                  Governed under the visionary guidance of Founder & Chancellor Bishop Dr. Darlingston G. Johnson, Founding President Dr. Kona-Facia Freeman-Nepay, and Board of Trustees Chairman Dr. Jonathan C. Taylor, HIAU combines rigorous academic governance with Christ-centered spiritual oversight and community transformation.
-                </p>
-                <div className="flex flex-wrap gap-2 text-xs mb-3">
-                  <span className="bg-[#FAF4E8] text-[#A17A32] px-3 py-1.5 rounded border border-[#C39A53]/30 font-semibold">Founder: Bishop Dr. Darlingston G. Johnson</span>
-                  <span className="bg-[#FAF4E8] text-[#A17A32] px-3 py-1.5 rounded border border-[#C39A53]/30 font-semibold">President: Asst. Prof. Mamawa M. Freeman-Moore</span>
-                  <span className="bg-[#FAF4E8] text-[#A17A32] px-3 py-1.5 rounded border border-[#C39A53]/30 font-semibold">Board Chair: Dr. Jonathan C. Taylor</span>
-                </div>
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-purple-100">
-                  <button
-                    onClick={() => onOpenProfile?.('chancellor')}
-                    className="px-3 py-1.5 bg-[#4A1249] hover:bg-[#661B69] text-white text-xs font-collegiate font-bold uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  >
-                    <span>View Chancellor's Profile</span>
-                    <span>→</span>
-                  </button>
-                  <button
-                    onClick={() => onOpenProfile?.('president')}
-                    className="px-3 py-1.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] text-xs font-collegiate font-bold uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  >
-                    <span>View President's Message</span>
-                    <span>→</span>
-                  </button>
-                  <button
-                    onClick={() => onOpenProfile?.('deputy_chancellor')}
-                    className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-[#4A1249] text-xs font-collegiate font-bold uppercase tracking-wider rounded transition-colors cursor-pointer border border-purple-200"
-                  >
-                    <span>Dr. Freeman-Nepay</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* OFFICIAL ADMINISTRATORS, PROFESSORS & STAFF PORTRAIT GALLERY (FROM HIAU.ORG.LR) */}
-        {/* ========================================================================= */}
-        <div className="bg-white rounded-2xl border-2 border-purple-200/80 p-6 sm:p-10 shadow-lg mb-12">
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 pb-6 border-b border-purple-100 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#4A1249] text-[#C39A53] shadow-xs">
-                  <Users className="w-3.5 h-3.5 text-[#C39A53]" />
-                  Verified Faculty & Administration
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FAF4E8] text-[#A17A32] border border-[#C39A53]/30">
-                  <Camera className="w-3.5 h-3.5 text-[#C39A53]" />
-                  Official HIAU Portraits
-                </span>
-              </div>
-              <h3 className="text-3xl sm:text-4xl font-collegiate font-black text-[#4A1249] uppercase tracking-tight">
-                ADMINISTRATORS, PROFESSORS & GOVERNING TRUSTEES
-              </h3>
-              <p className="text-slate-600 text-sm max-w-2xl mt-1 leading-relaxed">
-                Meet the visionary educators, executive administrators, and distinguished professors driving academic excellence and Christ-centered leadership at Harvest Intercontinental American University.
+        {/* Institutional background and governance — concise, accessible,
+            no unverified assembly photograph and no decorative photo overlays. */}
+        <div className="mb-14 grid gap-6 lg:grid-cols-2">
+          <article className="overflow-hidden rounded-xl border border-[#E5DEE8] bg-white shadow-sm">
+            <img
+              src="/assets/aistudio/image_29eb5504.png"
+              alt="HIAU campus building in Monrovia"
+              loading="lazy"
+              decoding="async"
+              className="h-52 w-full object-cover sm:h-64"
+            />
+            <div className="p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#927139]">University background</p>
+              <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#4A1249]">Our foundation and campus</h3>
+              <p className="mt-4 text-sm leading-7 text-slate-700">
+                HIAU's development began in 2020 with an international task force
+                convened through Harvest Intercontinental Ministries Unlimited.
+                Its Old Road campus in Monrovia provides a home for academic and
+                administrative activities.
+              </p>
+              <p className="mt-4 flex items-start gap-2 text-sm text-slate-600">
+                <MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#927139]" />
+                Old Road, Chugbor, Monrovia, Liberia
               </p>
             </div>
-
-            {/* Filter segmented buttons */}
-            <div className="flex flex-wrap gap-1.5 p-1 bg-[#FAF4FB] border border-purple-200 rounded-lg">
-              <button
-                onClick={() => setActiveLeaderTab('all')}
-                className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  activeLeaderTab === 'all'
-                    ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                    : 'text-slate-600 hover:text-[#4A1249]'
-                }`}
-              >
-                All Directory ({EXECUTIVE_ADMINISTRATORS.length + BOARD_OF_TRUSTEES.length + PROFESSORS_AND_FACULTY.length})
+          </article>
+          <article className="rounded-xl border border-[#E5DEE8] bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#927139]">Institutional governance</p>
+            <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#4A1249]">Leadership and stewardship</h3>
+            <p className="mt-4 text-sm leading-7 text-slate-700">
+              The Chancellor, President, Board of Trustees and faculty provide
+              academic direction and institutional oversight. Meet the people
+              serving HIAU through the leadership directory below.
+            </p>
+            <dl className="mt-6 divide-y divide-[#EEE8F0] text-sm">
+              <div className="py-3">
+                <dt className="font-semibold text-[#4A1249]">Chancellor</dt>
+                <dd className="mt-1 text-slate-700">Bishop Dr. Darlingston G. Johnson</dd>
+              </div>
+              <div className="py-3">
+                <dt className="font-semibold text-[#4A1249]">President</dt>
+                <dd className="mt-1 text-slate-700">Asst. Professor Mamawa M. Freeman-Moore</dd>
+              </div>
+              <div className="py-3">
+                <dt className="font-semibold text-[#4A1249]">Board Chair</dt>
+                <dd className="mt-1 text-slate-700">Dr. Jonathan C. Taylor</dd>
+              </div>
+            </dl>
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3">
+              <button type="button" onClick={() => onOpenProfile?.('chancellor')}
+                className="text-sm font-semibold text-[#4A1249] underline-offset-4 hover:underline">
+                Chancellor's profile →
               </button>
-              <button
-                onClick={() => setActiveLeaderTab('executive')}
-                className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  activeLeaderTab === 'executive'
-                    ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                    : 'text-slate-600 hover:text-[#4A1249]'
-                }`}
-              >
-                Executive ({EXECUTIVE_ADMINISTRATORS.length})
-              </button>
-              <button
-                onClick={() => setActiveLeaderTab('trustee')}
-                className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  activeLeaderTab === 'trustee'
-                    ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                    : 'text-slate-600 hover:text-[#4A1249]'
-                }`}
-              >
-                Trustees ({BOARD_OF_TRUSTEES.length})
-              </button>
-              <button
-                onClick={() => setActiveLeaderTab('faculty')}
-                className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  activeLeaderTab === 'faculty'
-                    ? 'bg-[#4A1249] text-[#C39A53] shadow-xs'
-                    : 'text-slate-600 hover:text-[#4A1249]'
-                }`}
-              >
-                Professors ({PROFESSORS_AND_FACULTY.length})
+              <button type="button" onClick={() => onOpenProfile?.('president')}
+                className="text-sm font-semibold text-[#4A1249] underline-offset-4 hover:underline">
+                President's profile →
               </button>
             </div>
+          </article>
+        </div>
+
+        {/* One restrained, unified leadership directory for all 19 profiles. */}
+        <section aria-labelledby="hiau-leaders-heading" className="mb-14 rounded-xl border border-[#E5DEE8] bg-white px-4 py-8 shadow-sm sm:px-8">
+          <div className="flex flex-col gap-5 border-b border-[#EEE8F0] pb-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#927139]">Our people</p>
+              <h3 id="hiau-leaders-heading"
+                className="mt-2 text-2xl font-bold tracking-tight text-[#4A1249] sm:text-3xl">
+                University leadership and faculty
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Explore profiles of university executives, governing trustees and faculty.
+              </p>
+            </div>
+            <div role="group" aria-label="Filter leadership directory"
+              className="flex flex-wrap gap-2">
+              {([
+                ['all', 'All', EXECUTIVE_ADMINISTRATORS.length + BOARD_OF_TRUSTEES.length + PROFESSORS_AND_FACULTY.length],
+                ['executive', 'Executives', EXECUTIVE_ADMINISTRATORS.length],
+                ['trustee', 'Trustees', BOARD_OF_TRUSTEES.length],
+                ['faculty', 'Faculty', PROFESSORS_AND_FACULTY.length],
+              ] as const).map(([key,label,count])=>(
+                <button key={key} type="button"
+                  onClick={() => setActiveLeaderTab(key)}
+                  aria-pressed={activeLeaderTab===key}
+                  className={`rounded-md border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#927139] ${
+                    activeLeaderTab===key
+                      ? 'border-[#4A1249] bg-[#4A1249] text-white'
+                      : 'border-[#DAD0DE] bg-white text-[#4A1249] hover:bg-[#F7F2F7]'
+                  }`}>
+                  {label} ({count})
+                </button>
+              ))}
+            </div>
           </div>
-
-          {/* Leaders Portrait Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredLeaders.map((leader, idx) => (
-              <div
-                key={idx}
-                onClick={() => onOpenProfile?.(leader.id)}
-                className="bg-[#FAF8FB] border border-purple-200/80 border-t-4 border-t-[#4A1249] hover:border-[#C39A53] rounded-xl overflow-hidden shadow-xs hover:shadow-xl transition-all group flex flex-col justify-between cursor-pointer"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') onOpenProfile?.(leader.id);
-                }}
-              >
-                <div>
-                  {/* Portrait photo frame */}
-                  <div className="relative h-64 sm:h-60 w-full overflow-hidden bg-[#2A082C]">
-                    <img
-                      src={leader.image}
-                      alt={leader.name}
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#2A082C]/90 via-transparent to-black/20" />
-
-                    {/* Category tag */}
-                    <div className="absolute top-2.5 left-2.5">
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded shadow-sm border ${
-                          leader.category === 'executive'
-                            ? 'bg-[#4A1249] text-[#C39A53] border-[#C39A53]/60'
-                            : leader.category === 'trustee'
-                            ? 'bg-[#C39A53] text-[#2A082C] border-[#2A082C]/30'
-                            : 'bg-white/90 text-[#4A1249] border-purple-300'
-                        }`}
-                      >
-                        {leader.category === 'executive'
-                          ? 'Executive Leadership'
-                          : leader.category === 'trustee'
-                          ? 'Board of Trustees'
-                          : 'Faculty Professor'}
-                      </span>
-                    </div>
-
-                    {/* Bottom overlay name on image */}
-                    <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-[#C39A53] block truncate">
-                        {leader.title}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Body information */}
-                  <div className="p-4 space-y-1.5">
-                    <h4 className="text-base font-collegiate font-bold text-[#4A1249] group-hover:text-[#661B69] transition-colors tracking-tight leading-snug">
-                      {leader.name}
-                    </h4>
-                    <p className="text-xs font-semibold text-[#A17A32]">
-                      {leader.title}
-                    </p>
-                    <p className="text-[11px] text-slate-600 leading-relaxed pt-1 line-clamp-3">
-                      {leader.role}
-                    </p>
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredLeaders.map(leader => (
+              <article key={leader.id}
+                className="group flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[#E5DEE8] bg-white transition-colors hover:border-[#B699BF]">
+                <LeadershipPortrait key={leader.image} leader={leader} />
+                <div className="flex flex-1 flex-col p-5">
+                  <h4 className="text-base font-bold leading-snug text-[#4A1249]">{leader.name}</h4>
+                  <p className="mt-2 text-sm font-medium leading-6 text-[#775789]">{leader.title}</p>
+                  <div className="mt-auto pt-5">
+                    <button type="button" onClick={() => onOpenProfile?.(leader.id)}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-[#4A1249] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#927139]"
+                      aria-label={`View profile of ${leader.name}`}>
+                      View profile <span aria-hidden="true">→</span>
+                    </button>
                   </div>
                 </div>
-
-                {/* Footer interactive button and verification */}
-                <div className="p-3 bg-white border-t border-purple-100 flex flex-col gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenProfile?.(leader.id);
-                    }}
-                    className="w-full py-1.5 px-2 bg-purple-50 hover:bg-[#4A1249] text-[#4A1249] hover:text-[#C39A53] text-[11px] font-collegiate font-bold uppercase tracking-wider rounded transition-colors flex items-center justify-center gap-1.5 border border-purple-200 cursor-pointer shadow-2xs"
-                  >
-                    <span>View Dedicated Profile</span>
-                    <span>→</span>
-                  </button>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-1">
-                    <span className="flex items-center gap-1 text-[#4A1249] font-bold">
-                      <CheckCircle className="w-3 h-3 text-[#C39A53]" /> Official Profile
-                    </span>
-                    <span className="text-[#C39A53] font-bold">HIAU</span>
-                  </div>
-                </div>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Core Principles Section */}
         <div className="mb-12">

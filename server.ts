@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import {
   DEMO_USERS,
@@ -264,7 +265,7 @@ app.post('/api/admin/public-media/videos/:id/upload',
       return res.status(415).json({ error: 'Please upload a valid MP4 file smaller than 50 MB.' });
     }
     fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
-    const fileName = `${id}-${Date.now()}-${requireSafeRandomHex()}.mp4`;
+    const fileName = `${id}-${Date.now()}-${randomUUID()}.mp4`;
     fs.writeFileSync(path.join(MEDIA_UPLOAD_DIR, fileName), bytes, { flag: 'wx' });
     const videos = readPublicVideos().map(video =>
       video.id === id ? { ...video, src: `/uploads/public-videos/${fileName}` } : video);

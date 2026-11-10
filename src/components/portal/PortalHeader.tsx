@@ -68,7 +68,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4 py-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#4a1249] text-white">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#4a1249] text-white hiau-dashboard-icon">
               <GraduationCap className="h-6 w-6" aria-hidden="true"/>
             </div>
             <div className="min-w-0">
@@ -94,7 +94,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 <button key={module.id} type="button"
                   onClick={() => { setMoreOpen(false); onSelectTab(module.id); }}
                   aria-current={selected ? 'page' : undefined}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${selected ? 'bg-[#4a1249] text-white' : 'text-slate-650 hover:bg-[#f4edf4] hover:text-[#4a1249]'}`}>
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${selected ? 'bg-[#4a1249] text-white hiau-dashboard-selected' : 'text-slate-650 hover:bg-[#f4edf4] hover:text-[#4a1249]'}`}>
                   <Icon className="h-4 w-4" aria-hidden="true"/> {t(label(module.id))}
                 </button>
               );

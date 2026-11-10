@@ -3,6 +3,7 @@ import {
   StudentProfileData,
   StudentRegistrationItem,
   ApplicationRecord,
+  PublicApplicationIntake,
   FinancialAccount,
   NchePolicyItem,
   AuditLogEntry,
@@ -158,7 +159,7 @@ export const api = {
   },
 
   // Admissions
-  async getApplications(): Promise<{ applications: ApplicationRecord[] }> {
+  async getApplications(): Promise<{ applications: PublicApplicationIntake[] }> {
     const res = await fetch(`${API_BASE}/applications`);
     return res.json();
   },

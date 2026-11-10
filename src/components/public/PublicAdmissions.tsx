@@ -64,9 +64,9 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
     programDesired: 'B.S. in Information Technology (IT)',
     faculty: 'College of Science, Technology & Allied Health',
     wassceIndex: '',
-    mathGrade: 'B2',
-    englishGrade: 'B3',
-    scienceGrade: 'B3',
+    mathGrade: '',
+    englishGrade: '',
+    scienceGrade: '',
     county: 'Montserrado',
     applyingForScholarship: false,
   });
@@ -200,7 +200,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                 START YOUR JOURNEY AT HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY
               </h4>
               <p className="text-purple-100 text-sm mt-1 max-w-xl leading-relaxed">
-                Applications for Semester I (2026/2027) are now actively under review. Apply today for BLEST degree programs and TVET certificate tracks.
+                Submit your admissions information for review. Confirm admissions dates, entrance-assessment fees and payment instructions directly with the university before paying.
               </p>
             </div>
           </div>
@@ -209,7 +209,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
             className="px-6 py-3.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-collegiate font-black text-xs uppercase tracking-wider rounded-sm shadow-lg transition-transform hover:scale-105 shrink-0 flex items-center gap-2 cursor-pointer"
           >
             <FileText className="w-4 h-4 text-[#2A082C]" />
-            <span>Open Online Application ($10 Fee)</span>
+            <span>Open online application</span>
           </button>
         </div>
       </div>
@@ -253,7 +253,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                   {submissionSuccess}
                 </div>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  The Admissions Committee will review your academic profile and reach out via email ({formData.email}) and phone ({formData.phone}) to schedule your $10 entrance assessment.
+                  Your application has been recorded for admissions review. No admission decision or payment has been made. Keep this reference number for follow-up at your registered email ({formData.email}).
                 </p>
                 <div className="pt-4">
                   <button
@@ -421,6 +421,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                         onChange={(e) => setFormData({ ...formData, mathGrade: e.target.value })}
                         className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded text-xs text-[#2E0F34]"
                       >
+                        <option value="">Select grade</option>
                         {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
@@ -434,6 +435,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                         onChange={(e) => setFormData({ ...formData, englishGrade: e.target.value })}
                         className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded text-xs text-[#2E0F34]"
                       >
+                        <option value="">Select grade</option>
                         {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
@@ -447,6 +449,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                         onChange={(e) => setFormData({ ...formData, scienceGrade: e.target.value })}
                         className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded text-xs text-[#2E0F34]"
                       >
+                        <option value="">Select grade</option>
                         {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
@@ -490,7 +493,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                     ) : (
                       <>
                         <Send className="w-4 h-4 text-[#2A082C]" />
-                        <span>Submit Application ($10 Assessment Fee)</span>
+                        <span>Submit application (no online charge)</span>
                       </>
                     )}
                   </button>

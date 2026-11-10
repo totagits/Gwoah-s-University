@@ -3,6 +3,7 @@ import {
   StudentProfileData,
   StudentRegistrationItem,
   ApplicationRecord,
+  PublicApplicationIntake,
   FinancialAccount,
   NchePolicyItem,
   AuditLogEntry,
@@ -158,7 +159,7 @@ export const api = {
   },
 
   // Admissions
-  async getApplications(): Promise<{ applications: ApplicationRecord[] }> {
+  async getApplications(): Promise<{ applications: PublicApplicationIntake[] }> {
     const res = await fetch(`${API_BASE}/applications`);
     return res.json();
   },
@@ -167,9 +168,18 @@ export const api = {
     const res = await fetch(`${API_BASE}/applications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify(appData),
     });
-    return res.json();
+    const response = await res.json().catch(() => null);
+    if (!res.ok || !response?.success) {
+      return {
+        success: false,
+        error: response?.error ||
+          'Your application could not be saved. Please try again.',
+      };
+    }
+    return response;
   },
 
   async updateApplication(id: string, updates: Partial<ApplicationRecord>) {

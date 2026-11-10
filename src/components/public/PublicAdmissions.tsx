@@ -83,6 +83,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
     try {
       const payload = {
         applicantName: formData.applicantName,
+    applyingForScholarship: formData.applyingForScholarship,
         email: formData.email,
         phone: formData.phone,
         programDesired: formData.programDesired,
@@ -148,35 +149,43 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
           ))}
         </div>
 
-        {/* Scholarships & Financial Aid Callout */}
-        <div className="bg-white border-2 border-[#C39A53]/70 rounded-xl p-6 sm:p-8 shadow-sm mb-12 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <div className="md:col-span-8 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C39A53]">
-              <Award className="w-4 h-4 text-[#C39A53]" />
-              <span>HIAU Scholarship Committee</span>
-            </div>
-            <h3 className="text-2xl font-collegiate font-black text-[#4A1249] uppercase tracking-tight">
-              NEED-BASED & MERIT-BASED FINANCIAL SCHOLARSHIPS
-            </h3>
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-              In harmony with our founding mandate that *"no one lives or dies without access to quality education,"* HIAU awards partial and full tuition scholarships to academically dedicated scholars facing economic hardships across Liberia. Applicants indicate financial aid interest upon submission.
+        {/* Public financial-aid information: no unpublished award promises or
+            invented eligibility cutoffs. Decisions belong to authorized staff. */}
+        <section id="financial-aid" aria-labelledby="hiau-financial-aid-title"
+          className="mb-12 rounded-xl border border-[#E5DEE8] bg-white p-6 shadow-sm sm:p-9">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#946D2C]">Admissions and affordability</p>
+          <h3 id="hiau-financial-aid-title" className="mt-2 text-2xl font-bold tracking-tight text-[#4A1249] sm:text-3xl">
+            Financial Aid &amp; Scholarships
+          </h3>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
+            Students may inquire about need-based assistance, merit consideration and other forms of educational support.
+            Eligibility, funding availability, application dates and final awards must be confirmed by HIAU's authorized admissions and financial-aid staff.
+          </p>
+          <div className="mt-7 grid gap-5 md:grid-cols-3">
+            {[
+              {heading:'Merit consideration',description:'Ask about academic-achievement criteria, required records and selection procedures.'},
+              {heading:'Need-based assistance',description:'Learn what financial-circumstance information may be required and how applications are assessed.'},
+              {heading:'Other student support',description:'Inquire about sponsorships, installment arrangements and support programs where approved and available.'}
+            ].map(item=>(
+              <div key={item.heading} className="rounded-lg border border-[#E7E0EA] bg-[#FBFAFC] p-5">
+                <h4 className="font-semibold text-[#4A1249]">{item.heading}</h4>
+                <p className="mt-2 text-sm leading-6 text-slate-700">{item.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-7 border-t border-[#E7E0EA] pt-5">
+            <h4 className="text-base font-semibold text-[#4A1249]">How to inquire</h4>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+              Contact the university's admissions office at <a href="mailto:info@hiau.org.lr"
+              className="font-semibold text-[#4A1249] underline underline-offset-2">info@hiau.org.lr</a> to request current policies,
+              eligibility criteria, deadlines and approved application instructions. An inquiry does not establish an award or guarantee tuition assistance.
             </p>
-            <div className="flex flex-wrap gap-2 pt-1 text-xs">
-              <span className="bg-[#FAF4E8] text-[#A17A32] px-3 py-1 rounded border border-[#C39A53]/30 font-semibold">Merit Scholarships (GPA &gt; 3.5)</span>
-              <span className="bg-[#FAF4E8] text-[#A17A32] px-3 py-1 rounded border border-[#C39A53]/30 font-semibold">Need-Based Financial Assistance</span>
-              <span className="bg-[#FAF4E8] text-[#A17A32] px-3 py-1 rounded border border-[#C39A53]/30 font-semibold">Scholarship Committee Interviews</span>
-            </div>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              Online scholarship application tracking and award processing are not yet available through this public website.
+              Never send banking details or sensitive financial documents by ordinary email unless the university provides an approved secure submission method.
+            </p>
           </div>
-
-          <div className="md:col-span-4 bg-[#FAF4FB] border border-purple-200 rounded-lg p-5 text-center space-y-2">
-            <DollarSign className="w-8 h-8 text-[#4A1249] mx-auto" />
-            <div className="text-xs uppercase font-bold text-[#4A1249]">Placement Assessment Fee</div>
-            <div className="text-2xl font-collegiate font-black text-[#C39A53]">$10 USD</div>
-            <div className="text-[11px] text-slate-500">
-              Payable via Lonestar MTN Mobile Money, Orange Money, or EcoBank direct slip
-            </div>
-          </div>
-        </div>
+        </section>
 
         {/* CTA Banner - HIAU Imperial Purple with Heritage Gold Accent */}
         <div className="bg-[#4A1249] text-white border-2 border-[#C39A53]/60 rounded-xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
@@ -456,7 +465,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                     className="w-4 h-4 text-[#4A1249] rounded border-slate-300 cursor-pointer"
                   />
                   <label htmlFor="scholarshipCheck" className="text-xs text-slate-800 font-medium cursor-pointer">
-                    I wish to be considered for <strong>HIAU Need-Based or Merit Financial Aid</strong> through the Scholarship Committee.
+                    I would like HIAU to contact me about <strong>financial-aid or scholarship consideration</strong>. This is an expression of interest, not a scholarship application or award.
                   </label>
                 </div>
 

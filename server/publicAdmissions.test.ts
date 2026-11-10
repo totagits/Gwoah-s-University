@@ -39,10 +39,14 @@ test('real HTTP admissions intake persists aid interest and protects applicant r
   const operations=new Operations(dir);
   const app=express();
   app.use('/api/applications',express.json({limit:'12kb'}));
-  installIdentity(app,{directory:dir,users:()=>[],save:()=>{},origin:'https://staging.example.test',secure:false});
+  const identity = installIdentity(app,{directory:dir,users:()=>[],save:()=>{},origin:'https://staging.example.test',secure:false});
   installPublicAdmissions(app,operations);
   const listener=app.listen(0,'127.0.0.1');
   try {
+    if (!listener.listening) await new Promise<void>((resolve,reject) => {
+      listener.once('listening',resolve);
+      listener.once('error',reject);
+    });
     const address=listener.address();
     if (!address || typeof address==='string') throw new Error('No HTTP test listener');
     const endpoint='http://127.0.0.1:'+address.port+'/api/applications';
@@ -74,7 +78,9 @@ test('real HTTP admissions intake persists aid interest and protects applicant r
     assert.equal(operations.one('SELECT scholarship_interest FROM public_admissions_intake WHERE application_number=?',
       (await declined.json() as any).application.applicationNumber).scholarship_interest,0);
   } finally {
+    listener.closeAllConnections();
     if (listener.listening) await new Promise<void>((resolve,reject)=>listener.close(error=>error?reject(error):resolve()));
+    identity.close();
     operations.sql.close();
     rmSync(dir,{recursive:true,force:true});
   }

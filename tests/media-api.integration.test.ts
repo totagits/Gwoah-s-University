@@ -97,10 +97,18 @@ test('reject malformed MP4 and accept uploaded video only for authorized session
     Origin:origin,Cookie:cookie,'X-HIAU-CSRF':csrf,'Content-Type':'video/mp4'
   },body:Buffer.from('not a valid mp4')});
   assert.equal(bad.status,415);
-  const bytes = Buffer.alloc(24);
-  bytes.writeUInt32BE(24,0);
-  bytes.write('ftyp',4,'ascii');
-  bytes.write('isom',8,'ascii');
+  const box = (type: string, payload: Buffer) => {
+    const result = Buffer.alloc(8 + payload.length);
+    result.writeUInt32BE(result.length, 0);
+    result.write(type, 4, 'ascii');
+    payload.copy(result, 8);
+    return result;
+  };
+  const bytes = Buffer.concat([
+    box('ftyp', Buffer.concat([Buffer.from('isom'), Buffer.alloc(4), Buffer.from('isom')])),
+    box('moov', Buffer.from([1, 2, 3, 4])),
+    box('mdat', Buffer.from([5, 6, 7, 8])),
+  ]);
   const success = await api(location,{method:'POST',headers:{
     Origin:origin,Cookie:cookie,'X-HIAU-CSRF':csrf,'Content-Type':'video/mp4'
   },body:bytes});

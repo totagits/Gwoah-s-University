@@ -33,17 +33,22 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expanded, setExpanded] = useState<'primary' | 'secondary'>('primary');
+  const [expanded, setExpanded] = useState<Record<'primary' | 'secondary', boolean>>({primary:true,secondary:true});
   const modules = portalModulesForRole(currentUser.role);
   const primary = modules.filter(module => module.group === 'primary');
   const secondary = modules.filter(module => module.group === 'secondary');
 
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDrawerOpen(false);
+    };
+    window.addEventListener('keydown',handleKey);
+    return () => window.removeEventListener('keydown',handleKey);
+  }, [drawerOpen]);
+
   // The mobile drawer never remains over a different authenticated workspace.
   useEffect(() => { setDrawerOpen(false); }, [activeTab, currentUser.role]);
-  useEffect(() => {
-    if (secondary.some(module => module.id === activeTab)) setExpanded('secondary');
-    else setExpanded('primary');
-  }, [activeTab, secondary.length]);
 
   const goTo = (id: string) => {
     onSelectTab(id);
@@ -55,11 +60,11 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
     <section aria-label={label} className="mb-4">
       <button type="button"
         className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-xs font-bold uppercase tracking-[0.12em] text-[#7D6581] hover:bg-[#F5EEF6] ${collapsed ? 'lg:justify-center' : ''}`}
-        aria-expanded={expanded === key} onClick={() => setExpanded(open => open === key ? (key === 'primary' ? 'secondary' : 'primary') : key)}>
+        aria-expanded={expanded[key]} onClick={() => setExpanded(open => ({...open,[key]:!open[key]}))}>
         <span className={collapsed ? 'lg:sr-only' : ''}>{label}</span>
-        <ChevronRight aria-hidden="true" className={`h-4 w-4 shrink-0 transition-transform ${expanded === key ? 'rotate-90' : ''}`} />
+        <ChevronRight aria-hidden="true" className={`h-4 w-4 shrink-0 transition-transform ${expanded[key] ? 'rotate-90' : ''}`} />
       </button>
-      {expanded === key && (
+      {expanded[key] && (
         <div className="mt-1 space-y-1">
           {entries.map(module => {
             const Icon = moduleIcons[module.id];
@@ -125,8 +130,9 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
         </button>
       </div>
       {drawerOpen && (
-        <div className="fixed inset-0 z-[65] bg-[#201020]/50 lg:hidden"
-          onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+        <button type="button" tabIndex={-1} aria-label="Close workspace menu"
+          className="fixed inset-0 z-[65] cursor-default bg-[#201020]/50 lg:hidden"
+          onClick={() => setDrawerOpen(false)} />
       )}
       <aside id="hiau-mobile-workspace-navigation"
         className={`z-[70] h-full shrink-0 border-r border-[#E9E1EB] bg-white transition-transform

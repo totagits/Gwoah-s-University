@@ -32,8 +32,8 @@ export const PortalLoginModal: React.FC<PortalLoginModalProps> = ({
     setError(null);
     try {
       const res = await api.login({ email: email.trim(), password });
-      if (res.success && res.user && res.token) {
-        onLoginSuccess(res.user, res.token);
+      if (res.success && res.user && res.csrf) {
+        onLoginSuccess(res.user, 'secure-cookie-session');
       } else {
         setError('Invalid university credentials.');
       }
@@ -112,11 +112,11 @@ export const PortalLoginModal: React.FC<PortalLoginModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wide">
-                  Institutional Email / Staff or Student ID
+                  Website Administrator Email
                 </label>
                 <input
                   type="text"
-                  placeholder="name@hiau.edu.lr or HIAU-..."
+                  placeholder="admin@university.example"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm text-[#2E0F34] focus:outline-none focus:border-[#4A1249]"
@@ -147,7 +147,7 @@ export const PortalLoginModal: React.FC<PortalLoginModalProps> = ({
             </form>
 
             <div className="pt-4 mt-4 border-t border-purple-100 text-[11px] text-slate-600 leading-relaxed">
-              <span className="font-bold text-[#4A1249]">Security Notice:</span> Access to this system is restricted to authorized university personnel. All transactions, grade modifications, and financial receipts are recorded in the immutable audit log.
+              <span className="font-bold text-[#4A1249]">Security Notice:</span> Access to this system is restricted to authorized university personnel. Only website media management is available during this phase. Other university ERP services are not yet enabled.
             </div>
           </div>
         </div>

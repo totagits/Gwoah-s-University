@@ -51,12 +51,14 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
 }) => {
   const [videos,setVideos]=useState<HeroVideoSlide[]>(HERO_VIDEOS);
   const [activeVideoIndex,setActiveVideoIndex]=useState(0);
-  const [isPlaying,setIsPlaying]=useState(true);
+  // Desired playback is separate from the media element's actual status.
+  const [wantsPlayback,setWantsPlayback]=useState(true);
+  const [isActuallyPlaying,setIsActuallyPlaying]=useState(false);
   const [isMuted,setIsMuted]=useState(true);
-  const videoRefs=useRef(new Map<string,HTMLVideoElement>());
+  const [videoError,setVideoError]=useState('');
+  const videoRef=useRef<HTMLVideoElement|null>(null);
   const currentVideo=videos[activeVideoIndex]||videos[0];
 
-  // No authenticated information is returned from this public, published-only listing.
   useEffect(()=>{
     const controller=new AbortController();
     fetch('/api/public/hero-videos',{signal:controller.signal,cache:'no-store'})
@@ -65,46 +67,54 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
         if(!Array.isArray(data.videos)||data.videos.length<2)return;
         const safe=data.videos.filter((v:HeroVideoSlide)=>
           typeof v.id==='string'&&typeof v.title==='string'&&
-          typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&/^[a-z0-9_-]+$/.test(v.src.slice(18)));
-        if(safe.length>=2){setVideos(safe);}
-      }).catch(()=>{/* Preserve two original videos if dynamic listing is unavailable. */});
+          typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&
+          /^[a-z0-9_-]+$/.test(v.src.slice('/api/public/video/'.length)));
+        if(safe.length>=2)setVideos(safe);
+      }).catch(()=>{/* Retain the original two clips when playlist fetch fails. */});
     return ()=>controller.abort();
   },[]);
+
+  const attemptPlayback=()=>{
+    const element=videoRef.current;
+    if(!element||!wantsPlayback)return;
+    element.muted=isMuted;
+    void element.play().catch(error=>{
+      // Do not turn playback intention off on early AbortError/NotAllowedError.
+      // The visitor can still use the visible Play button.
+      if(error?.name==='NotAllowedError')
+        setVideoError('Autoplay was blocked by the browser. Press Play to start.');
+    });
+  };
+
+  useEffect(()=>{
+    const element=videoRef.current;
+    if(!element)return;
+    element.muted=isMuted;
+    if(wantsPlayback)attemptPlayback();
+    else element.pause();
+  },[currentVideo.id,isMuted,wantsPlayback]);
 
   const switchVideo=(index:number)=>{
     if(!videos.length)return;
     const next=(index+videos.length)%videos.length;
     if(next===activeVideoIndex)return;
-    const outgoing=videoRefs.current.get(currentVideo.id);
+    setIsActuallyPlaying(false);
+    setVideoError('');
+    setWantsPlayback(true);
     setActiveVideoIndex(next);
-    setIsPlaying(true);
-    // Maintain the signature crossfade before retiring the previous player.
-    window.setTimeout(()=>outgoing?.pause(),750);
   };
-
-  // isPlaying represents the visitor's intention to play, NOT the result of a
-  // premature play() attempt. A pending media request can reject play() with
-  // AbortError; turning the intention off prevented all onCanPlay retries.
-  const tryPlay=(video:HTMLVideoElement)=>{
-    if(!isPlaying)return;
-    video.muted=isMuted;
-    void video.play().catch(()=>{
-      // Keep autoplay requested. The next media-ready event can retry, and
-      // visitors retain the manual Play control if their browser blocks it.
-    });
-  };
-  useEffect(()=>{
-    const current=videoRefs.current.get(currentVideo?.id);
-    if(!current)return;
-    current.muted=isMuted;
-    if(isPlaying)tryPlay(current);
-    else current.pause();
-  },[currentVideo?.id,isMuted,isPlaying]);
-
   const togglePlayback=()=>{
-    const current=videoRefs.current.get(currentVideo.id);
-    if(isPlaying){current?.pause();setIsPlaying(false);}
-    else void current?.play().then(()=>setIsPlaying(true)).catch(()=>setIsPlaying(false));
+    if(wantsPlayback&&isActuallyPlaying){
+      setWantsPlayback(false);
+      videoRef.current?.pause();
+    }else{
+      setWantsPlayback(true);
+      const element=videoRef.current;
+      if(element){
+        element.muted=isMuted;
+        void element.play().catch(()=>setVideoError('Unable to start playback. Try reloading the page.'));
+      }
+    }
   };
   const toggleMute=()=>setIsMuted(value=>!value);
   const handleNextVideo=()=>switchVideo(activeVideoIndex+1);
@@ -121,38 +131,30 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
           }}
         >
-          {/* The video is the hero: do not cover it with a photo or poster.
-              Browsers render the actual first decoded frame as soon as bytes arrive. */}
-          {/* Keep mounted clips stable when the server returns the public playlist.
-              The initial built-in IDs match the server IDs, avoiding video reloads. */}
-          {videos.map((video,index)=>(
-            <video
-              key={video.id}
-              ref={node=>{
-                if(node)videoRefs.current.set(video.id,node);
-                else videoRefs.current.delete(video.id);
-              }}
-              src={video.src}
-              preload={index===activeVideoIndex?'auto':'metadata'}
-              autoPlay={index===activeVideoIndex&&isPlaying}
-              muted={isMuted}
-              playsInline
-              onLoadedMetadata={event=>{
-                if(index===activeVideoIndex)tryPlay(event.currentTarget);
-              }}
-              onLoadedData={event=>{
-                if(index===activeVideoIndex)tryPlay(event.currentTarget);
-              }}
-              onCanPlay={event=>{
-                if(index===activeVideoIndex)tryPlay(event.currentTarget);
-              }}
-              onEnded={()=>{if(index===activeVideoIndex)switchVideo(index+1);}}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-                activeVideoIndex===index
-                  ? 'opacity-100 z-10':'opacity-0 pointer-events-none z-0'
-              }`}
-            />
-          ))}
+          {/* Only the active video is mounted; other clips cannot compete for
+              browser decoding or the initial network connection. No image poster. */}
+          <video
+            key={currentVideo.id}
+            ref={videoRef}
+            src={currentVideo.src}
+            preload="auto"
+            autoPlay
+            muted={isMuted}
+            playsInline
+            disablePictureInPicture
+            onLoadedMetadata={attemptPlayback}
+            onLoadedData={attemptPlayback}
+            onCanPlay={attemptPlayback}
+            onPlay={()=>{setIsActuallyPlaying(true);setVideoError('');}}
+            onPlaying={()=>{setIsActuallyPlaying(true);setVideoError('');}}
+            onPause={()=>setIsActuallyPlaying(false)}
+            onError={()=>setVideoError('The video could not load. Select another video or try refreshing.')}
+            onEnded={()=>switchVideo(activeVideoIndex+1)}
+            className="absolute inset-0 z-10 h-full w-full object-cover"
+          />
+          {videoError&&<div role="status" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">
+            {videoError}
+          </div>}
 
           {/* Diagonal HIAU Heritage Gold Accent Slash (Exact Slanted Divider Line) */}
           <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-1.5 bg-[#C39A53] shadow-md z-20 pointer-events-none" />
@@ -183,10 +185,10 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               <button
                 onClick={togglePlayback}
                 className="w-9 h-9 rounded-full bg-[#4A1249]/90 hover:bg-[#4A1249] text-white flex items-center justify-center backdrop-blur-md border border-[#C39A53]/70 shadow-lg cursor-pointer transition-transform active:scale-95"
-                aria-label={isPlaying ? 'Pause video' : 'Play video'}
-                title={isPlaying ? 'Pause video' : 'Play video'}
+                aria-label={isActuallyPlaying ? 'Pause video' : 'Play video'}
+                title={isActuallyPlaying ? 'Pause video' : 'Play video'}
               >
-                {isPlaying ? (
+                {isActuallyPlaying ? (
                   <Pause className="w-4 h-4 text-[#C39A53]" />
                 ) : (
                   <Play className="w-4 h-4 text-[#C39A53] ml-0.5" />
@@ -236,7 +238,6 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                       key={vid.id}
                       onClick={() => {
                         switchVideo(idx);
-                        setIsPlaying(true);
                       }}
                       className={`px-2.5 py-1 rounded-md text-[11px] font-collegiate font-bold uppercase tracking-wider transition-all cursor-pointer ${
                         isActive

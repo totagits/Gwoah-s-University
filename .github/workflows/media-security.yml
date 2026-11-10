@@ -1,0 +1,36 @@
+name: HIAU media security and build checks
+
+on:
+  push:
+    branches:
+      - 'feat/secure-media-admin-session-*'
+  pull_request:
+    paths:
+      - 'src/server/**'
+      - 'src/components/public/**'
+      - 'src/components/portal/AdminPublicVideoManager.tsx'
+      - 'src/services/**'
+      - 'src/data/publicMedia.ts'
+      - 'server.ts'
+      - 'tests/**'
+      - 'package.json'
+      - '.github/workflows/media-security.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Type check
+        run: npm run lint
+      - name: Media authentication regression tests
+        run: npm test
+      - name: Build public site
+        run: npm run build

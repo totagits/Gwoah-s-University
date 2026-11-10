@@ -102,3 +102,15 @@ Review of `staging` source establishes the components and image references exist
 - [ ] Use fictional applicant information only for the staged browser submission acceptance; verify reference issuance, staff queue and scholarship flag. Do not submit actual applicant data before university privacy policies are approved.
 - [ ] Verify both scholarship opt-in and opt-out, rejected missing fields, failed network/save errors, and denial of public `GET /api/applications`.
 - [ ] Confirm an institution-approved privacy notice, record retention/deletion process and data access policy before broad public availability.
+
+
+## ERP-NAV — Staging sidebar and RBAC milestone (2026-11-10)
+- [x] Replaced the crowded top horizontal portal tabs with a responsive left navigation sidebar. The header now retains university branding, global search, notifications, language, theme controls, and logout.
+- [x] The sidebar includes independent collapsible groups, a desktop compact icon mode and mobile drawer with an Escape shortcut.
+- [x] Sidebar visibility follows the eight actually implemented role identities in `src/portal/moduleRegistry.ts`. No unreleased roles or unfinished ERP modules are advertised.
+- [x] React module components are rendered only when `isPortalModuleAvailable(role, tab)` is true, alongside the existing server-side authentication/role checks. Navigation is never a security boundary.
+- [x] Updated Curriculum Studio's New program draft action to use the accessible purple/white selected-control style.
+- [ ] Verify actual administrator, registrar, dean, lecturer, bursar, admissions officer, student and alumni sign-in experiences on staging, using authorized test identities only.
+- [ ] Browser-test sidebar expanded/compact states at desktop widths, and drawer operation, focus movement, Escape, scrolling and content overflow on 375px and 768px layouts.
+- [ ] Complete separate RBAC permission-matrix audit: server CRUD, financial approvals, admissions decisions, notifications and protected exports; do not treat menu hiding as a complete permissions review.
+- [ ] Verify role-appropriate initial tab, theme contrast and reauthentication after session expiry; capture acceptance screenshots before production merge.

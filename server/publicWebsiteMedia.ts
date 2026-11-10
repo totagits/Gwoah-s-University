@@ -51,6 +51,10 @@ const resolveSlot=(store:Operations,raw:string)=>allSlots(store).find(v=>v.slot=
 
 const KEY='public-media:';
 const MAX_BYTES=50*1024*1024;
+const CHUNK_BYTES=256*1024;
+const UPLOAD_TTL=30*60*1000;
+type UploadSession={id:string;slot:string;owner:string;size:number;received:number;created:number};
+const pendingUploads=new Map<string,UploadSession>();
 type State={draft?:string;published?:string;version:number;updatedAt?:string};
 const isAdmin=(res:Response)=>actorOf(res)?.role==='super_admin';
 const parse=(store:Operations,slot:string):State=>{
@@ -186,6 +190,106 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     if(state.draft)return sendMedia(req,res,mediaPath(directory,state.draft));
     const target=state.published?'/api/public/video/'+item.slot:item.defaultSrc;
     return target?res.redirect(302,target):res.status(404).end();
+  });
+  // Small authenticated chunks avoid a reverse-proxy limit on one large PUT.
+  // Upload sessions are process-local; partial transfers must restart after app restart.
+  const cleanupUploads=()=>{
+    const now=Date.now();
+    for(const [id,session] of pendingUploads){
+      if(now-session.created>UPLOAD_TTL){
+        pendingUploads.delete(id);
+        fs.rmSync(path.join(storage,'.pending-'+id+'.part'),{force:true});
+      }
+    }
+  };
+  app.post('/api/admin/website-video/:slot/uploads',(req,res)=>{
+    if(!isAdmin(res))return res.status(403).json({error:'Super Administrator required.'});
+    const item=resolveSlot(store,req.params.slot);
+    if(!item)return res.status(404).json({error:'Unknown video slot.'});
+    const size=req.body?.size;
+    if(!Number.isSafeInteger(size)||size<24||size>MAX_BYTES)
+      return res.status(400).json({error:'MP4 size must be between 24 bytes and 50 MB.'});
+    cleanupUploads();
+    const actor=actorOf(res)!;
+    if([...pendingUploads.values()].filter(v=>v.owner===actor.id).length>=3)
+      return res.status(429).json({error:'Three uploads already in progress. Please retry later.'});
+    const id=crypto.randomUUID();
+    try{
+      fs.writeFileSync(path.join(storage,'.pending-'+id+'.part'),Buffer.alloc(0),{flag:'wx',mode:0o600});
+      pendingUploads.set(id,{id,slot:item.slot,owner:actor.id,size,received:0,created:Date.now()});
+      return res.status(201).json({uploadId:id,chunkSize:CHUNK_BYTES});
+    }catch{
+      return res.status(500).json({error:'Unable to initialize private upload.'});
+    }
+  });
+  app.post('/api/admin/website-video/:slot/uploads/:uploadId/chunk',
+    express.raw({type:'application/octet-stream',limit:'270kb'}),
+    (req,res)=>{
+      if(!isAdmin(res))return res.status(403).json({error:'Super Administrator required.'});
+      const session=pendingUploads.get(req.params.uploadId);
+      const actor=actorOf(res)!;
+      if(!session||session.slot!==req.params.slot||session.owner!==actor.id||
+        Date.now()-session.created>UPLOAD_TTL)
+        return res.status(404).json({error:'Upload session expired or unavailable. Start again.'});
+      const bytes=req.body;
+      const index=Number(req.get('x-hiau-chunk-index'));
+      if(!Buffer.isBuffer(bytes)||bytes.length===0||bytes.length>CHUNK_BYTES||
+        !Number.isSafeInteger(index)||index!==Math.floor(session.received/CHUNK_BYTES)||
+        session.received+bytes.length>session.size||
+        (session.received+bytes.length<session.size&&bytes.length!==CHUNK_BYTES))
+        return res.status(400).json({error:'Invalid or out-of-order video chunk.'});
+      try{
+        fs.appendFileSync(path.join(storage,'.pending-'+session.id+'.part'),bytes);
+        session.received+=bytes.length;
+        return res.json({success:true,received:session.received,total:session.size});
+      }catch{
+        pendingUploads.delete(session.id);
+        fs.rmSync(path.join(storage,'.pending-'+session.id+'.part'),{force:true});
+        return res.status(500).json({error:'Unable to write video chunk.'});
+      }
+    }
+  );
+  app.post('/api/admin/website-video/:slot/uploads/:uploadId/complete',(req,res)=>{
+    if(!isAdmin(res))return res.status(403).json({error:'Super Administrator required.'});
+    const session=pendingUploads.get(req.params.uploadId);
+    const actor=actorOf(res)!;
+    if(!session||session.slot!==req.params.slot||session.owner!==actor.id||
+      Date.now()-session.created>UPLOAD_TTL)
+      return res.status(404).json({error:'Upload session expired or unavailable.'});
+    if(session.received!==session.size)
+      return res.status(409).json({error:'Video upload is not complete.'});
+    const item=resolveSlot(store,session.slot);
+    if(!item)return res.status(404).json({error:'Video slot no longer exists.'});
+    const temp=path.join(storage,'.pending-'+session.id+'.part');
+    const filename=crypto.randomUUID()+'.mp4';
+    const destination=mediaPath(directory,filename);
+    try{
+      if(!checkMp4(temp))return res.status(415).json({error:'Invalid MP4 file header.'});
+      fs.renameSync(temp,destination);
+      const previous=parse(store,session.slot);
+      store.transaction(()=>{
+        save(store,session.slot,{...previous,draft:filename,updatedAt:new Date().toISOString()});
+        store.audit(actor.id,'WEBSITE_VIDEO_DRAFT_UPLOAD',session.slot,null,{bytes:session.size,filename,mode:'chunked'});
+      });
+      pendingUploads.delete(session.id);
+      if(previous.draft&&previous.draft!==previous.published)
+        fs.rmSync(mediaPath(directory,previous.draft),{force:true});
+      return res.status(201).json({success:true,bytes:session.size,pendingPublication:true});
+    }catch{
+      pendingUploads.delete(session.id);
+      fs.rmSync(temp,{force:true});
+      fs.rmSync(destination,{force:true});
+      return res.status(500).json({error:'Unable to finalize private video upload.'});
+    }
+  });
+  app.delete('/api/admin/website-video/:slot/uploads/:uploadId',(req,res)=>{
+    if(!isAdmin(res))return res.status(403).json({error:'Super Administrator required.'});
+    const session=pendingUploads.get(req.params.uploadId);
+    if(!session||session.slot!==req.params.slot||session.owner!==actorOf(res)!.id)
+      return res.status(404).json({error:'Upload session not found.'});
+    pendingUploads.delete(session.id);
+    fs.rmSync(path.join(storage,'.pending-'+session.id+'.part'),{force:true});
+    return res.json({success:true});
   });
   app.put('/api/admin/website-video/:slot',async(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);

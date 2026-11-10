@@ -83,11 +83,12 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
     try {
       const payload = {
         applicantName: formData.applicantName,
-    applyingForScholarship: formData.applyingForScholarship,
+        applyingForScholarship: formData.applyingForScholarship,
         email: formData.email,
         phone: formData.phone,
         programDesired: formData.programDesired,
         faculty: formData.faculty,
+        county: formData.county,
         wassceIndex: formData.wassceIndex,
         wassceCoreSubjects: [
           { subject: 'Mathematics', grade: formData.mathGrade },

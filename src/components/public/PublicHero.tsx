@@ -126,7 +126,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
       <div className="relative w-full min-h-[580px] lg:min-h-[620px] xl:min-h-[680px] flex flex-col justify-center bg-white">
         {/* Left Column: Full-Bleed Carousel Video to Left Edge with Signature Slanted Cut */}
         <div
-          className="lg:absolute lg:inset-y-0 lg:left-0 lg:w-[53%] xl:w-[52%] w-full h-84 sm:h-96 lg:h-full relative overflow-hidden z-10 bg-[#2A082C]"
+          className="lg:absolute lg:inset-y-0 lg:left-0 lg:w-[52%] xl:w-[51%] w-full h-84 sm:h-96 lg:h-full relative overflow-hidden z-10 bg-[#2A082C]"
         >
           {/* Only the active video is mounted; other clips cannot compete for
               browser decoding or the initial network connection. No image poster. */}
@@ -153,19 +153,19 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             {videoError}
           </div>}
 
-          {/* Preserve the diagonal silhouette with an overlay rather than
-              clipping the *ancestor* of a D3D11 hardware-decoded video. In
-              Chromium/Windows, ancestor clip-path can prevent video frames
-              from reaching the compositor even while playback continues.
-              This white triangle covers the small lower-right cutout. */}
-          <div
+          {/* The video remains an unclipped hardware-decoded layer. A separate
+              mask draws the exact diagonal with a single thin gold accent:
+              no extra vertical strip at the right edge. */}
+          <svg
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-[15] hidden bg-white lg:block"
-            style={{clipPath:'polygon(100% 0, 100% 100%, 80% 100%)'}}
-          />
-
-          {/* Diagonal HIAU Heritage Gold Accent Slash (Exact Slanted Divider Line) */}
-          <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-1.5 bg-[#C39A53] shadow-md z-20 pointer-events-none" />
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            className="pointer-events-none absolute inset-0 z-[15] hidden h-full w-full lg:block"
+          >
+            <polygon points="100,0 100,100 80,100" fill="#FFFFFF" />
+            <line x1="100" y1="0" x2="80" y2="100"
+              stroke="#C39A53" strokeWidth="0.32" vectorEffect="non-scaling-stroke" />
+          </svg>
 
           {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}
           <div className="absolute top-4 left-4 right-12 z-20 flex items-center justify-between pointer-events-none">
@@ -175,98 +175,72 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             </span>
           </div>
 
-          {/* Bottom Video Information & Carousel Controls */}
-          <div className="absolute bottom-4 left-4 right-8 z-20 flex flex-col gap-2.5">
-            {/* Video Caption Card */}
-            <div className="bg-[#2A082C]/85 backdrop-blur-md border border-[#C39A53]/40 p-2.5 rounded-lg text-white max-w-sm hidden sm:block">
-              <span className="text-xs font-collegiate font-bold text-[#C39A53] uppercase tracking-wide block truncate">
-                {currentVideo.title}
-              </span>
-              <span className="text-[11px] text-purple-100 block truncate mt-0.5">
-                {currentVideo.subtitle}
-              </span>
+          {/* Compact controls, safely inside the diagonal cutout at its base. */}
+          <div className="absolute bottom-5 left-4 right-[23%] z-20 flex flex-col gap-2 sm:left-6 lg:right-[24%]">
+            <div className="max-w-[390px] rounded-md bg-[#2A082C]/80 px-3 py-2 text-[#C39A53] backdrop-blur-sm">
+              <span className="block truncate text-xs font-bold uppercase tracking-wide">{currentVideo.title}</span>
             </div>
-
-            {/* Bottom Controls Bar: Prev / Play-Pause / Next / Mute & 01/02 Selectors */}
-            <div className="flex items-center gap-2">
-              {/* Play / Pause Toggle Button */}
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <button
+                type="button"
                 onClick={togglePlayback}
-                className="w-9 h-9 rounded-full bg-[#4A1249]/90 hover:bg-[#4A1249] text-white flex items-center justify-center backdrop-blur-md border border-[#C39A53]/70 shadow-lg cursor-pointer transition-transform active:scale-95"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#C39A53] bg-[#2A082C]/90 text-white hover:bg-[#4A1249] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53]"
                 aria-label={isActuallyPlaying ? 'Pause video' : 'Play video'}
                 title={isActuallyPlaying ? 'Pause video' : 'Play video'}
               >
-                {isActuallyPlaying ? (
-                  <Pause className="w-4 h-4 text-[#C39A53]" />
-                ) : (
-                  <Play className="w-4 h-4 text-[#C39A53] ml-0.5" />
-                )}
+                {isActuallyPlaying
+                  ? <Pause className="h-5 w-5 text-[#C39A53]" />
+                  : <Play className="ml-0.5 h-5 w-5 text-[#C39A53]" />}
               </button>
-
-              {/* Audio Mute / Unmute Toggle Button */}
               <button
+                type="button"
                 onClick={toggleMute}
-                className="w-9 h-9 rounded-full bg-[#4A1249]/90 hover:bg-[#4A1249] text-white flex items-center justify-center backdrop-blur-md border border-[#C39A53]/70 shadow-lg cursor-pointer transition-transform active:scale-95"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-[#2A082C]/80 text-white hover:bg-[#4A1249]"
                 aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
-                title={isMuted ? 'Unmute audio' : 'Mute audio'}
+                title={isMuted ? 'Unmute video audio' : 'Mute video audio'}
               >
-                {isMuted ? (
-                  <VolumeX className="w-4 h-4 text-[#C39A53]" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-[#C39A53]" />
-                )}
+                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
               </button>
-
-              {/* Prev / Next Video Carousel Switchers */}
-              <div className="flex items-center gap-1 bg-[#2A082C]/80 backdrop-blur-md p-1 rounded-full border border-[#C39A53]/50">
-                <button
-                  onClick={handlePrevVideo}
-                  className="w-7 h-7 rounded-full bg-[#4A1249] hover:bg-[#661B69] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
-                  aria-label="Previous homepage video"
-                  title="Previous video"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5 text-[#C39A53]" />
+              <div className="flex shrink-0 items-center rounded-full border border-[#C39A53]/60 bg-[#2A082C]/80">
+                <button type="button" onClick={handlePrevVideo}
+                  className="flex h-9 w-8 items-center justify-center text-white hover:text-[#C39A53]"
+                  aria-label="Previous homepage video" title="Previous video">
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
-                <button
-                  onClick={handleNextVideo}
-                  className="w-7 h-7 rounded-full bg-[#4A1249] hover:bg-[#661B69] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
-                  aria-label="Next homepage video"
-                  title="Next video"
-                >
-                  <ChevronRight className="w-3.5 h-3.5 text-[#C39A53]" />
+                <span className="min-w-10 text-center text-xs font-bold tabular-nums text-white"
+                  aria-live="polite">{String(activeVideoIndex+1).padStart(2,'0')}/{String(videos.length).padStart(2,'0')}</span>
+                <button type="button" onClick={handleNextVideo}
+                  className="flex h-9 w-8 items-center justify-center text-white hover:text-[#C39A53]"
+                  aria-label="Next homepage video" title="Next video">
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
-
-              {/* Dynamic homepage video selector: originals plus published additions. */}
-              <div className="flex items-center gap-1.5 ml-1">
-                {videos.map((vid, idx) => {
-                  const isActive = activeVideoIndex === idx;
-                  return (
-                    <button
-                      key={vid.id}
-                      onClick={() => {
-                        switchVideo(idx);
-                      }}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-collegiate font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-[#C39A53] text-[#2A082C] shadow-md ring-1 ring-[#C39A53]'
-                          : 'bg-[#2A082C]/80 text-purple-200 hover:text-white hover:bg-[#4A1249] border border-white/20'
-                      }`}
-                    >
-                      {vid.label}
-                    </button>
-                  );
-                })}
+              <div role="group" aria-label="Choose homepage video"
+                className="flex min-w-0 items-center gap-1.5">
+                {videos.map((vid,idx)=>(
+                  <button
+                    key={vid.id}
+                    type="button"
+                    onClick={()=>switchVideo(idx)}
+                    aria-label={`Show video ${idx+1}: ${vid.title}`}
+                    aria-current={idx===activeVideoIndex?'true':undefined}
+                    title={vid.label}
+                    className={`h-2.5 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                      idx===activeVideoIndex
+                        ? 'w-6 bg-[#C39A53]' : 'w-2.5 bg-white/70 hover:bg-white'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Column: Clean White Canvas in HIAU Imperial Purple & Gold */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-20 relative z-20">
-          <div className="lg:w-1/2 lg:ml-auto lg:pl-10 xl:pl-16 space-y-6 text-left">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 xl:py-20 relative z-20">
+          <div className="lg:w-1/2 lg:ml-auto lg:pl-9 xl:pl-12 space-y-6 text-left">
             {/* HIAU Brand Headline in Imperial Purple */}
-            <h1 className="font-collegiate font-black text-5xl sm:text-6xl lg:text-7xl xl:text-[84px] text-[#4A1249] tracking-tight leading-[0.92] uppercase">
+            <h1 className="font-collegiate font-black text-5xl sm:text-6xl lg:text-[64px] xl:text-[76px] text-[#4A1249] tracking-tight leading-[0.92] uppercase">
               HARVEST UNIVERSITY <br />
               <span className="text-[#4A1249]">IN LIBERIA</span>
             </h1>

@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Video,
 } from 'lucide-react';
+import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from '../../data/publicMedia';
 
 interface PublicHeroProps {
   onOpenPortal: () => void;
@@ -16,43 +17,33 @@ interface PublicHeroProps {
   onOpenApplicationModal: () => void;
 }
 
-interface HeroVideoSlide {
-  id: string;
-  title: string;
-  subtitle: string;
-  src: string;
-  poster: string;
-  badge: string;
-  label: string;
-}
-
-const HERO_VIDEOS: HeroVideoSlide[] = [
-  {
-    id: 'campus',
-    title: 'HIAU Main Academic Campus',
-    subtitle: 'Exterior complex, 2nd-floor lecture halls & palm quadrangle',
-    src: '/assets/aistudio/image_20261105_121706_f720baa0.mp4',
-    poster: '/assets/aistudio/image_29eb5504.png',
-    badge: 'Video 1 • Campus First',
-    label: '01 Campus Tour',
-  },
-  {
-    id: 'classroom',
-    title: 'Interactive Laptop Lab & Smart Classroom',
-    subtitle: 'Individual wooden carrels, dedicated laptops & interactive projection',
-    src: '/assets/aistudio/image_20261105_102657_b174d32f.mp4',
-    poster: '/assets/aistudio/image_51d124f3.png',
-    badge: 'Video 2 • Classroom Second',
-    label: '02 Smart Lab',
-  },
-];
-
 export const PublicHero: React.FC<PublicHeroProps> = ({
   onOpenPortal: _onOpenPortal,
   onNavigateSection,
   onOpenApplicationModal,
 }) => {
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [heroVideos, setHeroVideos] = useState<PublicVideo[]>(DEFAULT_PUBLIC_VIDEOS);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/public-media/videos', { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Media unavailable')))
+      .then((payload: { videos?: PublicVideo[] }) => {
+        if (Array.isArray(payload.videos) &&
+          payload.videos.length === 2 &&
+          payload.videos[0]?.id === 'campus' &&
+          payload.videos[1]?.id === 'classroom' &&
+          payload.videos.every((video) => typeof video.src === 'string' && video.src.startsWith('/'))) {
+          setHeroVideos(payload.videos);
+        }
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) console.warn('Using default public videos:', error);
+      });
+    return () => controller.abort();
+  }, []);
+
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
 
@@ -60,7 +51,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const campusVideoRef = useRef<HTMLVideoElement>(null);
   const classroomVideoRef = useRef<HTMLVideoElement>(null);
 
-  const currentVideo = HERO_VIDEOS[activeVideoIndex];
+  const currentVideo = heroVideos[activeVideoIndex];
 
   // Seamless instant handoff between the two videos with crossfade
   const switchVideo = (nextIndex: number) => {
@@ -133,12 +124,12 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   };
 
   const handleNextVideo = () => {
-    switchVideo((activeVideoIndex + 1) % HERO_VIDEOS.length);
+    switchVideo((activeVideoIndex + 1) % heroVideos.length);
     setIsPlaying(true);
   };
 
   const handlePrevVideo = () => {
-    switchVideo((activeVideoIndex - 1 + HERO_VIDEOS.length) % HERO_VIDEOS.length);
+    switchVideo((activeVideoIndex - 1 + heroVideos.length) % heroVideos.length);
     setIsPlaying(true);
   };
 
@@ -156,8 +147,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           {/* Video 0: Campus Complex (Preloaded & Always Mounted for Seamless Crossfade) */}
           <video
             ref={campusVideoRef}
-            src={HERO_VIDEOS[0].src}
-            poster={HERO_VIDEOS[0].poster}
+            src={heroVideos[0].src}
+            poster={heroVideos[0].poster}
             preload="auto"
             muted={isMuted}
             playsInline
@@ -170,8 +161,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           {/* Video 1: Smart Classroom & Lab (Preloaded & Always Mounted for Seamless Crossfade) */}
           <video
             ref={classroomVideoRef}
-            src={HERO_VIDEOS[1].src}
-            poster={HERO_VIDEOS[1].poster}
+            src={heroVideos[1].src}
+            poster={heroVideos[1].poster}
             preload="auto"
             muted={isMuted}
             playsInline
@@ -256,7 +247,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
 
               {/* 2-Slide Tabs (01 Campus / 02 Classroom) */}
               <div className="flex items-center gap-1.5 ml-1">
-                {HERO_VIDEOS.map((vid, idx) => {
+                {heroVideos.map((vid, idx) => {
                   const isActive = activeVideoIndex === idx;
                   return (
                     <button

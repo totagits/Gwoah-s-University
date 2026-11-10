@@ -55,7 +55,12 @@
 - [x] Removed unverified GPA cutoffs, scholarship award guarantees, funding availability promises and payment-channel representations from the public financial-aid panel.
 - [x] Added `applyingForScholarship` to the client submission payload and optional application type. **This does not mean the request is persisted:** the current staging server has no public `POST /api/applications` handler, and the authenticated workspaces admission workflow is separate.
 - [ ] Confirm institution-approved policies, contact emails, deadlines, award eligibility and currently funded schemes before publishing promises.
-- [ ] Design and implement a privacy-safe public admissions application endpoint with rate-limits, validation, persistence, auditable workflow and test data isolation. Do not accept sensitive banking/financial documents until an approved secure upload service exists.
+- [x] Implemented a same-origin, rate-limited, validated public admissions intake endpoint backed by a persistent SQLite table, returning a unique receipt reference only after successful save; storage durability still requires verified Coolify persistent-volume mount.
+- [x] Added authenticated, read-only admissions intake queue showing scholarship interest without implying paid fees or accepted applications; requires actual staff-role browser verification.
+- [x] Added integration tests for HTTP submission, input validation, persisted scholarship-interest values and unauthenticated read denial (CI results required).
+- [ ] Verify APP_URL origin matches staging and production hostnames in each environment; never share credentials. Verify JSON body limits, database backups and application retention policies.
+- [ ] Run an explicitly fictional staging applicant through receipt, staff queue and redeploy persistence; verify no personal information is exposed to public visitors.
+- [ ] No financial documents are accepted at this stage; secure upload consent and retention must be approved first.
 - [ ] Wire scholarship-interest into the secure admissions record, committee screening, student correspondence and access-controlled review. Confirm with end-to-end tests using a staging applicant.
 - [ ] Implement scholarship award approvals, financial credit postings, renewals and reconciliation only during ERP-2, with separation of duties and audit history.
 - [ ] Verify financial-aid menu scroll, mobile accessibility, and clear distinction between **inquiry**, **application**, and **award**.
@@ -82,3 +87,10 @@ Existing UI/API methods (e.g. `AcademicPlanningRegistration.tsx` and `src/servic
 
 ## Verification evidence and limits
 Review of `staging` source establishes the components and image references exist. Browser screenshots in this project showed the administrator video library, successful private draft upload, playback, public publish, and later a working campus frame. The latest post-layout autoplay and all leadership identity/photograph claims remain subject to manual staging acceptance. The CI inventory can check file presence but cannot establish that an image depicts the correct individual.
+
+### Intake boundaries and remaining ERP work (November 10, 2026)
+- Public admission submissions are stored in `public_admissions_intake` in the existing operations SQLite database, separate from the formal, registrar-approved `applications` table.
+- Receipt status `received` confirms storage only. It does not confer admission, WASSCE verification, scholarship approval, paid assessment fees or invoice creation.
+- Only authenticated super administrators, registrars and admissions officers may read the intake queue. The staff portal lists self-reported grades, but no mock fee or admission decision.
+- Staff approval/rejection, email notifications, document verification, scholarships awards and reconciliation belong to ERP-1 and ERP-2 and are deliberately not enabled here.
+- Public privacy/consent copy, data retention/deletion policy, acceptable document uploads, anti-bot measures beyond per-IP throttling, and institution-approved fee disclosure still need acceptance before general public launch.

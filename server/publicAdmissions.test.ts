@@ -25,7 +25,7 @@ const application = {
 };
 
 test('admissions validation rejects missing identity, invalid grades and missing aid choice', () => {
-  assert.match((parsePublicApplication({}) as {error:string}).error,/name/i);
+  assert.match((parsePublicApplication({...application,applicantName:''}) as {error:string}).error,/name/i);
   assert.match((parsePublicApplication({...application, email:'bad'}) as {error:string}).error,/email/i);
   assert.match((parsePublicApplication({...application, applyingForScholarship:undefined}) as {error:string}).error,/scholarship/i);
   assert.match((parsePublicApplication({...application,
@@ -74,7 +74,7 @@ test('real HTTP admissions intake persists aid interest and protects applicant r
     assert.equal(operations.one('SELECT scholarship_interest FROM public_admissions_intake WHERE application_number=?',
       (await declined.json() as any).application.applicationNumber).scholarship_interest,0);
   } finally {
-    await new Promise<void>((resolve,reject)=>listener.close(error=>error?reject(error):resolve()));
+    if (listener.listening) await new Promise<void>((resolve,reject)=>listener.close(error=>error?reject(error):resolve()));
     operations.sql.close();
     rmSync(dir,{recursive:true,force:true});
   }

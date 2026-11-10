@@ -221,10 +221,10 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         action: () => onNavigateSection('admissions'),
       },
       {
-        label: 'HIAU Scholarship Committee',
-        desc: 'Need-based and merit-based tuition financial aid',
+        label: 'Financial Aid & Scholarships',
+        desc: 'Learn about aid inquiries, eligibility and available support',
         icon: <FileText className="w-4 h-4 text-[#C39A53]" />,
-        action: () => onNavigateSection('admissions'),
+        action: () => onNavigateSection('financial-aid'),
         badge: 'Aid',
       },
       {

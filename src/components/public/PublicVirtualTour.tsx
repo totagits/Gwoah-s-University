@@ -17,6 +17,7 @@ import {
   VolumeX,
   RotateCcw,
 } from 'lucide-react';
+import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from '../../data/publicMedia';
 
 export interface TourVideoItem {
   id: string;
@@ -136,6 +137,24 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   onOpenApplicationModal,
   onOpenPortal,
 }) => {
+  const [managedVideos, setManagedVideos] = useState<PublicVideo[]>(DEFAULT_PUBLIC_VIDEOS);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/public-media/videos', { signal: controller.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('Media unavailable')))
+      .then((data: { videos?: PublicVideo[] }) => {
+        if (Array.isArray(data.videos) && data.videos.length === 2 &&
+          data.videos[0]?.id === 'campus' && data.videos[1]?.id === 'classroom' &&
+          data.videos.every(item => typeof item.src === 'string' && item.src.startsWith('/'))) {
+          setManagedVideos(data.videos);
+        }
+      })
+      .catch(() => { /* Keep existing videos if public media service is unavailable. */ });
+    return () => controller.abort();
+  }, []);
+  const tourVideos = tourVideos.map((item, index) => ({
+    ...item, videoUrl: managedVideos[index].src, posterImage: managedVideos[index].poster,
+  }));
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
@@ -144,7 +163,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   const campusTourRef = useRef<HTMLVideoElement>(null);
   const classroomTourRef = useRef<HTMLVideoElement>(null);
 
-  const currentVideo = TOUR_VIDEOS[selectedIndex];
+  const currentVideo = tourVideos[selectedIndex];
 
   // Seamless instant handoff between the two videos with crossfade
   const switchTourVideo = (nextIndex: number) => {
@@ -224,12 +243,12 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
   };
 
   const handleNext = () => {
-    switchTourVideo((selectedIndex + 1) % TOUR_VIDEOS.length);
+    switchTourVideo((selectedIndex + 1) % tourVideos.length);
     setIsPlaying(true);
   };
 
   const handlePrev = () => {
-    switchTourVideo((selectedIndex - 1 + TOUR_VIDEOS.length) % TOUR_VIDEOS.length);
+    switchTourVideo((selectedIndex - 1 + tourVideos.length) % tourVideos.length);
     setIsPlaying(true);
   };
 
@@ -273,7 +292,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
 
         {/* 2-Slide Video Carousel Selector Tabs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-          {TOUR_VIDEOS.map((video, idx) => {
+          {tourVideos.map((video, idx) => {
             const isSelected = selectedIndex === idx;
             return (
               <button
@@ -358,8 +377,8 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
                 {/* Video 0: Campus Complex (Preloaded & Always Mounted) */}
                 <video
                   ref={campusTourRef}
-                  src={TOUR_VIDEOS[0].videoUrl}
-                  poster={TOUR_VIDEOS[0].posterImage}
+                  src={tourVideos[0].videoUrl}
+                  poster={tourVideos[0].posterImage}
                   preload="auto"
                   muted={isMuted}
                   playsInline
@@ -372,8 +391,8 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
                 {/* Video 1: Smart Classroom & Lab (Preloaded & Always Mounted) */}
                 <video
                   ref={classroomTourRef}
-                  src={TOUR_VIDEOS[1].videoUrl}
-                  poster={TOUR_VIDEOS[1].posterImage}
+                  src={tourVideos[1].videoUrl}
+                  poster={tourVideos[1].posterImage}
                   preload="auto"
                   muted={isMuted}
                   playsInline
@@ -486,7 +505,7 @@ export const PublicVirtualTour: React.FC<PublicVirtualTourProps> = ({
                     </button>
 
                     <span className="text-white/80 text-xs font-mono ml-1">
-                      Video {selectedIndex + 1} of {TOUR_VIDEOS.length}
+                      Video {selectedIndex + 1} of {tourVideos.length}
                     </span>
                   </div>
 

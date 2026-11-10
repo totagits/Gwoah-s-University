@@ -28,7 +28,27 @@ const DEFAULTS=[
     ? '/assets/degree-clips/image_20261109_002629_2.mp4'
     : item.defaultSrc,
 }));
-const bySlot=new Map(DEFAULTS.map(x=>[x.slot,x]));
+const EXTRA_KEY='public-media:hero-extras';
+type ExtraHero={slot:string;label:string;defaultSrc:string;order:number};
+const extraHeroes=(store:Operations):ExtraHero[]=>{
+  const raw=store.one('SELECT value FROM settings WHERE key=?',EXTRA_KEY);
+  if(!raw)return [];
+  try{
+    const value=JSON.parse(raw.value);
+    return Array.isArray(value)?value.filter((v:ExtraHero)=>
+      typeof v.slot==='string'&&/^hero-extra-[a-f0-9-]{36}$/.test(v.slot)&&
+      typeof v.label==='string'&&v.label.length>0&&v.label.length<=100&&
+      v.defaultSrc===''&&Number.isSafeInteger(v.order)&&v.order>=0
+    ).slice(0,10).sort((a,b)=>a.order-b.order):[];
+  }catch{return [];}
+};
+const saveExtras=(store:Operations,videos:ExtraHero[])=>store.run(
+  'INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+  EXTRA_KEY,JSON.stringify(videos)
+);
+const allSlots=(store:Operations)=>[...DEFAULTS,...extraHeroes(store)];
+const resolveSlot=(store:Operations,raw:string)=>allSlots(store).find(v=>v.slot===raw);
+
 const KEY='public-media:';
 const MAX_BYTES=50*1024*1024;
 type State={draft?:string;published?:string;version:number;updatedAt?:string};
@@ -40,7 +60,6 @@ const parse=(store:Operations,slot:string):State=>{
 const save=(store:Operations,slot:string,state:State)=>{
   store.run('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',KEY+slot,JSON.stringify(state));
 };
-const resolveSlot=(raw:string)=>bySlot.get(raw);
 const mediaPath=(directory:string,name:string)=>path.join(directory,'public-media',name);
 const sendMedia=(req:Request,res:Response,file:string)=>{
   try{
@@ -77,23 +96,83 @@ const checkMp4=(name:string)=>{
 export function installPublicWebsiteMedia(app:Express,store:Operations,directory:string){
   const storage=path.join(directory,'public-media');
   fs.mkdirSync(storage,{recursive:true,mode:0o700});
+  // The existing two original clips always remain available; new slots are public only after publishing.
+  app.get('/api/public/hero-videos',(_req,res)=>{
+    const builtIns=DEFAULTS.filter(v=>v.slot==='hero-campus'||v.slot==='hero-classroom');
+    const added=extraHeroes(store).filter(v=>{
+      const published=parse(store,v.slot).published;
+      return Boolean(published&&fs.existsSync(mediaPath(directory,published)));
+    });
+    res.set('Cache-Control','no-store');
+    return res.json({videos:[...builtIns,...added].map((v,index)=>({
+      id:v.slot, title:v.label, subtitle:'',
+      src:'/api/public/video/'+v.slot,
+      badge:'HIAU Video '+(index+1),
+      label:String(index+1).padStart(2,'0')+' '+(v.slot==='hero-campus'?'Campus':v.slot==='hero-classroom'?'Classroom':v.label),
+    }))});
+  });
   app.get('/api/public/video/:slot',(req,res)=>{
-    const item=resolveSlot(req.params.slot);
+    const item=resolveSlot(store,req.params.slot);
     if(!item)return res.status(404).end();
     const published=parse(store,item.slot).published;
     if(published&&fs.existsSync(mediaPath(directory,published)))return sendMedia(req,res,mediaPath(directory,published));
-    return res.redirect(302,item.defaultSrc);
+    return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
   });
   app.head('/api/public/video/:slot',(req,res)=>{
-    const item=resolveSlot(req.params.slot);
+    const item=resolveSlot(store,req.params.slot);
     if(!item)return res.status(404).end();
     const published=parse(store,item.slot).published;
     if(published&&fs.existsSync(mediaPath(directory,published)))return sendMedia(req,res,mediaPath(directory,published));
-    return res.redirect(302,item.defaultSrc);
+    return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
+  });
+  app.post('/api/admin/website-videos',(req,res)=>{
+    if(!isAdmin(res))return res.sendStatus(403);
+    const label=typeof req.body?.title==='string'?req.body.title.trim():'';
+    if(!label||label.length>100)return res.status(400).json({error:'Enter a title of 1–100 characters.'});
+    const extras=extraHeroes(store);
+    if(extras.length>=10)return res.status(409).json({error:'Maximum of ten extra homepage videos.'});
+    const item:ExtraHero={slot:'hero-extra-'+crypto.randomUUID(),label,defaultSrc:'',order:extras.length};
+    const actor=actorOf(res)!;
+    store.transaction(()=>{
+      saveExtras(store,[...extras,item]);
+      store.audit(actor.id,'WEBSITE_HERO_VIDEO_CREATE',item.slot,null,{label});
+    });
+    return res.status(201).json({success:true,slot:item.slot});
+  });
+  app.post('/api/admin/website-videos/reorder',(req,res)=>{
+    if(!isAdmin(res))return res.sendStatus(403);
+    const extras=extraHeroes(store);
+    const ids:unknown=req.body?.ids;
+    if(!Array.isArray(ids)||ids.length!==extras.length||
+      new Set(ids).size!==extras.length||
+      ids.some(v=>typeof v!=='string'||!extras.some(e=>e.slot===v)))
+      return res.status(400).json({error:'Include every additional homepage video exactly once.'});
+    const ordered=ids.map((slot,order)=>({...extras.find(e=>e.slot===slot)!,order}));
+    const actor=actorOf(res)!;
+    store.transaction(()=>{
+      saveExtras(store,ordered);
+      store.audit(actor.id,'WEBSITE_HERO_VIDEO_REORDER','hero-extras',null,{ids});
+    });
+    return res.json({success:true});
+  });
+  app.delete('/api/admin/website-video/:slot/extra',(req,res)=>{
+    if(!isAdmin(res))return res.sendStatus(403);
+    if(req.body?.confirmation!=='REMOVE_ADDITIONAL_HOME_VIDEO')
+      return res.status(400).json({error:'Explicit confirmation required.'});
+    const extras=extraHeroes(store);
+    if(!extras.some(e=>e.slot===req.params.slot))return res.sendStatus(404);
+    const next=extras.filter(e=>e.slot!==req.params.slot).map((e,order)=>({...e,order}));
+    const actor=actorOf(res)!;
+    store.transaction(()=>{
+      saveExtras(store,next);
+      store.audit(actor.id,'WEBSITE_HERO_VIDEO_REMOVE',req.params.slot,null,{});
+    });
+    // File bytes are kept for backup/recovery rather than deleted during publication edits.
+    return res.json({success:true});
   });
   app.get('/api/admin/website-videos',(_req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
-    return res.json({videos:DEFAULTS.map(v=>({
+    return res.json({videos:allSlots(store).map(v=>({
       ...v,...parse(store,v.slot),
       previewSrc:'/api/admin/website-video/'+v.slot+'/preview',
       publicSrc:'/api/public/video/'+v.slot,
@@ -101,15 +180,16 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
   });
   app.get('/api/admin/website-video/:slot/preview',(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
-    const item=resolveSlot(req.params.slot);
+    const item=resolveSlot(store,req.params.slot);
     if(!item)return res.sendStatus(404);
     const state=parse(store,item.slot);
     if(state.draft)return sendMedia(req,res,mediaPath(directory,state.draft));
-    return res.redirect(302,state.published?'/api/public/video/'+item.slot:item.defaultSrc);
+    const target=state.published?'/api/public/video/'+item.slot:item.defaultSrc;
+    return target?res.redirect(302,target):res.status(404).end();
   });
   app.put('/api/admin/website-video/:slot',async(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
-    const item=resolveSlot(req.params.slot);
+    const item=resolveSlot(store,req.params.slot);
     if(!item)return res.sendStatus(404);
     if(!req.is('video/mp4'))return res.status(415).json({error:'Upload an MP4 video.'});
     if(Number(req.headers['content-length']||0)>MAX_BYTES)
@@ -141,7 +221,7 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
   });
   app.post('/api/admin/website-video/:slot/publish',(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
-    const item=resolveSlot(req.params.slot);
+    const item=resolveSlot(store,req.params.slot);
     if(!item)return res.sendStatus(404);
     if(req.body?.confirmation!=='PUBLISH_WEBSITE_VIDEO')
       return res.status(400).json({error:'Confirm publication explicitly.'});
@@ -158,7 +238,7 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
   });
   app.delete('/api/admin/website-video/:slot',(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
-    const item=resolveSlot(req.params.slot);
+    const item=resolveSlot(store,req.params.slot);
     if(!item)return res.sendStatus(404);
     if(req.body?.confirmation!=='RESTORE_DEFAULT_WEBSITE_VIDEO')
       return res.status(400).json({error:'Confirm restoration explicitly.'});

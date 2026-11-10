@@ -37,6 +37,7 @@ import {
 } from './src/types';
 import { generateIcsCalendar, filterCalendarEvents } from './src/utils/calendarSync';
 import { computeTaskAnalytics } from './src/utils/taskAnalytics';
+import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from './src/data/publicMedia';
 import {
   validateCourseAdd,
   validateCourseDrop,
@@ -155,6 +156,39 @@ let db = loadDatabase();
 const app = express();
 app.use(express.json());
  
+// Public website media are persisted independently of seeded ERP demonstration data.
+// Mounted persistent storage is required before production publication.
+const MEDIA_FILE = path.join(__dirname, 'data', 'public-videos.json');
+const MEDIA_UPLOAD_DIR = path.join(__dirname, 'data', 'public-media-uploads');
+const VIDEO_IDS = ['campus', 'classroom'] as const;
+function readPublicVideos(): PublicVideo[] {
+  try {
+    if (!fs.existsSync(MEDIA_FILE)) return DEFAULT_PUBLIC_VIDEOS;
+    const stored = JSON.parse(fs.readFileSync(MEDIA_FILE, 'utf8')) as PublicVideo[];
+    if (!Array.isArray(stored)) return DEFAULT_PUBLIC_VIDEOS;
+    return DEFAULT_PUBLIC_VIDEOS.map((fallback) => {
+      const item = stored.find((entry) => entry?.id === fallback.id);
+      return item && typeof item.src === 'string' ? { ...fallback, ...item, id: fallback.id } : fallback;
+    });
+  } catch {
+    return DEFAULT_PUBLIC_VIDEOS;
+  }
+}
+function savePublicVideos(videos: PublicVideo[]) {
+  fs.mkdirSync(path.dirname(MEDIA_FILE), { recursive: true });
+  const temporaryPath = MEDIA_FILE + '.tmp';
+  fs.writeFileSync(temporaryPath, JSON.stringify(videos, null, 2), 'utf8');
+  fs.renameSync(temporaryPath, MEDIA_FILE);
+}
+app.get('/api/public-media/videos', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  return res.json({ videos: readPublicVideos() });
+});
+app.use('/uploads/public-videos', express.static(MEDIA_UPLOAD_DIR, {
+  dotfiles: 'deny', index: false, fallthrough: false, maxAge: '1h',
+}));
+
+ 
 // SECURITY HOLD: This prototype has no verified credential store, session validation,
 // or role-based authorization. Fail closed on restricted ERP endpoints until a
 // separately tested authentication/authorization implementation is introduced.
@@ -201,6 +235,45 @@ function recordAudit(
   }
   saveDatabase(db);
   return entry;
+}
+
+// These write routes are intentionally behind the fail-closed ERP security hold.
+// Activate them ONLY after real server-side sessions and administrator RBAC exist.
+app.patch('/api/admin/public-media/videos/:id', (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!VIDEO_IDS.includes(id as typeof VIDEO_IDS[number])) return res.status(404).json({ error: 'Unknown video slot.' });
+  const { title, subtitle, poster } = req.body || {};
+  if (typeof title !== 'string' || !title.trim() || title.length > 160 ||
+      typeof subtitle !== 'string' || subtitle.length > 240 ||
+      typeof poster !== 'string' || !/^\/(assets|uploads)\/[a-zA-Z0-9_./-]+$/.test(poster) ||
+      poster.includes('..')) return res.status(400).json({ error: 'Invalid metadata or poster path.' });
+  const videos = readPublicVideos().map(video =>
+    video.id === id ? { ...video, title: title.trim(), subtitle: subtitle.trim(), poster } : video);
+  savePublicVideos(videos);
+  return res.json({ success: true, videos });
+});
+
+app.post('/api/admin/public-media/videos/:id/upload',
+  express.raw({ type: 'video/mp4', limit: '50mb' }),
+  (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (!VIDEO_IDS.includes(id as typeof VIDEO_IDS[number])) return res.status(404).json({ error: 'Unknown video slot.' });
+    const bytes = req.body;
+    if (!Buffer.isBuffer(bytes) || bytes.length < 12 || bytes.length > 50 * 1024 * 1024 ||
+        bytes.toString('ascii', 4, 8) !== 'ftyp') {
+      return res.status(415).json({ error: 'Please upload a valid MP4 file smaller than 50 MB.' });
+    }
+    fs.mkdirSync(MEDIA_UPLOAD_DIR, { recursive: true });
+    const fileName = `${id}-${Date.now()}-${requireSafeRandomHex()}.mp4`;
+    fs.writeFileSync(path.join(MEDIA_UPLOAD_DIR, fileName), bytes, { flag: 'wx' });
+    const videos = readPublicVideos().map(video =>
+      video.id === id ? { ...video, src: `/uploads/public-videos/${fileName}` } : video);
+    savePublicVideos(videos);
+    return res.json({ success: true, videos });
+  }
+);
+function requireSafeRandomHex(): string {
+  return (Math.random().toString(16).slice(2) + Date.now().toString(16)).slice(0, 20);
 }
 
 /* ==========================================================================

@@ -1,3 +1,4 @@
+import { mediaAdminHeaders } from '../../services/mediaAuthClient';
 import React, { useEffect, useState } from 'react';
 import { DEFAULT_PUBLIC_VIDEOS, type PublicVideo } from '../../data/publicMedia';
 
@@ -10,17 +11,17 @@ export function AdminPublicVideoManager() {
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
-    fetch('/api/admin/public-media/videos')
+    fetch('/api/admin/public-media/videos', { credentials: 'same-origin' })
       .then(r => r.ok ? r.json() : Promise.reject(new Error('Administrator access is not enabled')))
       .then(data => { if (Array.isArray(data.videos)) setVideos(data.videos); })
-      .catch(() => setNotice('Editing is unavailable until authenticated administrator access is configured.'));
+      .catch(() => setNotice('Sign in as an authorized website administrator to manage videos.'));
   }, []);
 
   async function execute(url: string, options: RequestInit) {
     setBusy(true);
     setNotice('');
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, { ...options, credentials: 'same-origin', headers: mediaAdminHeaders(options.headers) });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.success) throw new Error(result.error || 'Change was not saved');
       if (Array.isArray(result.videos)) setVideos(result.videos);
@@ -81,7 +82,7 @@ export function AdminPublicVideoManager() {
     <h2 className="text-xl font-bold text-[#4A1249]">Website Video Library</h2>
     <p className="text-sm text-slate-600">
       Add new videos, edit existing entries, publish or unpublish, choose homepage features, reorder and remove entries.
-      Video management is currently protected by the ERP security hold.
+      Publishing requires an authenticated website administrator session.
     </p>
     <div className="border border-purple-200 rounded-lg p-4 bg-[#FAF8FB] space-y-2">
       <h3 className="font-semibold">Add new video</h3>

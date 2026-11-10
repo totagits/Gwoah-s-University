@@ -127,9 +127,6 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
         {/* Left Column: Full-Bleed Carousel Video to Left Edge with Signature Slanted Cut */}
         <div
           className="lg:absolute lg:inset-y-0 lg:left-0 lg:w-[53%] xl:w-[52%] w-full h-84 sm:h-96 lg:h-full relative overflow-hidden z-10 bg-[#2A082C]"
-          style={{
-            clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
-          }}
         >
           {/* Only the active video is mounted; other clips cannot compete for
               browser decoding or the initial network connection. No image poster. */}
@@ -155,6 +152,17 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           {videoError&&<div role="status" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">
             {videoError}
           </div>}
+
+          {/* Preserve the diagonal silhouette with an overlay rather than
+              clipping the *ancestor* of a D3D11 hardware-decoded video. In
+              Chromium/Windows, ancestor clip-path can prevent video frames
+              from reaching the compositor even while playback continues.
+              This white triangle covers the small lower-right cutout. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[15] hidden bg-white lg:block"
+            style={{clipPath:'polygon(100% 0, 100% 100%, 80% 100%)'}}
+          />
 
           {/* Diagonal HIAU Heritage Gold Accent Slash (Exact Slanted Divider Line) */}
           <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-1.5 bg-[#C39A53] shadow-md z-20 pointer-events-none" />

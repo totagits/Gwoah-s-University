@@ -203,3 +203,15 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Live desktop/375px/768px Chrome acceptance: ensure footer columns do not overflow, every contact link opens the correct phone/email action, navigation scrolls correctly from Home and from deep degree/profile routes, and focus is visible.
 - [ ] Confirm the university logo loads normally after staging deployment. The fallback is only for an unexpected failure, not an approved substitute for the seal.
 - **Status: WEB-03 implementation/source checks complete; live visual and institutional contact-data acceptance pending.** WEB-01 Apply Now remains deferred; WEB-02 new staff profile feature is preserved.
+
+
+### WEB-04 — Homepage video and administrator media management (11 November 2026)
+- [x] Reviewed existing secure video administration: 2 original homepage clips, up to 10 additional slots, MP4 upload (50 MB maximum), 256 KB chunk transfer, private preview, explicit publication, ordering, original restoration, and protected Super Administrator API routes.
+- [x] Added HTTP integration tests for multiple additional homepage clips: unauthenticated and unauthorized roles cannot administer media, new slots/drafts stay private, invalid reorder requests are rejected, valid ordering controls the public feed, and byte-range playback works.
+- [x] Added a real multipart-*chunked* upload acceptance test, including rejection of out-of-order chunks and attempt by another role; publication only after successful complete upload.
+- [x] Added restart/persistence and cleanup checks using a fresh server and reopened SQLite database on the **same** data directory; verify published videos and order survive the restart. Restore/default and extra-video removal return public playlist to the original two clips.
+- [ ] **Coolify deployment gate:** confirm `DATA_DIR` and its media directory are mounted on a persistent volume; a temporary test directory surviving an app restart does **not** prove actual VPS volumes, external backups or recovery.
+- [ ] **Browser acceptance:** login as Super Administrator; upload a fictional/licensed MP4; preview it privately; verify visitors cannot view the draft; publish; check carousel and ordering; restore original; confirm video data survives permitted staging redeploy. Do not use unlicensed media.
+- [ ] Confirm all original and degree-specific clips play in Chrome on desktop/mobile, autoplay respects browser limitations, mute/play/previous/next work, no static poster before videos.
+- [ ] Verify image/video rights and review live publication approval, sensitive public captions, record of approver and audit trail.
+- **WEB-04 remains acceptance pending** until live browser, deployment persistence and university authorization are recorded. No production promotion; the owner-deferred Apply Now issue remains separate.

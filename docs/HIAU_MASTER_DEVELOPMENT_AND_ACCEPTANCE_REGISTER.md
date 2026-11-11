@@ -114,7 +114,7 @@ All listed defects remain open until a recorded retest passes; the presence of a
 **Development:** Implements fixes, runs CI, documents verified results and tracks each open defect.  
 **Operations:** Verifies exact deployed SHA, persistent storage and backup/recovery, TLS and environment configuration.
 
-**Current active milestone: WEB-02 — Leadership and Governance review.** WEB-01 has been explicitly paused by the project owner with its Apply Now defect outstanding; it is not accepted. Review leader directory, 19 profiles, portraits, titles, governance, navigation and mobile layouts, without reopening the deferred Apply Now issue unless the owner requests it.
+**Current active milestone: WEB-05 — Academic Colleges and Degree Programs.** WEB-01 has been explicitly paused by the project owner with its Apply Now defect outstanding; it is not accepted. Review leader directory, 19 profiles, portraits, titles, governance, navigation and mobile layouts, without reopening the deferred Apply Now issue unless the owner requests it.
 
 **Change-control rule:** Every future PR cites a WEB/ERP/DEF identifier and its acceptance result. Do not start another unrelated feature simply because the previous PR merged. Production `main` remains unchanged without explicit release authorization.
 
@@ -215,3 +215,14 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Confirm all original and degree-specific clips play in Chrome on desktop/mobile, autoplay respects browser limitations, mute/play/previous/next work, no static poster before videos.
 - [ ] Verify image/video rights and review live publication approval, sensitive public captions, record of approver and audit trail.
 - **WEB-04 remains acceptance pending** until live browser, deployment persistence and university authorization are recorded. No production promotion; the owner-deferred Apply Now issue remains separate.
+
+
+### WEB-04 — Owner live acceptance update (11 November 2026)
+- **Staging deployment:** Owner-supplied Coolify screenshot shows successful webhook deployment of `943dfbe` (WEB-04) and application status **Running**.
+- **Persistent storage configuration:** Owner-supplied Coolify screenshot shows a Docker volume mounted at `/app/runtime-data`, matching the Dockerfile `DATA_DIR`.
+- **Owner-confirmed live workflow:** Owner confirmed Website Video Library verification, an actual video upload, publication to the homepage, and continued availability **after a redeployment**. Treat this as **owner-reported browser/deployment acceptance** for the WEB-04 core workflow, distinct from automated CI.
+- **Existing evidence:** PR #73 integration suite passed for upload permissions, draft privacy, publication, extra-video ordering, HTTP byte-range streaming, restore/removal, and persistence across a local restart.
+- **Milestone disposition:** **WEB-04 CORE WORKFLOW ACCEPTED BY OWNER ON STAGING.** Proceed to WEB-05 for public website completion. No production release is authorized.
+- **Separate remaining operational controls (not silently certified):** independent off-volume backups and restore rehearsal; rights/consent review for public videos; screen-reader and multi-viewport assessment; exact deployed commit of any later changes. These remain launch-readiness conditions under G1/G2, but do not block starting WEB-05.
+- **No claim:** The assistant did not personally operate the live staging browser or inspect an independent backup. Confirmation comes from the project owner and their Coolify screenshots.
+- **Next active milestone:** **WEB-05 — Five colleges and 19 public academic degree detail pages**: verify current program titles/credentials, academic information, video identity/playback, links, and responsive layout. Existing deferred WEB-01 Apply Now defect remains open for consolidated closure.

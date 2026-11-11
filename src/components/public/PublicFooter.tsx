@@ -1,4 +1,6 @@
 import React, {useState} from 'react';
+import {ManagedText} from './ManagedText';
+import {ManagedContactLink} from './ManagedContactLink';
 import { ArrowRight, GraduationCap, Mail, MapPin, Phone, ShieldCheck, Globe } from 'lucide-react';
 
 interface PublicFooterProps {
@@ -96,7 +98,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
                   {office.title.includes('United States')
                     ? <Globe aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />
                     : <MapPin aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />}
-                  <span>{office.address}</span>
+                  <span><ManagedText section="footer" slot={office.title==='Main academic campus'?'campus-address':office.title==='Administrative office'?'admin-address':'liaison-address'} fallback={office.address}/></span>
                 </p>
               </div>
             ))}
@@ -109,24 +111,19 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
           </h2>
           <p className="mt-5 text-sm font-semibold text-[#F0CE8D]">Telephone</p>
           <ul className="mt-2 space-y-2">
-            {phones.map(phone => (
-              <li key={phone.href}>
-                <a href={phone.href}
-                  className="inline-flex items-center gap-2 rounded-sm text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
-                  <Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-[#F0CE8D]" />
-                  {phone.label}
-                </a>
+            {phones.map((phone,index) => (
+              <li key={phone.href} className="flex items-center gap-2">
+                <Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-[#F0CE8D]" />
+                <ManagedContactLink kind="phone" slot={'phone-'+(index+1)} fallback={phone.label}/>
               </li>
             ))}
           </ul>
           <p className="mt-6 text-sm font-semibold text-[#F0CE8D]">Email inquiries</p>
           <ul className="mt-2 space-y-2">
-            {['info@hiau.org.lr', 'info@hiauniversity.org'].map(email => (
-              <li key={email}>
-                <a href={`mailto:${email}`} className="inline-flex min-w-0 items-start gap-2 break-all rounded-sm text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
-                  <Mail aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />
-                  {email}
-                </a>
+            {['info@hiau.org.lr', 'info@hiauniversity.org'].map((email,index) => (
+              <li key={email} className="flex items-center gap-2">
+                <Mail aria-hidden="true" className="h-4 w-4 shrink-0 text-[#F0CE8D]" />
+                <ManagedContactLink kind="email" slot={'email-'+(index+1)} fallback={email}/>
               </li>
             ))}
           </ul>

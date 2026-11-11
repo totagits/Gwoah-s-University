@@ -75,7 +75,7 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
   <div className="grid gap-5 lg:grid-cols-[minmax(235px,0.85fr)_minmax(0,1.6fr)]">
    <aside className="rounded-xl border bg-white p-4">
     <div className="flex items-center justify-between gap-2"><h3 className="font-bold text-[#4A1249]">Public Content</h3>
-     <button type="button" disabled={!isAuthor} className="rounded bg-[#4A1249] px-3 py-2 text-xs font-bold text-white disabled:opacity-40" onClick={()=>{setSelected('');setDraft(blank);setError('');setMessage('');}}>+ New</button></div>
+     <button type="button" disabled={!isAuthor} className="hiau-brand-action rounded bg-[#4A1249] px-3 py-2 text-xs font-bold text-white disabled:opacity-40" onClick={()=>{setSelected('');setDraft(blank);setError('');setMessage('');}}>+ New</button></div>
     <div className="mt-3 max-h-[500px] space-y-2 overflow-y-auto">
      {items.filter(x=>!x.archived).map(item=><button key={item.id} type="button" onClick={()=>choose(item)} className={`block w-full rounded border p-3 text-left text-sm ${item.id===selected?'border-[#4A1249] bg-purple-50':'border-slate-200'}`}>
        <strong className="block">{item.draft?.title||item.published?.title||'Untitled'}</strong>
@@ -112,7 +112,7 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" disabled={!isAuthor} checked={draft.verified} onChange={e=>setDraft({...draft,verified:e.target.checked})}/>
      <span>I confirm this text is accurate, approved for public use, and does not disclose confidential information.</span></label>
     <div className="flex flex-wrap gap-2">
-     <button type="button" disabled={busy||!isAuthor} onClick={()=>void execute('save')} className="rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Save private draft</button>
+     <button type="button" disabled={busy||!isAuthor} onClick={()=>void execute('save')} className="hiau-brand-action rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Save private draft</button>
      {current&&<>{isReviewer&&current.draft&&!current.draft.verified&&<button type="button" disabled={busy} onClick={()=>void execute('approve')} className="rounded border border-purple-300 px-4 py-2 text-sm font-semibold">Approve reviewed draft</button>}
       <button type="button" disabled={busy||!isReviewer||!current.draft?.verified} onClick={()=>void execute('publish')} className="rounded border border-[#4A1249] px-4 py-2 text-sm font-bold">Publish verified draft</button>
       <button type="button" disabled={busy||!isReviewer||!current.published} onClick={()=>void execute('unpublish')} className="rounded border px-4 py-2 text-sm">Unpublish</button>

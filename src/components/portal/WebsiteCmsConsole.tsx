@@ -6,7 +6,7 @@ type Item={id:string;draft:Content|null;published:Content|null;revision:number;h
 const blank:Content={section:'home',title:'',body:'',verified:false};
 const sections:Section[]=['home','about','academics','admissions','events','student-life','footer'];
 const parse=async(res:Response)=>{const data=await res.json().catch(()=>({error:'Unexpected response'}));if(!res.ok)throw new Error(data.error||'Request failed');return data;};
-const post=(url:string,method:string,body:object)=>parse(fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
+const post=async(url:string,method:string,body:object)=>parse(await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
 export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(id:string)=>void}>=({currentUser,openModule})=>{
  const [items,setItems]=useState<Item[]>([]),[selected,setSelected]=useState(''),[draft,setDraft]=useState<Content>(blank);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');

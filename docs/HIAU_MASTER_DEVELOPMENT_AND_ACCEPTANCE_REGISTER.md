@@ -248,3 +248,13 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - **Tests:** added direct HTTP negative authorization and incorrect-confirmation cases, successful draft deletion, proof existing public video remains unchanged, and isolation from a second degree.
 - [ ] Verify in Chrome after staging commit deploys: select a degree, choose an MP4, upload draft, preview, delete draft, upload replacement, publish, remove published replacement, and verify another degree's video remains unchanged.
 - **Status:** Source/CI verification required; live browser acceptance pending. Production unchanged and WEB-01 Apply Now remains deferred.
+
+
+### WEB-05 — Public academic-colleges button accidentally opens ERP login (11 November 2026)
+- **Owner screenshot:** A public visitor selecting **Explore academic colleges** from the public Academics page was shown the University Administrator sign-in modal. The login screen also showed visible literal `\\n` text at the top and its Sign in button had poor contrast.
+- **Root cause confirmed in code:** the correct public link `#hiau-college-directory` triggers a `hashchange`; App's URL router treated a leftover `?portal=1` parameter as a fresh login request on **every** hash event.
+- **Correction:** opening an academic-college anchor no longer invokes the login modal. Initial `?portal=1` authentication still runs through the existing session-bootstrap effect. Public navigation and return-from-ERP remove a stale `portal` query from the URL.
+- **Login presentation:** removed literal newline escape sequences rendered as text and reused the accessible high-contrast sign-in button class.
+- [ ] Live staging acceptance: from public Academics click Explore academic colleges; page must scroll to the five-college directory without credentials or sign-in. Repeat after returning from the administrator portal and with a retained `?portal=1` query; no login overlay on hash changes.
+- [ ] Verify direct `/?portal=1` still correctly presents sign-in when signed out, and authorized ERP access continues to require server authentication.
+- **Status:** Corrective code and regression tests; live user browser verification pending. Deferred WEB-01 Apply Now remains separate.

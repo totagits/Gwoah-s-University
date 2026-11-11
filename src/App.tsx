@@ -343,15 +343,17 @@ export default function App() {
                 onOpenPortal={handleOpenPortal}
               />
               <PublicColleges initialCollegeId={lastPublicCollegeId} />
-              <PublicAdmissions
-                isModalOpen={isApplicationModalOpen}
-                onCloseModal={() => setIsApplicationModalOpen(false)}
-                onOpenModal={() => setIsApplicationModalOpen(true)}
-              />
               <PublicCalendar />
               <PublicDEI />
             </main>
           )}
+
+          <PublicAdmissions
+            isModalOpen={isApplicationModalOpen}
+            showSection={!activeDegreeRoute && !activeLeaderProfileId}
+            onCloseModal={() => setIsApplicationModalOpen(false)}
+            onOpenModal={() => setIsApplicationModalOpen(true)}
+          />
 
           <PublicFooter
             onOpenPortal={handleOpenPortal}

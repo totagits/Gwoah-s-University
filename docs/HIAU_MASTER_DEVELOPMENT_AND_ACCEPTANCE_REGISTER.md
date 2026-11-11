@@ -130,3 +130,11 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Verify homepage hero autoplay and video controls, public text claims/approved media, and keyboard focus in Chrome; not established by these navigation fixes.
 
 **WEB-01 remains Acceptance pending.** This change is a focused navigation repair, not overall public-site acceptance. Continue WEB-01 browser checks; no ERP work was added.
+
+
+### WEB-01 homepage video loading observation and test (10 November 2026)
+- [x] Source audit found no poster image for the first hero video, leaving a blank video surface while first frames buffer. Existing HIAU campus photograph `/assets/aistudio/image_29eb5504.png` is now attached as a **campus-video-only** loading poster, with a test checking the image asset and preservation of player controls.
+- [ ] Live autoplay, buffering, video rotation, mute, poster behavior, and desktop/mobile layout remain **unverified**. A poster provides a visible initial preview, not evidence that video playback is fixed.
+- [ ] Verify actual content identity/usage rights for the campus still; the photograph should not be shown as the identity of other clips.
+- [ ] Live staging website could not be reached by the external fetcher and browser tab access was unavailable in this session. Confirm Coolify deployed commit, then conduct WEB-01 Chrome checks and attach screenshots.
+- [ ] Final WEB-01 status: **Acceptance pending**. Other public website acceptance milestones and new ERP expansion are not unlocked.

@@ -59,7 +59,7 @@ test('WEB-08: authenticated editorial workflow, scheduled publishing and SQLite 
  let revision=edit.payload.item.revision;
  approved=await call('POST','/api/admin/site-content/'+cmsId+'/approve',reviewer,{expectedRevision:revision});
  assert.equal(approved.status,200);
- const at=new Date(Date.now()+3600_000).toISOString();
+ const at=new Date(Math.ceil((Date.now()+3600_000)/60000)*60000).toISOString();
  let schedule=await call('POST','/api/admin/site-content/'+cmsId+'/schedule',reviewer,{expectedRevision:approved.payload.item.revision,publishAt:at});
  assert.equal(schedule.status,200);
  assert.equal((await call('GET',cmsPublic,visitor)).payload.items[0].body,input.body,'future publication should not appear early');

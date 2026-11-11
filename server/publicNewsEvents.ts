@@ -5,7 +5,8 @@ import type {Operations} from './operations';
 
 type Kind='news'|'event'|'announcement';
 type Entry={id:string;kind:Kind;title:string;summary:string;eventDate:string;location:string;
- status:'draft'|'published';verified:boolean;createdAt:string;updatedAt:string;publishedAt:string|null};
+ status:'draft'|'published';verified:boolean;createdAt:string;updatedAt:string;publishedAt:string|null;
+ live?:{kind:Kind;title:string;summary:string;eventDate:string;location:string;verified:boolean}};
 const PREFIX='site-news:';
 const idOk=(id:string)=>/^news-[a-f0-9-]{36}$/.test(id);
 const admin=(res:Response)=>actorOf(res)?.role==='super_admin';
@@ -29,7 +30,11 @@ const save=(db:Operations,e:Entry)=>db.run(
 export function installPublicNewsEvents(app:Express,db:Operations){
  app.get('/api/public/news-events',(_req,res)=>{
   res.set('Cache-Control','no-store');
-  return res.json({items:all(db).filter(x=>x.status==='published'&&x.verified)});
+  return res.json({items:all(db).flatMap(x=>{
+   if(x.status==='published'&&x.verified)return [x];
+   if(x.live?.verified)return [{...x,...x.live,status:'published'}];
+   return [];
+  })});
  });
  app.get('/api/admin/news-events',(_req,res)=>{
   if(!admin(res))return res.sendStatus(403);
@@ -48,7 +53,10 @@ export function installPublicNewsEvents(app:Express,db:Operations){
   const e=idOk(req.params.id)?read(db,req.params.id):undefined;
   if(!e)return res.sendStatus(404);
   const content=input(req.body);if(!content)return res.status(400).json({error:'Invalid news or event fields.'});
-  const updated={...e,...content,status:'draft' as const,updatedAt:new Date().toISOString()};
+  const live=e.live??(e.status==='published'?{
+   kind:e.kind,title:e.title,summary:e.summary,eventDate:e.eventDate,location:e.location,verified:e.verified
+  }:undefined);
+  const updated={...e,...content,live,status:'draft' as const,updatedAt:new Date().toISOString()};
   save(db,updated);db.audit(actorOf(res)!.id,'NEWS_DRAFT_EDIT',e.id,null,{});
   return res.json({item:updated});
  });
@@ -58,7 +66,9 @@ export function installPublicNewsEvents(app:Express,db:Operations){
   if(!e)return res.sendStatus(404);
   const publish=req.body?.published===true;
   if(publish&&!e.verified)return res.status(409).json({error:'Verify this announcement before publication.'});
-  e.status=publish?'published':'draft';e.publishedAt=publish?new Date().toISOString():null;e.updatedAt=new Date().toISOString();
+  e.status=publish?'published':'draft';
+  e.live=publish?{kind:e.kind,title:e.title,summary:e.summary,eventDate:e.eventDate,location:e.location,verified:e.verified}:undefined;
+  e.publishedAt=publish?new Date().toISOString():null;e.updatedAt=new Date().toISOString();
   save(db,e);db.audit(actorOf(res)!.id,publish?'NEWS_PUBLISH':'NEWS_UNPUBLISH',e.id,null,{});
   return res.json({item:e});
  });

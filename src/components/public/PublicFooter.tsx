@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { ArrowRight, GraduationCap, Mail, MapPin, Phone, ShieldCheck, Globe } from 'lucide-react';
 
 interface PublicFooterProps {
@@ -31,16 +31,26 @@ const academicLinks = [
 export const PublicFooter: React.FC<PublicFooterProps> = ({
   onNavigateSection,
   onOpenProfile,
-}) => (
+}) => {
+  const [sealUnavailable,setSealUnavailable]=useState(false);
+  return (
   <footer className="hiau-public-footer border-t-[3px] border-[#C39A53] bg-[#4A1249] text-white"
     aria-label="Harvest Intercontinental American University footer">
     <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:py-14">
       <div className="grid gap-x-10 gap-y-10 md:grid-cols-2 xl:grid-cols-[1.25fr_1.15fr_1fr_1fr]">
         <section aria-label="About HIAU" className="min-w-0">
           <div className="flex items-center gap-3">
-            <img src="/assets/aistudio/image_bfcc4a11.png"
-              alt="HIAU university seal" loading="lazy" decoding="async"
-              className="h-14 w-14 shrink-0 rounded-full bg-white p-1 object-contain" />
+            {sealUnavailable ? (
+              <span role="img" aria-label="HIAU university identity"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#F0CE8D] bg-white text-lg font-black text-[#4A1249]">
+                H
+              </span>
+            ) : (
+              <img src="/assets/aistudio/image_bfcc4a11.png"
+                alt="HIAU university seal" loading="lazy" decoding="async"
+                onError={() => setSealUnavailable(true)}
+                className="h-14 w-14 shrink-0 rounded-full bg-white p-1 object-contain" />
+            )}
             <div className="min-w-0">
               <p className="text-base font-bold leading-snug tracking-tight text-white">
                 Harvest Intercontinental
@@ -64,7 +74,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
           </div>
           <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm">
             <button type="button" onClick={() => onOpenProfile?.('chancellor')}
-              className="inline-flex items-center gap-1.5 font-semibold text-[#F0CE8D] underline-offset-4 hover:underline">
+              className="inline-flex items-center gap-1.5 rounded-sm font-semibold text-[#F0CE8D] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
               Chancellor <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
             <button type="button" onClick={() => onOpenProfile?.('president')}
@@ -102,7 +112,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
             {phones.map(phone => (
               <li key={phone.href}>
                 <a href={phone.href}
-                  className="inline-flex items-center gap-2 text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline">
+                  className="inline-flex items-center gap-2 rounded-sm text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
                   <Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-[#F0CE8D]" />
                   {phone.label}
                 </a>
@@ -113,7 +123,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
           <ul className="mt-2 space-y-2">
             {['info@hiau.org.lr', 'info@hiauniversity.org'].map(email => (
               <li key={email}>
-                <a href={`mailto:${email}`} className="inline-flex min-w-0 items-start gap-2 break-all text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline">
+                <a href={`mailto:${email}`} className="inline-flex min-w-0 items-start gap-2 break-all rounded-sm text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
                   <Mail aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#F0CE8D]" />
                   {email}
                 </a>
@@ -130,7 +140,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
             {academicLinks.map(item => (
               <li key={item.label}>
                 <button type="button" onClick={() => onNavigateSection(item.target)}
-                  className="text-left text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline">
+                  className="rounded-sm text-left text-sm leading-6 text-[#EEE6EE] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
                   {item.label}
                 </button>
               </li>
@@ -142,10 +152,11 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
       <div className="mt-10 flex flex-col gap-3 border-t border-white/25 pt-6 text-sm text-[#EEE6EE] sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Harvest Intercontinental American University. All rights reserved.</p>
         <button type="button" onClick={() => onNavigateSection('about')}
-          className="self-start font-semibold text-[#F0CE8D] underline-offset-4 hover:underline">
+          className="self-start rounded-sm font-semibold text-[#F0CE8D] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">
           About HIAU
         </button>
       </div>
     </div>
   </footer>
-);
+  );
+};

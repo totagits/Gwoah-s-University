@@ -1,3 +1,4 @@
+import { ManagedText } from './ManagedText';
 import React, { useState } from 'react';
 import type {PublicStaffEntry} from '../../data/publicStaff';
 import {
@@ -270,10 +271,10 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additio
             Institutional Identity & Leadership
           </span>
           <h2 className="text-4xl sm:text-5xl font-collegiate font-black mt-3 tracking-tight text-[#4A1249]">
-            ABOUT HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY
+            <ManagedText section="about" slot="page-heading" fallback="ABOUT HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY" />
           </h2>
           <p className="text-slate-600 mt-2 text-base leading-relaxed">
-            Bridging the educational divide between developed and developing nations by delivering world-class American-style, Christ-centered, entrepreneurship-driven higher education in Liberia.
+            <ManagedText section="about" slot="page-description" fallback="Bridging the educational divide between developed and developing nations by delivering world-class American-style, Christ-centered, entrepreneurship-driven higher education in Liberia." />
           </p>
         </div>
 

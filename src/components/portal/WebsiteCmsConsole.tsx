@@ -1,10 +1,17 @@
 import React,{useCallback,useEffect,useState} from 'react';
 type Section='home'|'about'|'academics'|'admissions'|'events'|'student-life'|'footer';
-type Content={section:Section;title:string;body:string;verified:boolean};
+type Content={section:Section;title:string;body:string;verified:boolean;slot?:string};
 type Revision={revision:number;at:string;actor:string;action:string;content:Content|null};
 type Item={id:string;draft:Content|null;published:Content|null;revision:number;history:Revision[];archived:boolean;updatedAt:string};
-const blank:Content={section:'home',title:'',body:'',verified:false};
+const blank:Content={section:'home',title:'',body:'',verified:false,slot:''};
 const sections:Section[]=['home','about','academics','admissions','events','student-life','footer'];
+const slots:Record<Section,Array<{id:string;label:string}>>={
+ home:[{id:'hero-heading',label:'Homepage hero heading'},{id:'hero-description',label:'Homepage introduction'}],
+ about:[{id:'page-heading',label:'About page heading'},{id:'page-description',label:'About introduction'}],
+ academics:[{id:'page-heading',label:'Academics page heading'},{id:'page-description',label:'Academics introduction'}],
+ admissions:[{id:'page-heading',label:'Admissions page heading'},{id:'page-description',label:'Admissions introduction'}],
+ events:[],'student-life':[],footer:[]
+};
 const parse=async(res:Response)=>{const data=await res.json().catch(()=>({error:'Unexpected response'}));if(!res.ok)throw new Error(data.error||'Request failed');return data;};
 const post=async(url:string,method:string,body:object)=>parse(await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
 export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(id:string)=>void}>=({currentUser,openModule})=>{
@@ -61,9 +68,17 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
     {error&&<p role="alert" className="rounded bg-red-50 p-3 text-sm text-red-800">{error}</p>}
     {message&&<p role="status" className="rounded bg-green-50 p-3 text-sm text-green-800">{message}</p>}
     <label className="block text-sm font-semibold">Website section
-      <select value={draft.section} onChange={e=>setDraft({...draft,section:e.target.value as Section,verified:false})} className="mt-1 w-full rounded border p-2">
+      <select value={draft.section} onChange={e=>setDraft({...draft,section:e.target.value as Section,slot:'',verified:false})} className="mt-1 w-full rounded border p-2">
        {sections.map(s=><option key={s} value={s}>{s.replace('-', ' ')}</option>)}
       </select></label>
+    <label className="block text-sm font-semibold">Placement on existing page (optional)
+      <select value={draft.slot||''} onChange={e=>setDraft({...draft,slot:e.target.value,verified:false})}
+        className="mt-1 w-full rounded border p-2">
+        <option value="">Additional content block (does not replace existing text)</option>
+        {slots[draft.section].map(slot=><option key={slot.id} value={slot.id}>{slot.label}</option>)}
+      </select>
+      <span className="mt-1 block text-xs font-normal text-slate-600">Selecting a page field lets approved content replace the existing wording in that location. Only one published item can occupy a field.</span>
+    </label>
     <label className="block text-sm font-semibold">Headline
       <input maxLength={150} value={draft.title} onChange={e=>setDraft({...draft,title:e.target.value,verified:false})} className="mt-1 w-full rounded border p-2"/></label>
     <label className="block text-sm font-semibold">Public body text

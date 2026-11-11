@@ -1,3 +1,4 @@
+import { ManagedText } from './ManagedText';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowRight,
@@ -257,13 +258,12 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           <div className="lg:w-1/2 lg:ml-auto lg:pl-9 xl:pl-12 space-y-6 text-left">
             {/* HIAU Brand Headline in Imperial Purple */}
             <h1 className="font-collegiate font-black text-5xl sm:text-6xl lg:text-[64px] xl:text-[76px] text-[#4A1249] tracking-tight leading-[0.92] uppercase">
-              HARVEST UNIVERSITY <br />
-              <span className="text-[#4A1249]">IN LIBERIA</span>
+              <ManagedText section="home" slot="hero-heading" fallback="HARVEST UNIVERSITY IN LIBERIA" />
             </h1>
 
             {/* Subtitle Paragraph */}
             <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-xl font-normal">
-              Our Liberia location is preparing career-ready students for the challenges and opportunities of tomorrow. Strong academic excellence, Christ-centered leadership, and global standards accelerate hands-on learning opportunities, technological research, and community service across Liberia.
+              <ManagedText section="home" slot="hero-description" fallback="Our Liberia location is preparing career-ready students for the challenges and opportunities of tomorrow. Strong academic excellence, Christ-centered leadership, and global standards accelerate hands-on learning opportunities, technological research, and community service across Liberia." />
             </p>
 
             {/* Dual Rectangular CTA Buttons in Authentic HIAU Brand Colors (Purple & Gold) */}

@@ -1,3 +1,4 @@
+import { ManagedText } from './ManagedText';
 import React, { useState } from 'react';
 import {
   Briefcase,
@@ -320,13 +321,10 @@ export const PublicColleges: React.FC<{initialCollegeId?: string}> = ({initialCo
               Academics at HIAU
             </p>
             <h2 id="hiau-academics-title" className="max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight text-[#4a1249] sm:text-5xl lg:text-6xl">
-              Find your academic path
+              <ManagedText section="academics" slot="page-heading" fallback="Find your academic path" />
             </h2>
             <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-700 sm:text-lg">
-              Explore the colleges, academic disciplines and proposed degree paths
-              described by Harvest Intercontinental American University.
-              Academic requirements and current program availability should be confirmed
-              with the university before applying.
+              <ManagedText section="academics" slot="page-description" fallback="Explore the colleges, academic disciplines and proposed degree paths described by Harvest Intercontinental American University. Academic requirements and current program availability should be confirmed with the university before applying." />
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="#hiau-college-directory" className="inline-flex items-center gap-2 rounded-md bg-[#4a1249] px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#681a66] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">

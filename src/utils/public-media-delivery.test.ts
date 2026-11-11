@@ -46,4 +46,9 @@ test('WEB-01: video route uses public bundled assets with protected published ov
   assert.match(server,/slot:'hero-classroom'.*image_20261105_102657_b174d32f\.mp4/);
   assert.match(server,/sendMedia\(req,res,mediaPath\(directory,published\),true\)/);
   assert.match(server,/sendMedia\(req,res,file,true\)/);
+  assert.doesNotMatch(server,/res\.redirect\(302,item\.defaultSrc\)/);
+  assert.ok(server.includes("app.get('/api/public/media-status'"));
+  assert.ok(server.includes("app.get('/assets/aistudio/image_bfcc4a11.png'"));
+  const identity=fs.readFileSync(new URL('../../server/identity.ts',import.meta.url),'utf8');
+  assert.ok(identity.includes("endpoint === '/api/public/media-status'"));
 });

@@ -415,6 +415,7 @@ export default function App() {
             />
           )}
 
+          <PublicCmsSection section="footer" />
           <PublicFooter
             onOpenPortal={handleOpenPortal}
             onNavigateSection={handleNavigateSection}

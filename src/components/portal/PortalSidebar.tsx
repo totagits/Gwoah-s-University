@@ -29,6 +29,7 @@ const moduleIcons: Record<PortalModuleId, React.ElementType> = {
   website_staff: Users,
   campus_content: Settings,
   website_cms: Settings,
+  website_news: Settings,
 };
 
 export const PortalSidebar: React.FC<PortalSidebarProps> = ({

@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=(file:string)=>readFileSync(new URL(file,import.meta.url),'utf8');
+const cms=read('../../server/websiteCms.ts');
+const news=read('../../server/publicNewsEvents.ts');
+const navbar=read('../components/public/PublicNavbar.tsx');
+const footer=read('../components/public/PublicFooter.tsx');
+const catalog=read('../components/public/PublicColleges.tsx');
+const degree=read('../components/public/PublicDegreeDetail.tsx');
+const editor=read('../components/portal/WebsiteCmsConsole.tsx');
+const app=read('../App.tsx');
+const firewall=read('../../server/identity.ts');
+test('WEB-07: 19 academic catalog routes allow bounded focus, credential and duration',()=>{
+ for(const field of ['focus','duration','credential'])assert.match(cms,new RegExp("'"+field+"'"));
+ assert.match(cms,/body\.length>55/);
+ assert.match(cms,/body\.length>70/);
+ assert.match(catalog,/ManagedText section="academics"/);
+ assert.match(degree,/publishedFocus/);
+ assert.match(degree,/degree\.\$\{route\}\.credential/);
+ assert.match(degree,/\/api\/public\/degree-curriculum/);
+});
+test('WEB-07: navigation only changes labels and preserves fixed destinations',()=>{
+ assert.match(cms,/navigationLabels/);
+ assert.match(navbar,/ManagedText section="navigation"/);
+ assert.match(navbar,/onNavigateSection\(link\.id\)/);
+ assert.match(cms,/body\.length>32/);
+ assert.match(editor,/label-hero/);
+});
+test('WEB-07: footer uses validated email and phone links',()=>{
+ assert.match(cms,/footerContactSlots/);
+ assert.match(cms,/slot\.startsWith\('phone-'\)/);
+ assert.match(cms,/slot\.startsWith\('email-'\)/);
+ assert.match(footer,/ManagedContactLink kind="phone"/);
+ assert.match(footer,/ManagedContactLink kind="email"/);
+ assert.match(footer,/ManagedText section="footer"/);
+});
+test('WEB-07: events remain separate from academic calendar and require verified publication',()=>{
+ assert.match(news,/actorOf\(res\)\?\.role==='super_admin'/);
+ assert.match(news,/if\(publish&&!e\.verified\)/);
+ assert.match(news,/e\.live=publish/);
+ assert.match(news,/if\(x\.live\?\.verified\)/);
+ assert.match(news,/NEWS_DRAFT_CREATE/);
+ assert.match(news,/NEWS_DELETE/);
+ assert.match(firewall,/endpoint === '\/api\/public\/news-events'/);
+ assert.match(app,/<PublicNewsEvents \/>/);
+ assert.match(app,/<WebsiteNewsEventsConsole/);
+ assert.match(read('../components/public/PublicCalendar.tsx'),/academicWindowStatus/);
+});

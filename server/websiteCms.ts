@@ -6,7 +6,16 @@ import type {Operations} from './operations';
 // Plain-text CMS content only. No arbitrary HTML, scripts, URLs or application settings.
 const sections=['home','about','academics','admissions','events','student-life','footer'] as const;
 type Section=(typeof sections)[number];
-type Content={section:Section;title:string;body:string;verified:boolean};
+export const managedSlots={
+ home:['hero-heading','hero-description'],
+ about:['page-heading','page-description'],
+ academics:['page-heading','page-description'],
+ admissions:['page-heading','page-description'],
+ events:[],
+ 'student-life':[],
+ footer:[]
+} as const;
+type Content={section:Section;title:string;body:string;verified:boolean;slot?:string};
 type Revision={revision:number;at:string;actor:string;action:string;content:Content|null};
 type RecordItem={id:string;draft:Content|null;published:Content|null;revision:number;history:Revision[];archived:boolean;updatedAt:string};
 const PREFIX='website-cms:';
@@ -17,7 +26,9 @@ const parseContent=(v:any):Content|null=>{
  const section=v?.section;
  const title=safe(v?.title,150),body=safe(v?.body,4000);
  if(!sections.includes(section)||title.length<3||body.length<15)return null;
- return {section,title,body,verified:v?.verified===true};
+ const slot=safe(v?.slot,60);
+ if(slot&&!((managedSlots as Record<string,readonly string[]>)[section]||[]).includes(slot))return null;
+ return {section,title,body,verified:v?.verified===true,...(slot?{slot}:{})};
 };
 const entries=(store:Operations):RecordItem[]=>
  store.all("SELECT value FROM settings WHERE key LIKE 'website-cms:%'").flatMap(row=>{
@@ -47,7 +58,7 @@ export function installWebsiteCms(app:Express,store:Operations){
  app.get('/api/admin/site-content',(_req,res)=>{
    if(!editor(res))return res.sendStatus(403);
    res.set('Cache-Control','no-store');
-   return res.json({items:entries(store).map(summary),sections});
+   return res.json({items:entries(store).map(summary),sections,managedSlots});
  });
  app.post('/api/admin/site-content',express.json({limit:'16kb'}),(req,res)=>{
    if(!editor(res))return res.sendStatus(403);
@@ -74,6 +85,9 @@ export function installWebsiteCms(app:Express,store:Operations){
    if(!item||item.archived)return res.sendStatus(404);
    if(!expected(req.body,item))return res.status(409).json({error:'Content changed. Refresh and retry.'});
    if(!item.draft?.verified)return res.status(409).json({error:'Review and verify the draft before publication.'});
+   if(item.draft.slot&&entries(store).some(other=>other.id!==item.id&&!other.archived&&
+     other.published?.section===item.draft?.section&&other.published?.slot===item.draft?.slot))
+     return res.status(409).json({error:'Another published item already controls this page field. Unpublish that item first.'});
    item.published={...item.draft};item.draft=null;
    history(item,actorOf(res)!.id,'PUBLISH',item.published);save(store,item);
    store.audit(actorOf(res)!.id,'SITE_CMS_PUBLISH',item.id,null,{revision:item.revision});

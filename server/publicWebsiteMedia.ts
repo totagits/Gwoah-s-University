@@ -192,6 +192,10 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     if(!isAdmin(res))return res.sendStatus(403);
     return res.json({videos:allSlots(store).map(v=>({
       ...v,...parse(store,v.slot),
+      defaultAvailable:Boolean(v.defaultSrc&&(
+        fs.existsSync(path.join(process.cwd(),'dist',v.defaultSrc.slice(1)))||
+        fs.existsSync(path.join(process.cwd(),'public',v.defaultSrc.slice(1)))
+      )),
       previewSrc:'/api/admin/website-video/'+v.slot+'/preview',
       publicSrc:'/api/public/video/'+v.slot,
     }))});

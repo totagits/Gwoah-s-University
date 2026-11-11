@@ -43,25 +43,6 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
   const explainer=degreeExplainers.degrees.find(item=>item.college===college.id&&item.name===program.name);
   const focusAreas=program.focus.split(',').map(area=>area.trim()).filter(Boolean);
   const hasConfirmedCredit=program.name==='Bachelor of Science in Civil Engineering';
-  const universityProvidedVideos:Record<string,{src:string;label:string}> = {
-    'business--bachelor-of-business-administration-in-accounting': {
-      src:'/assets/degree-clips/image_20261108_223153.mp4',
-      label:'University-provided Accounting degree introduction',
-    },
-    'business--bachelor-of-business-administration-in-entrepreneurship': {
-      src:'/assets/degree-clips/image_20261108_232357_1.mp4',
-      label:'University-provided Entrepreneurship degree introduction',
-    },
-    'liberal_arts--bachelor-of-arts-in-liberal-arts-humanities': {
-      src:'/assets/degree-clips/image_20261108_233524.mp4',
-      label:'University-provided Liberal Arts & Humanities degree introduction',
-    },
-    'liberal_arts--bachelor-of-arts-in-strategic-communications-media': {
-      src:'/assets/degree-clips/image_20261109_002629_2.mp4',
-      label:'University-provided Strategic Communications & Media degree introduction',
-    },
-  };
-  const suppliedVideo=universityProvidedVideos[route];
   const degreeVideoSource=`/api/public/video/${encodeURIComponent(route)}`;
   const academicNote=hasConfirmedCredit
     ? 'HIAU has specified a total of 179 credits for Civil Engineering. Its detailed semester-by-semester course sequence is still undergoing Registrar review and has not been published here.'
@@ -166,14 +147,15 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Learn about this field</p>
           <h2 id="degree-video" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Why this degree matters today</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700">
-            {suppliedVideo
-              ? 'Watch the university-provided introduction to this degree. This short video supplements the program overview and does not replace the official academic curriculum.'
-              : 'Watch an original narrated explanation of the field, its relevance to the modern world, and possible areas of professional development. This educational animation is not documentary footage of a particular HIAU degree program.'} The video starts muted when autoplay is permitted; select Turn on narration to hear it.
+            Watch the explainer currently published for this degree. The university may replace the original
+            narration with an approved program-specific video through the website video library.
+            Videos introduce the academic field and do not replace official program requirements.
+            Playback starts muted when your browser permits autoplay; select Turn on narration to hear it.
           </p>
           <div className="mt-5">
             <PublicDegreeVideo key={route} route={route} source={degreeVideoSource} title={program.name}/>
           </div>
-          <p className="mt-2 text-xs text-slate-600">{suppliedVideo ? suppliedVideo.label : 'Original computer-narrated educational explainer · Subject information may change as technology and professional standards develop.'}</p>
+          <p className="mt-2 text-xs text-slate-600">Degree explainer · University-managed video · Program content and academic requirements are subject to official verification.</p>
         </section>
       </div>
       <aside className="lg:sticky lg:top-28 lg:self-start">

@@ -3,7 +3,7 @@ import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle} from 'lucide-rea
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
-  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;
+  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;defaultAvailable?:boolean;
 };
 type RoleProps={currentUser:{role:string}};
 const parseApiResponse=async(response:Response)=>{
@@ -21,6 +21,9 @@ const parseApiResponse=async(response:Response)=>{
 
 export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const [slots,setSlots]=useState<VideoSlot[]>([]);
+  const [libraryView,setLibraryView]=useState<'home'|'degree'>('degree');
+  const [collegeFilter,setCollegeFilter]=useState('all');
+  const [degreeSearch,setDegreeSearch]=useState('');
   const [busy,setBusy]=useState<string|null>(null);
   const [message,setMessage]=useState('');
   const [error,setError]=useState('');
@@ -39,8 +42,29 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   useEffect(()=>{
     void load().catch(e=>setError(e instanceof Error?e.message:'Could not load website video library.'));
   },[load]);
-  const active=slots.find(s=>s.slot===selected);
+  const degreeSlots=slots.filter(s=>!s.slot.startsWith('hero-'));
+  const homeSlots=slots.filter(s=>s.slot.startsWith('hero-'));
+  const collegeNames:Record<string,string>={
+    business:'Business & Entrepreneurship',liberal_arts:'Liberal Arts & Social Sciences',
+    education:'Education',science_tech:'Science, Technology & Allied Health',
+    theology:'Theology',
+  };
+  const collegeOf=(slot:string)=>slot.split('--')[0];
+  const selectedCollege=collegeFilter==='all'?degreeSlots:degreeSlots.filter(s=>collegeOf(s.slot)===collegeFilter);
+  const visibleSlots=libraryView==='home'?homeSlots:selectedCollege.filter(s=>
+    s.label.toLowerCase().includes(degreeSearch.toLowerCase())||s.slot.toLowerCase().includes(degreeSearch.toLowerCase()));
+  const publishedCount=degreeSlots.filter(s=>Boolean(s.published)).length;
+  const draftCount=degreeSlots.filter(s=>Boolean(s.draft)).length;
+  const missingCount=degreeSlots.filter(s=>!s.published&&s.defaultAvailable===false).length;
+  // Keep the editor scoped to a visible degree after the college/search changes.
+  // Never allow a stale hidden selection to receive an upload or publication.
+  const active=visibleSlots.find(s=>s.slot===selected)??visibleSlots[0];
   const extras=slots.filter(s=>s.slot.startsWith('hero-extra-')).sort((a,b)=>(a.order??0)-(b.order??0));
+  const chooseView=(next:'home'|'degree')=>{
+    setLibraryView(next);setError('');setMessage('');setFile(null);
+    const first=slots.find(s=>next==='home'?s.slot.startsWith('hero-'):!s.slot.startsWith('hero-'));
+    if(first)setSelected(first.slot);
+  };
   const createHero=async()=>{
     const title=newHeroTitle.trim();
     if(!title||busy)return;
@@ -167,7 +191,49 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
         Student records and ERP academic operations are not affected.
       </p>
     </div>
-    <div className="rounded-xl border border-purple-200 bg-white p-5 space-y-3">
+    <section aria-label="Video library categories" className="rounded-xl border border-[#e3d5e6] bg-white p-5">
+      <div className="flex flex-wrap gap-3" role="group" aria-label="Select video collection">
+        <button type="button" aria-pressed={libraryView==='degree'} onClick={()=>chooseView('degree')}
+          className={`rounded-lg border px-4 py-2.5 text-sm font-bold ${libraryView==='degree'?'hiau-dashboard-selected border-[#4a1249] bg-[#4a1249] text-white':'border-[#ddd0e0] text-[#35103b]'}`}>
+          Degree explainer videos ({degreeSlots.length})
+        </button>
+        <button type="button" aria-pressed={libraryView==='home'} onClick={()=>chooseView('home')}
+          className={`rounded-lg border px-4 py-2.5 text-sm font-bold ${libraryView==='home'?'hiau-dashboard-selected border-[#4a1249] bg-[#4a1249] text-white':'border-[#ddd0e0] text-[#35103b]'}`}>
+          Homepage carousel ({homeSlots.length})
+        </button>
+      </div>
+      {libraryView==='degree'&&<>
+        <p className="mt-3 text-sm text-slate-700">
+          Manage the explanatory video for each public academic degree separately.
+          Uploads remain private drafts until you choose Publish.
+        </p>
+        <dl className="mt-4 grid gap-3 sm:grid-cols-4">
+          {[
+            ['Degree pages',degreeSlots.length],
+            ['Published replacements',publishedCount],
+            ['Private drafts',draftCount],
+            ['Missing playable video',missingCount],
+          ].map(([label,value])=><div key={label} className="rounded-lg border border-[#e4d8e7] p-3">
+            <dt className="text-xs text-slate-600">{label}</dt>
+            <dd className="mt-1 text-2xl font-bold text-[#4a1249]">{value}</dd>
+          </div>)}
+        </dl>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm font-semibold text-[#35103b]">Filter by college
+            <select value={collegeFilter} onChange={e=>setCollegeFilter(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900">
+              <option value="all">All five colleges</option>
+              {Object.entries(collegeNames).map(([id,name])=><option key={id} value={id}>{name}</option>)}
+            </select>
+          </label>
+          <label className="text-sm font-semibold text-[#35103b]">Find a degree
+            <input value={degreeSearch} onChange={e=>setDegreeSearch(e.target.value)} placeholder="Search all degree titles"
+              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900"/>
+          </label>
+        </div>
+      </>}
+    </section>
+    {libraryView==='home'&&<div className="rounded-xl border border-purple-200 bg-white p-5 space-y-3">
       <h3 className="font-bold text-[#35103b]">Add another homepage video</h3>
       <p className="text-sm text-slate-600">Keep the campus and classroom videos, and add up to ten more clips. New videos stay unpublished until you approve them.</p>
       <div className="flex flex-wrap gap-3">
@@ -180,27 +246,29 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
         </button>
       </div>
       {extras.length>=10&&<p className="text-xs text-amber-800">Maximum of ten additional homepage videos reached.</p>}
-    </div>
+    </div>}
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
       <div className="rounded-xl border border-[#e3d5e6] bg-white p-4">
-        <h3 className="mb-3 font-semibold text-[#35103b]">Select a public video</h3>
+        <h3 className="mb-3 font-semibold text-[#35103b]">{libraryView==='degree'?'Select an academic degree':'Select a homepage video'}</h3>
         <div className="max-h-[520px] space-y-2 overflow-y-auto">
-          {slots.map(item=><button type="button" key={item.slot}
+          {visibleSlots.map(item=><button type="button" key={item.slot}
             onClick={()=>{setSelected(item.slot);setFile(null);setError('');setMessage('');}}
-            aria-current={selected===item.slot?'true':undefined}
-            className={`block w-full rounded-lg border p-3 text-left text-sm ${selected===item.slot?'border-[#4a1249] bg-[#faf2fb]':'border-slate-200 hover:bg-slate-50'}`}>
+            aria-current={active?.slot===item.slot?'true':undefined}
+            className={`block w-full rounded-lg border p-3 text-left text-sm ${active?.slot===item.slot?'border-[#4a1249] bg-[#faf2fb]':'border-slate-200 hover:bg-slate-50'}`}>
             <span className="block font-semibold text-[#35103b]">{item.label}</span>
-            <span className="mt-1 block text-xs text-slate-600">{item.published?'Custom published video':item.slot.startsWith('hero-extra-')?'Not yet published':'Original video'}{item.draft?' · Unpublished draft':''}</span>
+            {libraryView==='degree'&&<span className="mt-1 block text-xs text-slate-500">{collegeNames[collegeOf(item.slot)]||collegeOf(item.slot)}</span>}
+            <span className="mt-1 block text-xs text-slate-600">{item.published?'Published replacement':item.slot.startsWith('hero-extra-')?'Not yet published':item.defaultAvailable===false?'Original video unavailable':'Original explainer'}{item.draft?' · Private draft ready':''}</span>
           </button>)}
         </div>
       </div>
-      <div className="space-y-4 rounded-xl border border-[#e3d5e6] bg-white p-5">
+      <div className="min-w-0 space-y-4 rounded-xl border border-[#e3d5e6] bg-white p-5">
         {!active?<p className="text-sm text-slate-600">Choose a video to manage.</p>:<>
           <h3 className="text-lg font-bold text-[#35103b]">{active.label}</h3>
+          {!active.slot.startsWith('hero-')&&<p className="text-xs font-semibold text-[#735579]">{collegeNames[collegeOf(active.slot)]} · Individual degree explainer</p>}
           <p className="text-sm text-slate-600">
-            {active.published?'Custom version '+active.version+' is publicly visible.':active.slot.startsWith('hero-extra-')?'This additional homepage slot is not published yet.':'Currently using the original HIAU video.'}
+            {active.published?'Custom version '+active.version+' is publicly visible.':active.slot.startsWith('hero-extra-')?'This additional homepage slot is not published yet.':active.defaultAvailable===false?'No original MP4 is available. Upload a draft and publish it to make this degree explainer playable.':'Currently using the original explainer video.'}
           </p>
-          {active.slot.startsWith('hero-extra-')&&!active.draft&&!active.published
+          {(active.slot.startsWith('hero-extra-')||active.defaultAvailable===false)&&!active.draft&&!active.published
             ? <div className="flex aspect-video items-center justify-center rounded-xl bg-[#2a082c] px-5 text-center text-white">
                 Upload an MP4 as a private draft to preview it here.
               </div>
@@ -208,6 +276,10 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
                 <video key={active.slot+'-'+previewVersion} controls preload="metadata" playsInline className="aspect-video w-full object-contain"
                   aria-label={'Preview for '+active.label} src={active.draft?active.previewSrc+'?v='+previewVersion:active.publicSrc+'?v='+previewVersion}/>
               </div>}
+          {!active.slot.startsWith('hero-')&&<a href={'/#degree='+encodeURIComponent(active.slot)} target="_blank" rel="noopener noreferrer"
+            className="inline-flex rounded-md border border-[#4a1249] px-3 py-2 text-sm font-bold text-[#4a1249] hover:bg-[#faf2fb]">
+            Open this degree page
+          </a>}
           {active.draft&&<p className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
             <AlertTriangle className="h-4 w-4"/>Private draft ready to review — not yet visible to visitors.
           </p>}

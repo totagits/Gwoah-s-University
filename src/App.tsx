@@ -7,6 +7,7 @@ import { PublicAbout } from './components/public/PublicAbout';
 import { PublicVirtualTour } from './components/public/PublicVirtualTour';
 import { PublicCampusContent } from './components/public/PublicCampusContent';
 import { PublicCmsSection } from './components/public/PublicCmsSection';
+import { PublicNewsEvents } from './components/public/PublicNewsEvents';
 import { PublicColleges, resolvePublicDegree } from './components/public/PublicColleges';
 import { PublicDegreeDetail } from './components/public/PublicDegreeDetail';
 import { PublicAdmissions } from './components/public/PublicAdmissions';
@@ -19,6 +20,7 @@ import {isPublicStaffEntry} from './data/publicStaff';
 import {WebsiteStaffProfiles} from './components/portal/WebsiteStaffProfiles';
 import {CampusContentConsole} from './components/portal/CampusContentConsole';
 import {WebsiteCmsConsole} from './components/portal/WebsiteCmsConsole';
+import {WebsiteNewsEventsConsole} from './components/portal/WebsiteNewsEventsConsole';
 import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
@@ -400,6 +402,7 @@ export default function App() {
               />
               <PublicCmsSection section="admissions" />
               <PublicCalendar />
+              <PublicNewsEvents />
               <PublicCmsSection section="events" />
               <PublicDEI />
               <PublicCmsSection section="student-life" />
@@ -497,6 +500,9 @@ export default function App() {
             )}
             {activePortalTab === 'website_cms' && (
               <WebsiteCmsConsole currentUser={currentUser} openModule={(id) => { if (isPortalModuleAvailable(currentUser.role,id)) setActivePortalTab(id); }} />
+            )}
+            {activePortalTab === 'website_news' && (
+              <WebsiteNewsEventsConsole currentUser={currentUser} />
             )}
 
             {activePortalTab === 'student_portal' && (

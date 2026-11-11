@@ -239,3 +239,12 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] University must review academic claims, official titles, program availability, explainer accuracy, video rights and accessibility captions/transcripts before final sign-off.
 - [ ] Complete 19/19 degree page browser/video/mobile checks and verify persistence after real redeployment if new program-specific uploads are made. Reuse the WEB-04 persistent DATA_DIR volume.
 - **WEB-05 status:** implementation and automated verification in progress; institutional and live staging acceptance pending. Deferred WEB-01 Apply Now remains a separate open defect, and production `main` is unchanged.
+
+
+### WEB-05 correction — explicit video management controls (11 November 2026)
+- **Owner screenshot:** degree-video page selected Christian Counseling with a file input but no obvious Add/Edit/Delete controls. Upload and Publish were disabled until a file/draft existed, creating confusion about supported actions.
+- **UI correction:** clearly labeled per-degree **Add video / Upload new replacement**, **Publish video to this degree**, **Delete unpublished draft**, and **Remove published video / restore original**; contextual instructions show how to activate the buttons. One active public video is assigned to each degree; adding a video to an existing degree means replacing that degree's active video, not altering its program record.
+- **Secure deletion:** added a Super Administrator-only confirmation-protected endpoint to discard a private draft without unpublishing the currently live video. Removing a published replacement restores the university's original explainer. Degree video slots and original bundled files cannot be deleted by these actions.
+- **Tests:** added direct HTTP negative authorization and incorrect-confirmation cases, successful draft deletion, proof existing public video remains unchanged, and isolation from a second degree.
+- [ ] Verify in Chrome after staging commit deploys: select a degree, choose an MP4, upload draft, preview, delete draft, upload replacement, publish, remove published replacement, and verify another degree's video remains unchanged.
+- **Status:** Source/CI verification required; live browser acceptance pending. Production unchanged and WEB-01 Apply Now remains deferred.

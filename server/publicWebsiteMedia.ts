@@ -341,6 +341,24 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
       return res.status(bytes>MAX_BYTES?413:400).json({error:e instanceof Error?e.message:'Unable to upload MP4.'});
     }
   });
+  // Discard an unpublished replacement without changing the currently public clip.
+  app.delete('/api/admin/website-video/:slot/draft',(req,res)=>{
+    if(!isAdmin(res))return res.sendStatus(403);
+    const item=resolveSlot(store,req.params.slot);
+    if(!item)return res.sendStatus(404);
+    if(req.body?.confirmation!=='DISCARD_WEBSITE_VIDEO_DRAFT')
+      return res.status(400).json({error:'Confirm discarding this private draft explicitly.'});
+    const state=parse(store,item.slot);
+    if(!state.draft)return res.status(409).json({error:'No unpublished draft exists for this video.'});
+    const actor=actorOf(res)!;
+    store.transaction(()=>{
+      save(store,item.slot,{...state,draft:undefined,updatedAt:new Date().toISOString()});
+      store.audit(actor.id,'WEBSITE_VIDEO_DRAFT_DISCARD',item.slot,null,{hadDraft:true});
+    });
+    if(state.draft!==state.published)
+      fs.rmSync(mediaPath(directory,state.draft),{force:true});
+    return res.json({success:true});
+  });
   app.post('/api/admin/website-video/:slot/publish',(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
     const item=resolveSlot(store,req.params.slot);

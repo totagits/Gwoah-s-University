@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useState} from 'react';
-import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle} from 'lucide-react';
+import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle,Trash2} from 'lucide-react';
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
@@ -114,7 +114,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
     }catch(e){setError(e instanceof Error?e.message:'Could not reorder videos.');}
     finally{setBusy(null);}
   };
-  const run=async(kind:'upload'|'publish'|'restore')=>{
+  const run=async(kind:'upload'|'publish'|'restore'|'discard')=>{
     if(!active||busy)return;
     const id=active.slot;
     if(kind==='upload'){
@@ -124,7 +124,8 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
       if(file.size>50*1024*1024)return setError('MP4 must not exceed 50 MB.');
     }
     if(kind==='publish'&&!window.confirm('Publish this replacement video to the public website for '+active.label+'?'))return;
-    if(kind==='restore'&&!window.confirm('Restore the original HIAU video for '+active.label+'?'))return;
+    if(kind==='restore'&&!window.confirm('Remove the published replacement and restore the original degree video for '+active.label+'?'))return;
+    if(kind==='discard'&&!window.confirm('Discard the unpublished draft for '+active.label+'? The currently published video will not change.'))return;
     setBusy(id);setError('');setMessage('');
     try{
       const url='/api/admin/website-video/'+encodeURIComponent(id);
@@ -161,17 +162,17 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           throw error;
         }
       }else{
-        const response=await fetch(kind==='publish'?url+'/publish':url,{
+        const response=await fetch(kind==='publish'?url+'/publish':kind==='discard'?url+'/draft':url,{
           method:kind==='publish'?'POST':'DELETE',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
-            confirmation:kind==='publish'?'PUBLISH_WEBSITE_VIDEO':'RESTORE_DEFAULT_WEBSITE_VIDEO',
+            confirmation:kind==='publish'?'PUBLISH_WEBSITE_VIDEO':kind==='discard'?'DISCARD_WEBSITE_VIDEO_DRAFT':'RESTORE_DEFAULT_WEBSITE_VIDEO',
           }),
         });
         await parseApiResponse(response);
       }
       setMessage(kind==='upload'?'Video uploaded as a private draft. Preview it before publishing.':
-        kind==='publish'?'Replacement video published successfully.':'Original video restored.');
+        kind==='publish'?'Replacement video published successfully.':kind==='discard'?'Unpublished draft removed. The live degree video is unchanged.':'Original video restored; the replacement is no longer public.');
       setFile(null);
       setPreviewVersion(n=>n+1);
       await load();
@@ -283,11 +284,17 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           {active.draft&&<p className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
             <AlertTriangle className="h-4 w-4"/>Private draft ready to review — not yet visible to visitors.
           </p>}
-          <label className="block text-sm font-semibold text-[#35103b]" htmlFor="hiau-admin-video-file">Replacement MP4 (maximum 50 MB)</label>
+          <div className="rounded-lg border border-[#e4d8e7] bg-[#faf8fb] p-4 text-sm text-[#35103b]">
+            <h4 className="font-bold">Manage this degree's explanatory video</h4>
+            <p className="mt-1 text-slate-700">1. Choose an MP4 to add or replace this degree's explainer. 2. Upload it as a private draft. 3. Preview it above. 4. Publish to make it visible on this degree page.</p>
+            <p className="mt-2 text-xs text-slate-600">Each degree has one active public video. Publishing a new one replaces only this degree's video. Removing a replacement returns to the original explainer, not a blank page.</p>
+          </div>
+          <label className="block text-sm font-semibold text-[#35103b]" htmlFor="hiau-admin-video-file">Add or replace video — choose MP4 (maximum 50 MB)</label>
           <input id="hiau-admin-video-file" type="file" accept="video/mp4,.mp4"
             onChange={e=>setFile(e.target.files?.[0]||null)}
             className="block w-full rounded-lg border border-slate-300 p-2 text-sm"/>
-          {file&&<p className="text-xs text-slate-600">Selected: {file.name} ({(file.size/1024/1024).toFixed(1)} MB)</p>}
+          {file&&<p role="status" className="text-xs font-semibold text-[#35103b]">Ready to upload: {file.name} ({(file.size/1024/1024).toFixed(1)} MB)</p>}
+          {!file&&<p className="text-xs text-slate-600">Select a file to activate Add video. Publish becomes available after a successful private upload.</p>}
           {active.slot.startsWith('hero-extra-')&&<div className="flex flex-wrap gap-2">
             <button type="button" disabled={!!busy||extras.findIndex(v=>v.slot===active.slot)===0}
               onClick={()=>void moveHero(-1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-40">Move up</button>
@@ -299,16 +306,20 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={!file||!!busy} onClick={()=>void run('upload')}
               className="hiau-dashboard-selected inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
-              <Upload className="h-4 w-4"/>Upload private draft
+              <Upload className="h-4 w-4"/>{active.published?'Upload new replacement':'Add video as private draft'}
             </button>
             <button type="button" disabled={!active.draft||!!busy} onClick={()=>void run('publish')}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-600 px-4 py-2.5 text-sm font-semibold text-emerald-900 disabled:opacity-50">
-              <CheckCircle2 className="h-4 w-4"/>Publish replacement
+              <CheckCircle2 className="h-4 w-4"/>Publish video to this degree
             </button>
-            <button type="button" disabled={(!active.draft&&!active.published)||!!busy} onClick={()=>void run('restore')}
+            {active.draft&&<button type="button" disabled={!!busy} onClick={()=>void run('discard')}
+              className="inline-flex items-center gap-2 rounded-lg border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-800 disabled:opacity-50">
+              <Trash2 className="h-4 w-4"/>Delete unpublished draft
+            </button>}
+            {(active.published||active.draft)&&<button type="button" disabled={!!busy} onClick={()=>void run('restore')}
               className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-[#35103b] disabled:opacity-50">
-              <RotateCcw className="h-4 w-4"/>Restore original
-            </button>
+              <RotateCcw className="h-4 w-4"/>{active.published?'Remove published video / restore original':'Restore original'}
+            </button>}
           </div>
           {uploadProgress!==null&&<div role="status" className="text-sm text-[#4a1249] font-semibold">
             Uploading securely in small parts: {uploadProgress}%

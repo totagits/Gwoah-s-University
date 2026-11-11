@@ -191,3 +191,15 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Confirm official HIAU leadership details, staff appointment authority, photograph permission/identity, spelling, titles and qualifications, including all 19 existing profiles. Neither automated tests nor this content management feature constitutes such verification.
 - [ ] Verify desktop/mobile layout, shareable direct links, keyboard/filters, audit records and photo persistence after approved backup/redeploy test.
 - [ ] WEB-02 remains **acceptance pending** until browser acceptance and official content approval. WEB-01 Apply Now remains an explicitly deferred, separate defect.
+
+
+### WEB-03 — Footer navigation and accessibility review (11 November 2026)
+- [x] Audited footer route targets against actual public page anchors: About, Colleges/Degrees, Admissions, Campus Tour and Student Experience are present in source.
+- [x] Verified the four telephone links have valid `tel:` syntax and the contact email links use `mailto:` formatting; **real-world ownership and current phone/email correctness still require HIAU confirmation**.
+- [x] Added a visible fallback identifier for the university seal if its image request fails, avoiding a broken-image indicator/alt-text fragment.
+- [x] Added explicit keyboard-visible focus outlines for leadership, contact, public-section and About footer controls, while preserving the responsive column layout.
+- [x] Added source regression tests for footer navigation target existence, phone/email link formats, keyboard focus and seal fallback.
+- [ ] HIAU must verify the listed Monrovia locations, U.S. liaison address, four published phone numbers, both email inboxes, licensure wording and institutional claims against authorized records.
+- [ ] Live desktop/375px/768px Chrome acceptance: ensure footer columns do not overflow, every contact link opens the correct phone/email action, navigation scrolls correctly from Home and from deep degree/profile routes, and focus is visible.
+- [ ] Confirm the university logo loads normally after staging deployment. The fallback is only for an unexpected failure, not an approved substitute for the seal.
+- **Status: WEB-03 implementation/source checks complete; live visual and institutional contact-data acceptance pending.** WEB-01 Apply Now remains deferred; WEB-02 new staff profile feature is preserved.

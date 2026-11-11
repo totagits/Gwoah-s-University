@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import type {PublicStaffEntry} from '../../data/publicStaff';
+import {publicStaffAsLeader} from '../../data/publicStaff';
 import { ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Camera, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, GraduationCap, Link2, Search, Users, X } from 'lucide-react';
 import {
   LEADERSHIP_PROFILES,
@@ -13,10 +15,11 @@ interface PublicLeaderProfileProps {
   onSelectProfile: (id: string) => void;
   onNavigateSection: (sectionId: string) => void;
   onOpenApplicationModal?: () => void;
+  additionalStaff?: PublicStaffEntry[];
 }
 
 type Section = 'biography' | 'qualifications' | 'publications' | 'responsibilities';
-const categories = ['All', ...LEADER_GROUPS.map(group => group.category)] as const;
+const categories = ['All', ...LEADER_GROUPS.map(group => group.category), 'Additional University Staff'] as const;
 const directoryMembers = LEADER_GROUPS.flatMap(group => group.members);
 
 const initials = (name: string) =>
@@ -24,9 +27,11 @@ const initials = (name: string) =>
     .split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('');
 
 export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
-  profileId, onClose, onSelectProfile, onNavigateSection,
+  profileId, onClose, onSelectProfile, onNavigateSection, additionalStaff = [],
 }) => {
-  const resolvedProfile = resolveLeaderProfile(profileId);
+  const resolvedProfile = resolveLeaderProfile(profileId) ||
+    (additionalStaff.find(member=>member.id===profileId)
+      ? publicStaffAsLeader(additionalStaff.find(member=>member.id===profileId)!) : undefined);
   // Unknown or obsolete public links must never display another official's
   // biography as though it were the requested profile.
   const profile: LeaderProfile | undefined = resolvedProfile;
@@ -65,10 +70,15 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
     );
   }
 
-  const index = directoryMembers.findIndex(member => member.id === profile.id);
-  const prev = index > 0 ? directoryMembers[index - 1] : null;
-  const next = index >= 0 && index < directoryMembers.length - 1 ? directoryMembers[index + 1] : null;
-  const visibleGroups = LEADER_GROUPS
+  const extraMembers=additionalStaff.map(person=>({
+    id:person.id,name:person.name,role:person.title,badge:person.title,avatar:person.image,
+  }));
+  const combinedMembers=[...directoryMembers,...extraMembers];
+  const index = combinedMembers.findIndex(member => member.id === profile.id);
+  const prev = index > 0 ? combinedMembers[index - 1] : null;
+  const next = index >= 0 && index < combinedMembers.length - 1 ? combinedMembers[index + 1] : null;
+  const expandedGroups=[...LEADER_GROUPS,...(extraMembers.length?[{category:'Additional University Staff',members:extraMembers}]:[])];
+  const visibleGroups = expandedGroups
     .filter(group => category === 'All' || group.category === category)
     .map(group => ({
       ...group,

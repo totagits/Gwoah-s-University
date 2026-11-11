@@ -17,5 +17,5 @@ export const ManagedContactLink:React.FC<{kind:'email'|'phone';slot:string;fallb
    ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)?raw:fallback)
    : (/^\+?[0-9() .-]{7,25}$/.test(raw)?raw:fallback);
  const href=kind==='email'?'mailto:'+value:'tel:'+value.replace(/[^+0-9]/g,'');
- return <a href={href} className="inline-flex min-w-0 items-center gap-2 break-all rounded-sm text-sm leading-6 text-[#EEE6EE] hover:text-white hover:underline">{value}</a>;
+ return <a href={href} className="inline-flex min-w-0 items-center gap-2 break-all rounded-sm text-sm leading-6 text-[#EEE6EE] hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0CE8D]">{value}</a>;
 };

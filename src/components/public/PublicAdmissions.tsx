@@ -17,6 +17,7 @@ interface PublicAdmissionsProps {
   isModalOpen: boolean;
   onCloseModal: () => void;
   onOpenModal: () => void;
+  showSection?: boolean;
 }
 
 const ADMISSION_REQUIREMENTS = [
@@ -56,6 +57,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
   isModalOpen,
   onCloseModal,
   onOpenModal,
+  showSection = true,
 }) => {
   const [formData, setFormData] = useState({
     applicantName: '',
@@ -111,7 +113,8 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
   };
 
   return (
-    <section id="admissions" className="py-16 bg-[#FAF8FB] text-[#2E0F34] border-b border-purple-100">
+    <>
+    {showSection && <section id="admissions" className="py-16 bg-[#FAF8FB] text-[#2E0F34] border-b border-purple-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="text-xs font-bold tracking-widest uppercase text-[#C39A53] bg-[#4A1249] px-3.5 py-1.5 rounded-full border border-[#C39A53]/30 shadow-xs">
@@ -214,6 +217,8 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
           </button>
         </div>
       </div>
+
+    </section>}
 
       {/* ONLINE APPLICATION MODAL */}
       {isModalOpen && (
@@ -504,6 +509,6 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
           </div>
         </div>
       )}
-    </section>
+    </>
   );
 };

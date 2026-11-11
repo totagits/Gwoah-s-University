@@ -27,6 +27,6 @@ test('WEB-03: broken seal remains legible, links have explicit keyboard focus',(
   assert.match(footer,/onError=\{\(\) => setSealUnavailable\(true\)\}/);
   assert.match(footer,/aria-label="HIAU university identity"/);
   assert.ok((footer.match(/focus-visible:outline-2/g)||[]).length>=5);
-  assert.match(footer,/sm:grid-cols/);
+  assert.match(footer,/md:grid-cols/);
   assert.match(footer,/xl:grid-cols/);
 });

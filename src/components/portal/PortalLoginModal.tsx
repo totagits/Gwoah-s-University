@@ -28,7 +28,9 @@ export function PortalLoginModal({
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#1A071E]/75 p-4 backdrop-blur-sm">
-      <section role="dialog" aria-modal="true" aria-labelledby="hiau-login-title" className="w-full max-w-[490px] overflow-hidden rounded-xl border-2 border-[#C39A53] bg-white text-[#2A082C] shadow-2xl">\n        <div className="h-2 bg-[#C39A53]" />\n        <div className="p-6 sm:p-9">
+      <section role="dialog" aria-modal="true" aria-labelledby="hiau-login-title" className="w-full max-w-[490px] overflow-hidden rounded-xl border-2 border-[#C39A53] bg-white text-[#2A082C] shadow-2xl">
+        <div className="h-2 bg-[#C39A53]" />
+        <div className="p-6 sm:p-9">
         <div className="text-xs font-black tracking-[0.16em] uppercase text-[#8C662B]">HARVEST INTERCONTINENTAL AMERICAN UNIVERSITY</div>
         <h2 id="hiau-login-title" className="my-5 font-black text-3xl uppercase tracking-tight text-[#4A1249] sm:text-4xl">
           {activation ? 'Activate your account' : 'Welcome back.'}
@@ -119,7 +121,7 @@ export function PortalLoginModal({
               />
             </label>
           )}
-          <button type="submit" className="mt-1 rounded-md bg-[#4A1249] px-5 py-3 font-bold text-white transition-colors hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53] disabled:opacity-50" disabled={busy}>
+          <button type="submit" className="hiau-dashboard-selected mt-1 rounded-md border border-[#C39A53] bg-[#4A1249] px-5 py-3 font-bold text-white transition-colors hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53] disabled:opacity-50" disabled={busy}>
             {busy
               ? 'Please wait…'
               : activation

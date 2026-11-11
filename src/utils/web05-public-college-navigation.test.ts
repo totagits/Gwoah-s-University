@@ -27,3 +27,9 @@ test('WEB-05: portal login renders no literal backslash n text and submit text i
   assert.match(login,/hiau-dashboard-selected mt-1 rounded-md/);
   assert.match(login,/className="hiau-dashboard-selected[^"]*text-white/);
 });
+
+test('WEB-05: initial protected portal entry still depends on verified server session',()=>{
+  assert.match(app,/fetch\('\/api\/auth\/me', \{ credentials: 'same-origin' \}\)/);
+  assert.match(app,/if \(params\.has\('portal'\)\) setViewMode\('portal'\)/);
+  assert.match(app,/if \(active && \(params\.has\('portal'\) \|\| params\.has\('activate'\)\)\) setIsLoginModalOpen\(true\)/);
+});

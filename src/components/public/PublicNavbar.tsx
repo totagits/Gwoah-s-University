@@ -224,9 +224,9 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     },
     {
       id: 'leadership', title: 'Leadership', links: [
-        { label: 'Chancellor', action: () => onOpenProfile?.('chancellor') ?? onNavigateSection('hiau-leadership') },
-        { label: 'President', action: () => onOpenProfile?.('president') ?? onNavigateSection('hiau-leadership') },
-        { label: 'Deputy Chancellor', action: () => onOpenProfile?.('deputy_chancellor') ?? onNavigateSection('hiau-leadership') },
+        { label: 'Chancellor', action: () => onOpenProfile ? onOpenProfile('chancellor') : onNavigateSection('hiau-leadership') },
+        { label: 'President', action: () => onOpenProfile ? onOpenProfile('president') : onNavigateSection('hiau-leadership') },
+        { label: 'Deputy Chancellor', action: () => onOpenProfile ? onOpenProfile('deputy_chancellor') : onNavigateSection('hiau-leadership') },
         { label: 'Leadership Directory', action: () => onNavigateSection('hiau-leadership') },
       ],
     },

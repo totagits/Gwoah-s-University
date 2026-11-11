@@ -62,7 +62,7 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
    <h2 className="text-2xl font-bold text-[#4A1249]">Enterprise Website Content Management</h2>
    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Create and update public content without GitHub edits. Draft changes remain private until verified and published. Existing institutional text and design are preserved unless explicitly migrated.</p>
    <div className="mt-5 grid gap-3 sm:grid-cols-3">
-    {[{id:'website_media',name:'Photos & Videos',detail:'Managed video library'},{id:'website_staff',name:'Leadership & Staff',detail:'Profile publishing'},{id:'campus_content',name:'Campus & Facilities',detail:'Photos, details and stories'}].map(link=>
+    {[{id:'website_media',name:'Photos & Videos',detail:'Managed video library'},{id:'website_staff',name:'Leadership & Staff',detail:'Profile publishing'},{id:'campus_content',name:'Campus & Facilities',detail:'Photos, details and stories'},{id:'website_news',name:'News & Events',detail:'Announcements and event publication'}].map(link=>
       <button key={link.id} type="button" onClick={()=>openModule(link.id)} className="rounded-lg border border-purple-200 p-4 text-left hover:bg-purple-50 focus-visible:outline-2">
        <strong className="block text-[#4A1249]">{link.name}</strong><span className="text-xs text-slate-600">{link.detail}</span>
       </button>)}

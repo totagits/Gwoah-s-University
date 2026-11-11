@@ -148,9 +148,8 @@ export default function App() {
   useEffect(() => {
     const handleUrlRouting = () => {
       const params = new URLSearchParams(window.location.search);
-      // URL parameters never grant privileges.
-      if (params.has('portal') || params.has('activate')) setIsLoginModalOpen(true);
-
+      // Public hash/anchor navigation must never re-open a login dialog.
+      // Initial ?portal / ?activate handling is done by the auth-session effect.
       // Check query params: ?leader=chancellor or ?profile=president
       const queryLeader = params.get('leader') || params.get('profile');
       if (queryLeader) {
@@ -306,6 +305,13 @@ export default function App() {
   };
 
   const handleNavigateSection = (sectionId: string) => {
+    // Leaving the ERP for public content must also clear its one-time login flag.
+    // Otherwise clicking public #anchors can be mistaken for a portal entry.
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('portal')) {
+      url.searchParams.delete('portal');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
     setActiveLeaderProfileId(null);
     setActiveDegreeRoute(null);
     setActivePublicSection(sectionId);
@@ -414,7 +420,14 @@ export default function App() {
             activeTab={activePortalTab}
             onSelectTab={handleSelectTabWithSubAction}
             onLogout={handleLogout}
-            onBackToPublic={() => setViewMode('public')}
+            onBackToPublic={() => {
+              setViewMode('public');
+              const url = new URL(window.location.href);
+              if (url.searchParams.has('portal')) {
+                url.searchParams.delete('portal');
+                window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+              }
+            }}
             currentTheme={theme}
             onToggleTheme={handleToggleTheme}
             onOpenThemeSettings={() => setIsThemeSettingsOpen(true)}
@@ -504,7 +517,14 @@ export default function App() {
       {/* LOGIN MODAL */}
       <PortalLoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          const url = new URL(window.location.href);
+          if (url.searchParams.has('portal')) {
+            url.searchParams.delete('portal');
+            window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+          }
+        }}
         onLoginSuccess={handleLoginSuccess}
       />
 

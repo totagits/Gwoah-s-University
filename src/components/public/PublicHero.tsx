@@ -152,8 +152,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             onCanPlay={attemptPlayback}
             onPlay={()=>{setIsActuallyPlaying(true);setVideoError('');}}
             onPlaying={()=>{setIsActuallyPlaying(true);setIsVideoLoading(false);setVideoError('');}}
-            onWaiting={()=>{setIsVideoLoading(true);}}
-            onStalled={()=>{setIsVideoLoading(true);}}
+            onWaiting={()=>{setIsVideoLoading(true);setIsActuallyPlaying(false);}}
+            onStalled={()=>{setIsVideoLoading(true);setIsActuallyPlaying(false);}}
             onPause={()=>setIsActuallyPlaying(false)}
             onError={()=>{setIsVideoLoading(false);setVideoError('The video could not load. Select another video or try refreshing.');}}
             onEnded={()=>switchVideo(activeVideoIndex+1)}
@@ -163,7 +163,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             <div role="status" aria-label="Loading homepage video" className="pointer-events-none absolute inset-0 z-[11] flex items-center justify-center bg-[#2A082C] text-[#F0CE8D]">
               <div className="flex flex-col items-center gap-3 rounded-xl bg-[#2A082C]/85 px-6 py-5">
                 <LoaderCircle aria-hidden="true" className="h-8 w-8 animate-spin" />
-                <span className="text-xs font-semibold uppercase tracking-wide">Loading campus video…</span>
+                <span className="text-xs font-semibold uppercase tracking-wide">Loading video…</span>
               </div>
             </div>
           )}

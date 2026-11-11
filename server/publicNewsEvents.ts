@@ -1,0 +1,74 @@
+import crypto from 'node:crypto';
+import express,{type Express,type Response} from 'express';
+import {actorOf} from './identity';
+import type {Operations} from './operations';
+
+type Kind='news'|'event'|'announcement';
+type Entry={id:string;kind:Kind;title:string;summary:string;eventDate:string;location:string;
+ status:'draft'|'published';verified:boolean;createdAt:string;updatedAt:string;publishedAt:string|null};
+const PREFIX='site-news:';
+const idOk=(id:string)=>/^news-[a-f0-9-]{36}$/.test(id);
+const admin=(res:Response)=>actorOf(res)?.role==='super_admin';
+const txt=(v:unknown,max:number)=>typeof v==='string'?v.trim().slice(0,max):'';
+const dateOk=(v:string)=>v===''||(/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v);
+const input=(v:any)=>{
+ const kind=v?.kind,title=txt(v?.title,130),summary=txt(v?.summary,1800);
+ const eventDate=txt(v?.eventDate,10),location=txt(v?.location,140);
+ if(!['news','event','announcement'].includes(kind)||title.length<4||summary.length<20||
+  !dateOk(eventDate)||(kind==='event'&&!eventDate))return null;
+ return {kind:kind as Kind,title,summary,eventDate,location,verified:v?.verified===true};
+};
+const all=(db:Operations):Entry[]=>
+ db.all("SELECT value FROM settings WHERE key LIKE 'site-news:%'").flatMap(row=>{
+  try{const e=JSON.parse(row.value) as Entry;return idOk(e.id)?[e]:[];}catch{return [];}
+ }).sort((a,b)=>(b.eventDate||b.publishedAt||'').localeCompare(a.eventDate||a.publishedAt||''));
+const read=(db:Operations,id:string)=>all(db).find(x=>x.id===id);
+const save=(db:Operations,e:Entry)=>db.run(
+ 'INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+ PREFIX+e.id,JSON.stringify(e));
+export function installPublicNewsEvents(app:Express,db:Operations){
+ app.get('/api/public/news-events',(_req,res)=>{
+  res.set('Cache-Control','no-store');
+  return res.json({items:all(db).filter(x=>x.status==='published'&&x.verified)});
+ });
+ app.get('/api/admin/news-events',(_req,res)=>{
+  if(!admin(res))return res.sendStatus(403);
+  res.set('Cache-Control','no-store');return res.json({items:all(db)});
+ });
+ app.post('/api/admin/news-events',express.json({limit:'12kb'}),(req,res)=>{
+  if(!admin(res))return res.sendStatus(403);
+  const content=input(req.body);if(!content)return res.status(400).json({error:'Provide a valid title, description, kind and date for events.'});
+  const now=new Date().toISOString();
+  const e:Entry={id:'news-'+crypto.randomUUID(),...content,status:'draft',createdAt:now,updatedAt:now,publishedAt:null};
+  save(db,e);db.audit(actorOf(res)!.id,'NEWS_DRAFT_CREATE',e.id,null,{kind:e.kind});
+  return res.status(201).json({item:e});
+ });
+ app.put('/api/admin/news-events/:id',express.json({limit:'12kb'}),(req,res)=>{
+  if(!admin(res))return res.sendStatus(403);
+  const e=idOk(req.params.id)?read(db,req.params.id):undefined;
+  if(!e)return res.sendStatus(404);
+  const content=input(req.body);if(!content)return res.status(400).json({error:'Invalid news or event fields.'});
+  const updated={...e,...content,status:'draft' as const,updatedAt:new Date().toISOString()};
+  save(db,updated);db.audit(actorOf(res)!.id,'NEWS_DRAFT_EDIT',e.id,null,{});
+  return res.json({item:updated});
+ });
+ app.post('/api/admin/news-events/:id/publish',express.json({limit:'4kb'}),(req,res)=>{
+  if(!admin(res))return res.sendStatus(403);
+  const e=idOk(req.params.id)?read(db,req.params.id):undefined;
+  if(!e)return res.sendStatus(404);
+  const publish=req.body?.published===true;
+  if(publish&&!e.verified)return res.status(409).json({error:'Verify this announcement before publication.'});
+  e.status=publish?'published':'draft';e.publishedAt=publish?new Date().toISOString():null;e.updatedAt=new Date().toISOString();
+  save(db,e);db.audit(actorOf(res)!.id,publish?'NEWS_PUBLISH':'NEWS_UNPUBLISH',e.id,null,{});
+  return res.json({item:e});
+ });
+ app.delete('/api/admin/news-events/:id',express.json({limit:'4kb'}),(req,res)=>{
+  if(!admin(res))return res.sendStatus(403);
+  const e=idOk(req.params.id)?read(db,req.params.id):undefined;
+  if(!e)return res.sendStatus(404);
+  if(req.body?.confirmation!=='DELETE_NEWS_EVENT')return res.status(400).json({error:'Confirmation required.'});
+  db.run('DELETE FROM settings WHERE key=?',PREFIX+e.id);
+  db.audit(actorOf(res)!.id,'NEWS_DELETE',e.id,null,{title:e.title});
+  return res.json({success:true});
+ });
+}

@@ -87,58 +87,22 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const submenus: Record<string, SubmenuItem[]> = {
     about: [
       {
-        label: 'Mission, Vision & Core Principles',
-        desc: '"A world where no one lives or dies without access to quality education"',
+        label: 'University Overview',
+        desc: 'Our mission, values and institutional identity',
         icon: <Building className="w-4 h-4 text-[#C39A53]" />,
         action: () => onNavigateSection('about'),
       },
       {
-        label: 'Founder & Chancellor: Bishop Dr. Darlingston G. Johnson',
-        desc: 'Presiding Bishop of HIM-U & Visionary Founder of HIAU',
-        icon: <Award className="w-4 h-4 text-[#4A1249]" />,
-        action: () => (onOpenProfile ? onOpenProfile('chancellor') : onNavigateSection('about')),
-        badge: 'Official Profile',
-      },
-      {
-        label: 'President: Asst. Professor Mamawa M. Freeman-Moore',
-        desc: 'Founding President message, philosophy of education & leadership',
-        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
-        action: () => (onOpenProfile ? onOpenProfile('president') : onNavigateSection('about')),
-        badge: 'President Page',
-      },
-      {
-        label: 'Deputy Chancellor: Dr. Kona-Facia Freeman-Nepay',
-        desc: 'Executive academic direction & 2020 task force leadership',
-        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
-        action: () => (onOpenProfile ? onOpenProfile('deputy_chancellor') : onNavigateSection('about')),
-        badge: 'Deputy Chancellor',
-      },
-      {
-        label: 'Board of Trustees (Dr. Jonathan C. Taylor, Chair)',
-        desc: 'Fiduciary governance, statutory oversight & university council',
+        label: 'Leadership & Governance',
+        desc: 'University leaders, trustees and faculty profiles',
         icon: <Users className="w-4 h-4 text-[#4A1249]" />,
-        action: () => (onOpenProfile ? onOpenProfile('board_chair') : onNavigateSection('about')),
-        badge: 'Board Chair',
+        action: () => onNavigateSection('hiau-leadership'),
       },
       {
-        label: 'Global & National Board Head: Stanton B. Johnson',
-        desc: 'International executive leadership & strategic partnerships',
-        icon: <Users className="w-4 h-4 text-[#C39A53]" />,
-        action: () => (onOpenProfile ? onOpenProfile('board_head') : onNavigateSection('about')),
-        badge: 'Board Head',
-      },
-      {
-        label: 'Main Academic Campus — Old Road, Chugbor',
-        desc: 'Administrative headquarters, lecture halls, and lab in Monrovia',
-        icon: <Building className="w-4 h-4 text-[#C39A53]" />,
-        action: () => onNavigateSection('about'),
-      },
-      {
-        label: 'NCHE Licensure & Oral Roberts University Partner',
-        desc: 'Chartered in Liberia with global academic collaboration in Tulsa, USA',
-        icon: <ShieldCheck className="w-4 h-4 text-[#4A1249]" />,
-        action: () => onNavigateSection('about'),
-        badge: 'Chartered',
+        label: 'Campus & Facilities',
+        desc: 'Explore the HIAU learning environment',
+        icon: <Compass className="w-4 h-4 text-[#C39A53]" />,
+        action: () => onNavigateSection('tour'),
       },
     ],
     tour: [
@@ -453,7 +417,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   {/* Rich Desktop Submenu Dropdown */}
                   {hasItems && isCurrentOpen && (
                     <div
-                      className="absolute left-0 right-0 top-full mt-0 bg-white border border-purple-200 border-t-4 border-t-[#C39A53] rounded-b-lg shadow-2xl p-5 z-50 animate-in fade-in slide-in-from-top-1 max-h-[min(66vh,570px)] overflow-y-auto"
+                      className={`absolute top-full mt-0 bg-white border border-purple-200 border-t-4 border-t-[#C39A53] rounded-b-lg shadow-2xl z-50 animate-in fade-in slide-in-from-top-1 max-h-[min(66vh,570px)] overflow-y-auto ${link.id === 'about' ? 'left-16 w-80 p-2' : 'left-0 right-0 p-5'}`}
                       onMouseEnter={() => handleMouseEnter(link.id)}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -461,7 +425,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         <span>{link.label} Directory</span>
                         <span className="text-[10px] text-[#C39A53] font-semibold">HIAU Liberia</span>
                       </div>
-                      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 pt-4">
+                      <div className={link.id === 'about' ? 'flex flex-col gap-1 pt-2' : 'grid grid-cols-2 xl:grid-cols-3 gap-2 pt-4'}>
                         {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, idx) => (
                           <button
                             key={idx}

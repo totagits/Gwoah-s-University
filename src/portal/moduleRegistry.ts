@@ -12,6 +12,7 @@ export const PORTAL_MODULES = [
   { id: 'academics', label: 'Academic Planning', group: 'primary' },
   { id: 'curriculum', label: 'Curriculum Studio', group: 'secondary' },
   { id: 'website_media', label: 'Website Video Library', group: 'secondary' },
+  { id: 'website_staff', label: 'Public Staff Profiles', group: 'secondary' },
   { id: 'admissions', label: 'Admissions', group: 'primary' },
   { id: 'finance', label: 'Finance', group: 'primary' },
   { id: 'compliance', label: 'Compliance & Audit', group: 'primary' },

@@ -72,6 +72,12 @@ export function installWebsiteCms(app:Express,store:Operations){
    // Request-time activation works across restarts and avoids process-local timers.
    // Operations and media must reside in the persistent DATA_DIR volume.
    for(const scheduled of entries(store).filter(v=>!v.archived&&v.scheduledAt&&v.draft?.verified&&Date.parse(v.scheduledAt)<=Date.now())){
+     if(scheduled.draft?.slot&&entries(store).some(other=>other.id!==scheduled.id&&!other.archived&&
+       other.published?.section===scheduled.draft?.section&&other.published?.slot===scheduled.draft?.slot)){
+       scheduled.scheduledAt=undefined;history(scheduled,'system','SCHEDULE_CONFLICT_CANCELLED',scheduled.draft);
+       save(store,scheduled);store.audit('system','SITE_CMS_SCHEDULE_CONFLICT',scheduled.id,null,{});
+       continue;
+     }
      scheduled.published={...scheduled.draft!};scheduled.draft=null;scheduled.scheduledAt=undefined;
      history(scheduled,'system','SCHEDULED_PUBLISH',scheduled.published);save(store,scheduled);
      store.audit('system','SITE_CMS_SCHEDULED_PUBLISH',scheduled.id,null,{revision:scheduled.revision});
@@ -123,6 +129,9 @@ export function installWebsiteCms(app:Express,store:Operations){
    if(!item||item.archived)return res.sendStatus(404);
    if(!expected(req.body,item))return res.status(409).json({error:'Draft changed. Refresh and retry.'});
    if(!item.draft?.verified)return res.status(409).json({error:'Approve the verified draft first.'});
+   if(item.draft.slot&&entries(store).some(other=>other.id!==item.id&&!other.archived&&
+     other.published?.section===item.draft?.section&&other.published?.slot===item.draft?.slot))
+     return res.status(409).json({error:'Another published item occupies this field.'});
    const at=req.body?.publishAt;
    if(typeof at!=='string'||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.000Z$/.test(at)||
       !Number.isFinite(Date.parse(at))||Date.parse(at)<Date.now()+60_000||Date.parse(at)>Date.now()+365*86400000)

@@ -239,9 +239,9 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     },
     {
       id: 'campus', title: 'Campus & Community', links: [
-        { label: 'Campus Overview', action: () => onNavigateSection('tour') },
-        { label: 'Facilities', action: () => onNavigateSection('tour') },
-        { label: 'Campus Tour', action: () => onNavigateSection('tour') },
+        { label: 'Campus Overview', action: () => onNavigateSection('campus-campus') },
+        { label: 'Facilities & Infrastructure', action: () => onNavigateSection('campus-facilities') },
+        { label: 'Campus Life & Community', action: () => onNavigateSection('campus-community') },
       ],
     },
   ];

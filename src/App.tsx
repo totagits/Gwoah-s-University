@@ -5,6 +5,7 @@ import { PublicNavbar } from './components/public/PublicNavbar';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
 import { PublicVirtualTour } from './components/public/PublicVirtualTour';
+import { PublicCampusContent } from './components/public/PublicCampusContent';
 import { PublicColleges, resolvePublicDegree } from './components/public/PublicColleges';
 import { PublicDegreeDetail } from './components/public/PublicDegreeDetail';
 import { PublicAdmissions } from './components/public/PublicAdmissions';
@@ -15,6 +16,7 @@ import { PublicLeaderProfile } from './components/public/PublicLeaderProfile';
 import type {PublicStaffEntry} from './data/publicStaff';
 import {isPublicStaffEntry} from './data/publicStaff';
 import {WebsiteStaffProfiles} from './components/portal/WebsiteStaffProfiles';
+import {CampusContentConsole} from './components/portal/CampusContentConsole';
 import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
@@ -384,6 +386,7 @@ export default function App() {
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
                 onOpenPortal={handleOpenPortal}
               />
+              <PublicCampusContent />
               <PublicColleges initialCollegeId={lastPublicCollegeId} />
               <PublicAdmissions
                 isModalOpen={isApplicationModalOpen}
@@ -479,6 +482,9 @@ export default function App() {
             )}
             {activePortalTab === 'website_staff' && (
               <WebsiteStaffProfiles currentUser={currentUser} />
+            )}
+            {activePortalTab === 'campus_content' && (
+              <CampusContentConsole currentUser={currentUser} openVideoLibrary={() => setActivePortalTab('website_media')} />
             )}
 
             {activePortalTab === 'student_portal' && (

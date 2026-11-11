@@ -3,20 +3,30 @@ import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
 const degreeSlug=(name:string)=>name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const degreeSlots=degreeExplainers.degrees.flatMap(degree=>{
  const route=degree.college+'--'+degreeSlug(degree.name);
- return ([['overview','Program overview'],['relevance','Relevance today'],['careers','Professional directions']] as const).map(([field,label])=>({id:'degree.'+route+'.'+field,label:degree.name+' — '+label}));
+ return ([['overview','Program overview'],['relevance','Relevance today'],['careers','Professional directions'],['focus','Catalog focus areas'],['duration','Listed duration'],['credential','Credential designation']] as const).map(([field,label])=>({id:'degree.'+route+'.'+field,label:degree.name+' — '+label}));
 });
-type Section='home'|'about'|'academics'|'admissions'|'events'|'student-life'|'footer';
+type Section='home'|'about'|'academics'|'admissions'|'events'|'student-life'|'footer'|'navigation';
 type Content={section:Section;title:string;body:string;verified:boolean;slot?:string};
 type Revision={revision:number;at:string;actor:string;action:string;content:Content|null};
 type Item={id:string;draft:Content|null;published:Content|null;revision:number;history:Revision[];archived:boolean;updatedAt:string};
 const blank:Content={section:'home',title:'',body:'',verified:false,slot:''};
-const sections:Section[]=['home','about','academics','admissions','events','student-life','footer'];
+const sections:Section[]=['home','about','academics','admissions','events','student-life','footer','navigation'];
 const slots:Record<Section,Array<{id:string;label:string}>>={
  home:[{id:'hero-heading',label:'Homepage hero heading'},{id:'hero-description',label:'Homepage introduction'}],
  about:[{id:'page-heading',label:'About page heading'},{id:'page-description',label:'About introduction'},{id:'vision',label:'University vision'},{id:'mission',label:'University mission'},{id:'motto',label:'University motto'},{id:'institutional-history',label:'University history'}],
  academics:[{id:'page-heading',label:'Academics page heading'},{id:'page-description',label:'Academics introduction'},...degreeSlots],
  admissions:[{id:'page-heading',label:'Admissions page heading'},{id:'page-description',label:'Admissions introduction'}],
- events:[],'student-life':[],footer:[]
+ events:[],'student-life':[],footer:[
+  {id:'campus-address',label:'Main campus address'},{id:'admin-address',label:'Administrative office address'},
+  {id:'liaison-address',label:'International liaison address'},
+  ...[1,2,3,4].map(i=>({id:'phone-'+i,label:'Telephone '+i})),
+  ...[1,2].map(i=>({id:'email-'+i,label:'Email '+i}))
+ ],navigation:[
+  {id:'label-hero',label:'Home label'},{id:'label-about',label:'About label'},
+  {id:'label-tour',label:'Campus Tour label'},{id:'label-colleges',label:'Academics label'},
+  {id:'label-admissions',label:'Admissions label'},{id:'label-calendar',label:'Current Events label'},
+  {id:'label-dei',label:'Student Experience label'}
+ ]
 };
 const parse=async(res:Response)=>{const data=await res.json().catch(()=>({error:'Unexpected response'}));if(!res.ok)throw new Error(data.error||'Request failed');return data;};
 const post=async(url:string,method:string,body:object)=>parse(await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
@@ -52,7 +62,7 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
    <h2 className="text-2xl font-bold text-[#4A1249]">Enterprise Website Content Management</h2>
    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Create and update public content without GitHub edits. Draft changes remain private until verified and published. Existing institutional text and design are preserved unless explicitly migrated.</p>
    <div className="mt-5 grid gap-3 sm:grid-cols-3">
-    {[{id:'website_media',name:'Photos & Videos',detail:'Managed video library'},{id:'website_staff',name:'Leadership & Staff',detail:'Profile publishing'},{id:'campus_content',name:'Campus & Facilities',detail:'Photos, details and stories'}].map(link=>
+    {[{id:'website_media',name:'Photos & Videos',detail:'Managed video library'},{id:'website_staff',name:'Leadership & Staff',detail:'Profile publishing'},{id:'campus_content',name:'Campus & Facilities',detail:'Photos, details and stories'},{id:'website_news',name:'News & Events',detail:'Announcements and event publication'}].map(link=>
       <button key={link.id} type="button" onClick={()=>openModule(link.id)} className="rounded-lg border border-purple-200 p-4 text-left hover:bg-purple-50 focus-visible:outline-2">
        <strong className="block text-[#4A1249]">{link.name}</strong><span className="text-xs text-slate-600">{link.detail}</span>
       </button>)}

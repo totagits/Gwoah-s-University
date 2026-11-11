@@ -7,9 +7,11 @@ import degreeExplainers from '../scripts/hiau-degree-video-content.json';
 // Plain-text CMS content only. No arbitrary HTML, scripts, URLs or application settings.
 const degreeSlug=(name:string)=>name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const degreeRoutes=degreeExplainers.degrees.map(d=>d.college+'--'+degreeSlug(d.name));
-const degreeFields=['overview','relevance','careers'] as const;
+const degreeFields=['overview','relevance','careers','focus','duration','credential'] as const;
 export const degreeContentSlots=degreeRoutes.flatMap(route=>degreeFields.map(field=>'degree.'+route+'.'+field));
-const sections=['home','about','academics','admissions','events','student-life','footer'] as const;
+const navigationLabels=['hero','about','tour','colleges','admissions','calendar','dei'] as const;
+const footerContactSlots=['campus-address','admin-address','liaison-address','phone-1','phone-2','phone-3','phone-4','email-1','email-2'] as const;
+const sections=['home','about','academics','admissions','events','student-life','footer','navigation'] as const;
 type Section=(typeof sections)[number];
 export const managedSlots={
  home:['hero-heading','hero-description'],
@@ -18,7 +20,8 @@ export const managedSlots={
  admissions:['page-heading','page-description'],
  events:[],
  'student-life':[],
- footer:[]
+ footer:[...footerContactSlots],
+ navigation:navigationLabels.map(id=>'label-'+id)
 } as const;
 type Content={section:Section;title:string;body:string;verified:boolean;slot?:string};
 type Revision={revision:number;at:string;actor:string;action:string;content:Content|null};
@@ -30,9 +33,16 @@ const safe=(v:unknown,max:number)=>typeof v==='string'?v.trim().slice(0,max):'';
 const parseContent=(v:any):Content|null=>{
  const section=v?.section;
  const title=safe(v?.title,150),body=safe(v?.body,4000);
- if(!sections.includes(section)||title.length<3||body.length<15)return null;
  const slot=safe(v?.slot,60);
+ const shortField=slot.startsWith('label-')||slot.startsWith('phone-')||slot.startsWith('email-')||slot.endsWith('.duration')||slot.endsWith('.credential');
+ if(!sections.includes(section)||title.length<3||body.length<(shortField?2:15))return null;
  if(slot&&!((managedSlots as Record<string,readonly string[]>)[section]||[]).includes(slot))return null;
+ if(slot.startsWith('label-')&&(body.length>32||/[\r\n]/.test(body)))return null;
+ if(slot.startsWith('phone-')&&!/^\+?[0-9() .-]{7,25}$/.test(body))return null;
+ if(slot.startsWith('email-')&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body))return null;
+ if(slot.endsWith('.duration')&&body.length>55)return null;
+ if(slot.endsWith('.credential')&&body.length>70)return null;
+ if(slot.endsWith('.focus')&&body.length>650)return null;
  return {section,title,body,verified:v?.verified===true,...(slot?{slot}:{})};
 };
 const entries=(store:Operations):RecordItem[]=>

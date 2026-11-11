@@ -11,6 +11,7 @@ import { installPublicAdmissions } from './server/publicAdmissions';
 import {installPublicStaffProfiles} from './server/publicStaffProfiles';
 import {installCampusContent} from './server/campusContent';
 import {installWebsiteCms} from './server/websiteCms';
+import {installPublicNewsEvents} from './server/publicNewsEvents';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -41,6 +42,7 @@ installPublicWebsiteMedia(app, operations, directory);
 installPublicStaffProfiles(app, operations, directory);
 installCampusContent(app, operations, directory);
 installWebsiteCms(app, operations);
+installPublicNewsEvents(app, operations);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import {ManagedText} from './ManagedText';
 import {
   ChevronDown,
   Lock,
@@ -419,7 +420,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                     aria-expanded={isCurrentOpen}
                     aria-haspopup={hasItems ? 'true' : undefined}
                   >
-                    <span>{link.label}</span>
+                    <span><ManagedText section="navigation" slot={'label-'+link.id} fallback={link.label}/></span>
                     {hasItems && (
                       <ChevronDown
                         className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
@@ -514,7 +515,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                       }}
                       className="text-left text-sm font-bold text-slate-800 hover:text-[#4A1249]"
                     >
-                      {link.label}
+                      <ManagedText section="navigation" slot={'label-'+link.id} fallback={link.label}/>
                     </button>
                     {hasSub && (
                       <button

@@ -1,0 +1,102 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import express from 'express';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import type {Server} from 'node:http';
+import {Operations} from './operations';
+import {installWebsiteCms} from './websiteCms';
+import {installPublicNewsEvents} from './publicNewsEvents';
+
+test('WEB-08: authenticated editorial workflow, scheduled publishing and SQLite persistence',async t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-web08-'));
+ let store=new Operations(directory);
+ const app=express();
+ // Test fixture only. Production role and CSRF verification stays in installIdentity().
+ app.use((req,_res,next)=>next());
+ app.use((req,res,next)=>{
+   const role=req.header('x-test-role')||'visitor';
+   res.locals.actor={id:role,email:role+'@example.invalid',name:role,title:role,role};
+   next();
+ });
+ app.use(express.json());
+ installWebsiteCms(app,store);
+ installPublicNewsEvents(app,store);
+ const server:Server=await new Promise(resolve=>{const listener=app.listen(0,'127.0.0.1',()=>resolve(listener));});
+ const address=server.address();
+ if(!address||typeof address==='string')throw new Error('Could not start test server');
+ const base='http://127.0.0.1:'+address.port;
+ t.after(async()=>{
+   await new Promise<void>((resolve,reject)=>server.close(err=>err?reject(err):resolve()));
+   store.close();fs.rmSync(directory,{recursive:true,force:true});
+ });
+ const call=async(method:string,endpoint:string,role:string,body?:any)=>{
+   const r=await fetch(base+endpoint,{method,headers:{'x-test-role':role,'content-type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
+   const payload=await r.json().catch(()=>({}));
+   return {status:r.status,payload};
+ };
+ const editor='website_editor',reviewer='website_reviewer',visitor='visitor';
+ const input={section:'about',slot:'mission',title:'Institutional mission',body:'Verified institutional information for visitors',verified:true};
+ let created=await call('POST','/api/admin/site-content',editor,input);
+ assert.equal(created.status,201);
+ let cmsId=created.payload.item.id;
+ assert.equal(created.payload.item.draft.verified,false,'editor cannot self-verify');
+ const cmsPublic='/api/public/site-content';
+ assert.equal((await call('GET',cmsPublic,visitor)).payload.items.length,0,'private draft hidden');
+ assert.equal((await call('POST','/api/admin/site-content/'+cmsId+'/approve',editor,{expectedRevision:1})).status,403,'editor cannot approve');
+ assert.equal((await call('POST','/api/admin/site-content/'+cmsId+'/publish',editor,{expectedRevision:1})).status,403,'editor cannot publish');
+ assert.equal((await call('PUT','/api/admin/site-content/'+cmsId,reviewer,{...input,expectedRevision:1})).status,403,'reviewer cannot overwrite authored text');
+ let approved=await call('POST','/api/admin/site-content/'+cmsId+'/approve',reviewer,{expectedRevision:1});
+ assert.equal(approved.status,200);
+ assert.equal(approved.payload.item.draft.verified,true);
+ let published=await call('POST','/api/admin/site-content/'+cmsId+'/publish',reviewer,{expectedRevision:2});
+ assert.equal(published.status,200);
+ assert.equal((await call('GET',cmsPublic,visitor)).payload.items[0].body,input.body);
+ let edit=await call('PUT','/api/admin/site-content/'+cmsId,editor,{...input,body:'Updated published mission with more institutional information',expectedRevision:3});
+ assert.equal(edit.status,200);
+ assert.equal((await call('GET',cmsPublic,visitor)).payload.items[0].body,input.body,'live copy stays while draft is edited');
+ let revision=edit.payload.item.revision;
+ approved=await call('POST','/api/admin/site-content/'+cmsId+'/approve',reviewer,{expectedRevision:revision});
+ assert.equal(approved.status,200);
+ const at=new Date(Math.ceil((Date.now()+3600_000)/60000)*60000).toISOString();
+ let schedule=await call('POST','/api/admin/site-content/'+cmsId+'/schedule',reviewer,{expectedRevision:approved.payload.item.revision,publishAt:at});
+ assert.equal(schedule.status,200);
+ assert.equal((await call('GET',cmsPublic,visitor)).payload.items[0].body,input.body,'future publication should not appear early');
+ // Simulate a restart: the due schedule is held in the on-disk SQLite settings.
+ store.close();
+ const reopened=new Operations(directory);
+ // Keep the installed route handlers' Operations reference and replace only its reopened SQLite connection.
+ store.sql=reopened.sql;
+ assert.equal(store.one('SELECT value FROM settings WHERE key=?','website-cms:'+cmsId)!=null,true,'persistent CMS row exists after reopen');
+ const persisted=JSON.parse(store.one('SELECT value FROM settings WHERE key=?','website-cms:'+cmsId).value);
+ persisted.scheduledAt=new Date(Date.now()-1000).toISOString();
+ store.run('UPDATE settings SET value=? WHERE key=?',JSON.stringify(persisted),'website-cms:'+cmsId);
+ const delivered=await call('GET',cmsPublic,visitor);
+ assert.equal(delivered.status,200);
+ assert.match(delivered.payload.items[0].body,/Updated published mission/);
+ assert.equal((await call('GET','/api/admin/site-content',visitor)).status,403);
+ assert.equal((await call('GET','/api/admin/site-content',reviewer)).status,200);
+
+ const newsInput={kind:'event',title:'HIAU scheduled seminar',summary:'Public university seminar with verified details',eventDate:'2026-12-01',location:'Campus',verified:true};
+ let item=await call('POST','/api/admin/news-events',editor,newsInput);
+ assert.equal(item.status,201);
+ const newsId=item.payload.item.id;
+ assert.equal(item.payload.item.verified,false,'editor cannot self-verify an event');
+ assert.equal((await call('GET','/api/public/news-events',visitor)).payload.items.length,0);
+ assert.equal((await call('POST','/api/admin/news-events/'+newsId+'/approve',editor,{})).status,403);
+ approved=await call('POST','/api/admin/news-events/'+newsId+'/approve',reviewer,{});
+ assert.equal(approved.status,200);
+ schedule=await call('POST','/api/admin/news-events/'+newsId+'/schedule',reviewer,{publishAt:at});
+ assert.equal(schedule.status,200);
+ assert.equal((await call('GET','/api/public/news-events',visitor)).payload.items.length,0);
+ const savedNews=JSON.parse(store.one('SELECT value FROM settings WHERE key=?','site-news:'+newsId).value);
+ savedNews.scheduledAt=new Date(Date.now()-1000).toISOString();
+ store.run('UPDATE settings SET value=? WHERE key=?',JSON.stringify(savedNews),'site-news:'+newsId);
+ const announced=await call('GET','/api/public/news-events',visitor);
+ assert.equal(announced.payload.items[0].title,newsInput.title);
+ const editNews=await call('PUT','/api/admin/news-events/'+newsId,editor,{...newsInput,summary:'New unapproved seminar details are not yet public'});
+ assert.equal(editNews.status,200);
+ const stillLive=await call('GET','/api/public/news-events',visitor);
+ assert.equal(stillLive.payload.items[0].summary,newsInput.summary,'unapproved revision must remain private');
+});

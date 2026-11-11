@@ -39,7 +39,8 @@ test('WEB-07: events remain separate from academic calendar and require verified
  assert.match(news,/actorOf\(res\)\?\.role==='super_admin'/);
  assert.match(news,/if\(publish&&!e\.verified\)/);
  assert.match(news,/e\.live=publish/);
- assert.match(news,/if\(x\.live\?\.verified\)/);
+ assert.match(news,/x\.live\?\.verified\?x\.live:null/);
+ assert.match(news,/Never expose draft metadata/);
  assert.match(news,/NEWS_DRAFT_CREATE/);
  assert.match(news,/NEWS_DELETE/);
  assert.match(firewall,/endpoint === '\/api\/public\/news-events'/);

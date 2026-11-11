@@ -8,7 +8,7 @@ const degreeSlots=degreeExplainers.degrees.flatMap(degree=>{
 type Section='home'|'about'|'academics'|'admissions'|'events'|'student-life'|'footer'|'navigation';
 type Content={section:Section;title:string;body:string;verified:boolean;slot?:string};
 type Revision={revision:number;at:string;actor:string;action:string;content:Content|null};
-type Item={id:string;draft:Content|null;published:Content|null;revision:number;history:Revision[];archived:boolean;updatedAt:string};
+type Item={id:string;draft:Content|null;published:Content|null;revision:number;history:Revision[];archived:boolean;updatedAt:string;scheduledAt?:string};
 const blank:Content={section:'home',title:'',body:'',verified:false,slot:''};
 const sections:Section[]=['home','about','academics','admissions','events','student-life','footer','navigation'];
 const slots:Record<Section,Array<{id:string;label:string}>>={
@@ -33,12 +33,15 @@ const post=async(url:string,method:string,body:object)=>parse(await fetch(url,{m
 export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(id:string)=>void}>=({currentUser,openModule})=>{
  const [items,setItems]=useState<Item[]>([]),[selected,setSelected]=useState(''),[draft,setDraft]=useState<Content>(blank);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
+ const [publishTime,setPublishTime]=useState('');
+ const isAuthor=['super_admin','website_editor'].includes(currentUser.role);
+ const isReviewer=['super_admin','website_reviewer'].includes(currentUser.role);
  const reload=useCallback(async()=>{const data=await parse(await fetch('/api/admin/site-content',{credentials:'same-origin',cache:'no-store'}));setItems(data.items||[]);},[]);
  useEffect(()=>{void reload().catch(e=>setError(e.message));},[reload]);
  const current=items.find(x=>x.id===selected);
  const choose=(item:Item)=>{setSelected(item.id);setDraft(item.draft||item.published||blank);setError('');setMessage('');};
- const execute=async(kind:'save'|'publish'|'unpublish'|'archive'|'restore',revision?:number)=>{
-   if(busy||currentUser.role!=='super_admin')return;
+ const execute=async(kind:'save'|'approve'|'schedule'|'publish'|'unpublish'|'archive'|'restore',revision?:number)=>{
+   if(busy||((kind==='save'||kind==='restore')?!isAuthor:!isReviewer))return;
    if(kind==='archive'&&!window.confirm('Archive this content and remove it from the public site?'))return;
    setBusy(true);setError('');setMessage('');
    try{
@@ -48,15 +51,16 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
      else if(!id)throw new Error('Select an existing content item.');
      else if(kind==='restore')data=await post('/api/admin/site-content/'+id+'/restore','POST',{revision,expectedRevision:current!.revision});
      else if(kind==='archive')data=await post('/api/admin/site-content/'+id,'DELETE',{confirmation:'ARCHIVE_SITE_CONTENT',expectedRevision:current!.revision});
+     else if(kind==='schedule'){if(!publishTime)throw new Error('Select a future publication date and time.');data=await post('/api/admin/site-content/'+id+'/schedule','POST',{publishAt:new Date(publishTime).toISOString(),expectedRevision:current!.revision});}
      else data=await post('/api/admin/site-content/'+id+'/'+kind,'POST',{expectedRevision:current!.revision});
      await reload();
      if(kind==='archive'){setSelected('');setDraft(blank);}
      else{setSelected(data.item.id);setDraft(data.item.draft||data.item.published||blank);}
-     setMessage(kind==='save'?'Private draft saved. Published text is unchanged until approved.':kind==='restore'?'Historical revision restored as an unverified draft.':kind==='publish'?'Verified content published.':kind==='unpublish'?'Content unpublished.':'Content archived.');
+     setMessage(kind==='save'?'Private draft saved. Published text is unchanged until approved.':kind==='restore'?'Historical revision restored as an unverified draft.':kind==='approve'?'Draft verified and approved.':'schedule'===kind?'Approved draft scheduled for publication.':kind==='publish'?'Verified content published.':kind==='unpublish'?'Content unpublished.':'Content archived.');
    }catch(e){setError(e instanceof Error?e.message:'Could not complete action');}
    finally{setBusy(false);}
  };
- if(currentUser.role!=='super_admin')return <p role="alert">Website CMS requires super administrator authorization.</p>;
+ if(!isAuthor&&!isReviewer)return <p role="alert">Website CMS requires an authorized editor or reviewer.</p>;
  return <section className="space-y-6 text-slate-800">
   <div className="rounded-xl border border-[#e5dce8] bg-white p-5">
    <h2 className="text-2xl font-bold text-[#4A1249]">Enterprise Website Content Management</h2>
@@ -71,7 +75,7 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
   <div className="grid gap-5 lg:grid-cols-[minmax(235px,0.85fr)_minmax(0,1.6fr)]">
    <aside className="rounded-xl border bg-white p-4">
     <div className="flex items-center justify-between gap-2"><h3 className="font-bold text-[#4A1249]">Public Content</h3>
-     <button type="button" className="rounded bg-[#4A1249] px-3 py-2 text-xs font-bold text-white" onClick={()=>{setSelected('');setDraft(blank);setError('');setMessage('');}}>+ New</button></div>
+     <button type="button" disabled={!isAuthor} className="rounded bg-[#4A1249] px-3 py-2 text-xs font-bold text-white disabled:opacity-40" onClick={()=>{setSelected('');setDraft(blank);setError('');setMessage('');}}>+ New</button></div>
     <div className="mt-3 max-h-[500px] space-y-2 overflow-y-auto">
      {items.filter(x=>!x.archived).map(item=><button key={item.id} type="button" onClick={()=>choose(item)} className={`block w-full rounded border p-3 text-left text-sm ${item.id===selected?'border-[#4A1249] bg-purple-50':'border-slate-200'}`}>
        <strong className="block">{item.draft?.title||item.published?.title||'Untitled'}</strong>
@@ -104,21 +108,31 @@ export const WebsiteCmsConsole:React.FC<{currentUser:{role:string};openModule:(i
       <h3 className="mt-2 text-xl font-bold text-[#4A1249]">{draft.title||'Your heading appears here'}</h3>
       <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{draft.body||'Your verified institutional text appears here.'}</p>
     </div>
-    <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={draft.verified} onChange={e=>setDraft({...draft,verified:e.target.checked})}/>
+    {current?.scheduledAt&&<p role="status" className="text-sm text-[#4A1249]">Publication scheduled for {new Date(current.scheduledAt).toLocaleString()}.</p>}
+    <label className="flex items-start gap-2 text-sm"><input type="checkbox" disabled={!isAuthor} checked={draft.verified} onChange={e=>setDraft({...draft,verified:e.target.checked})}/>
      <span>I confirm this text is accurate, approved for public use, and does not disclose confidential information.</span></label>
     <div className="flex flex-wrap gap-2">
-     <button type="button" disabled={busy} onClick={()=>void execute('save')} className="rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Save private draft</button>
-     {current&&<><button type="button" disabled={busy||!current.draft?.verified} onClick={()=>void execute('publish')} className="rounded border border-[#4A1249] px-4 py-2 text-sm font-bold">Publish verified draft</button>
-      <button type="button" disabled={busy||!current.published} onClick={()=>void execute('unpublish')} className="rounded border px-4 py-2 text-sm">Unpublish</button>
-      <button type="button" disabled={busy} onClick={()=>void execute('archive')} className="rounded border border-red-200 px-4 py-2 text-sm text-red-700">Archive</button></>}
+     <button type="button" disabled={busy||!isAuthor} onClick={()=>void execute('save')} className="rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Save private draft</button>
+     {current&&<>{isReviewer&&current.draft&&!current.draft.verified&&<button type="button" disabled={busy} onClick={()=>void execute('approve')} className="rounded border border-purple-300 px-4 py-2 text-sm font-semibold">Approve reviewed draft</button>}
+      <button type="button" disabled={busy||!isReviewer||!current.draft?.verified} onClick={()=>void execute('publish')} className="rounded border border-[#4A1249] px-4 py-2 text-sm font-bold">Publish verified draft</button>
+      <button type="button" disabled={busy||!isReviewer||!current.published} onClick={()=>void execute('unpublish')} className="rounded border px-4 py-2 text-sm">Unpublish</button>
+      <button type="button" disabled={busy||!isReviewer} onClick={()=>void execute('archive')} className="rounded border border-red-200 px-4 py-2 text-sm text-red-700">Archive</button></>}
     </div>
+    {current&&isReviewer&&<div className="flex flex-wrap items-end gap-3">
+      <label className="block text-sm font-semibold">Schedule publication (local time)
+        <input type="datetime-local" value={publishTime} onChange={e=>setPublishTime(e.target.value)}
+          className="mt-1 block rounded border border-purple-200 p-2"/>
+      </label>
+      <button type="button" disabled={busy||!current.draft?.verified||!publishTime} onClick={()=>void execute('schedule')}
+        className="rounded border border-[#4A1249] px-4 py-2 text-sm font-bold text-[#4A1249] disabled:opacity-50">Schedule approved draft</button>
+    </div>}
     {current?.published&&<p className="text-xs text-slate-600">The currently published revision stays live while a new draft is being edited.</p>}
     {!!current?.history.length&&<div className="border-t pt-4">
       <h3 className="font-bold">Revision history</h3>
       <div className="mt-2 max-h-40 space-y-1 overflow-y-auto">{current.history.slice().reverse().map(row=>
        <div key={row.revision} className="flex items-center justify-between gap-2 text-xs">
         <span>#{row.revision} · {row.action} · {new Date(row.at).toLocaleString()}</span>
-        {row.content&&<button type="button" disabled={busy} onClick={()=>void execute('restore',row.revision)} className="font-semibold text-[#4A1249] underline">Restore as draft</button>}
+        {row.content&&<button type="button" disabled={busy||!isAuthor} onClick={()=>void execute('restore',row.revision)} className="font-semibold text-[#4A1249] underline">Restore as draft</button>}
        </div>)}</div>
     </div>}
    </div>

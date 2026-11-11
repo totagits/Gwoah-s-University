@@ -4,6 +4,8 @@
 
 export type UserRole = 
   | 'super_admin'
+  | 'website_editor'
+  | 'website_reviewer'
   | 'registrar'
   | 'dean'
   | 'lecturer'

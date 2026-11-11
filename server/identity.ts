@@ -8,6 +8,8 @@ import { sendMail, integrationStatus } from './integrations';
 
 export const roles = [
   'super_admin',
+  'website_editor',
+  'website_reviewer',
   'registrar',
   'dean',
   'lecturer',
@@ -405,6 +407,12 @@ export function installIdentity(
     const session = sessionFor(req);
     const actor = session ? publicActor(session) : null;
     if (!actor) return res.status(401).json({ error: 'Sign in to continue.' });
+    // Website-only roles have a deny-by-default API boundary: no ERP, HR,
+    // finance, admissions or administrative operations beyond scoped CMS routes.
+    if (['website_editor','website_reviewer'].includes(actor.role) &&
+        !/^\/api\/admin\/(?:site-content|news-events)(?:\/|$)/.test(endpoint) &&
+        !['/api/auth/logout','/api/auth/change-password'].includes(endpoint))
+      return res.status(403).json({error:'Website editorial accounts cannot access institutional ERP APIs.'});
     res.locals.actor = actor;
     res.locals.sessionHash = session.hash;
     (req as any).actor = actor;
@@ -439,6 +447,7 @@ export function installIdentity(
       if (endpoint === '/api/reset-demo') return deny();
       if (
         /^\/api\/admin\//.test(endpoint) &&
+        !/^\/api\/admin\/(?:site-content|news-events)(?:\/|$)/.test(endpoint) &&
         !administrators.includes(actor.role)
       )
         return deny();

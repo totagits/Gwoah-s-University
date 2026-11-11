@@ -114,7 +114,7 @@ All listed defects remain open until a recorded retest passes; the presence of a
 **Development:** Implements fixes, runs CI, documents verified results and tracks each open defect.  
 **Operations:** Verifies exact deployed SHA, persistent storage and backup/recovery, TLS and environment configuration.
 
-**Next single milestone: WEB-01 — Public homepage and navigation acceptance on the latest actually deployed staging commit.** Record the deployed SHA, review the home hero, header menus, CTAs, media and first-page mobile layout; log every observed failure before deciding on code changes. Then work through WEB-02 to WEB-11 in order.
+**Current active milestone: WEB-02 — Leadership and Governance review.** WEB-01 has been explicitly paused by the project owner with its Apply Now defect outstanding; it is not accepted. Review leader directory, 19 profiles, portraits, titles, governance, navigation and mobile layouts, without reopening the deferred Apply Now issue unless the owner requests it.
 
 **Change-control rule:** Every future PR cites a WEB/ERP/DEF identifier and its acceptance result. Do not start another unrelated feature simply because the previous PR merged. Production `main` remains unchanged without explicit release authorization.
 
@@ -169,3 +169,12 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Repeat on a leadership page and on a 375px mobile menu; cancel rather than submit personal details.
 - [ ] Test direct `https://hiau-staging.totag.network/?apply=1` entry and close/reload behavior.
 - [ ] **WEB-01 remains OPEN:** a green CI build is not an end-to-end browser acceptance.
+
+
+### Owner decision — defer WEB-01 Apply Now; continue public website (11 November 2026)
+- **Decision:** Project owner requested we stop repeated Apply Now attempts because they are consuming time and move forward. Preserve current work and revisit the defect only at a later, expressly selected repair/acceptance point.
+- **Deferred defect DEF-07 — Apply Now on individual degree page:** University owner reported that the highlighted header button did not open the application from `#degree=business--bachelor-of-business-administration-in-accounting` after prior fixes. PRs #67 and #68 changed code and passed automated checks, but **no successful owner/browser retest has been recorded**. Status: **OPEN — DEFERRED / NOT ACCEPTED**. Avoid claiming the button works on staging.
+- **WEB-01 status:** Partially observed (campus and classroom video playback/autoadvance reported working, university seal reported working); other checks remain pending. **Not accepted; not a production release gate.**
+- **Next active milestone: WEB-02 — Leadership and Governance.** Review leadership directory and all 19 profiles, photo authenticity/rights, official titles and bios, header navigation, visual alignment, and mobile usability.
+- **Exception to strict milestone order:** Owner has explicitly authorized proceeding to the next **public website** section despite the deferred WEB-01 defect. ERP development remains paused, and production `main` remains unchanged.
+- **Follow-up condition:** Return to DEF-07 during consolidated public-site defect closure before final G1 acceptance; any repair must include a true browser validation rather than source-only assertions.

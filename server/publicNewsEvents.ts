@@ -38,9 +38,12 @@ export function installPublicNewsEvents(app:Express,db:Operations){
   }
   res.set('Cache-Control','no-store');
   return res.json({items:all(db).flatMap(x=>{
-   if(x.status==='published'&&x.verified)return [x];
-   if(x.live?.verified)return [{...x,...x.live,status:'published'}];
-   return [];
+   const live=x.status==='published'&&x.verified?x:x.live?.verified?x.live:null;
+   if(!live)return [];
+   // Never expose draft metadata, the scheduled release time or private revisions.
+   return [{id:x.id,kind:live.kind,title:live.title,summary:live.summary,
+     eventDate:live.eventDate,location:live.location,status:'published',verified:true,
+     publishedAt:x.publishedAt}];
   })});
  });
  app.get('/api/admin/news-events',(_req,res)=>{

@@ -138,3 +138,13 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Verify actual content identity/usage rights for the campus still; the photograph should not be shown as the identity of other clips.
 - [ ] Live staging website could not be reached by the external fetcher and browser tab access was unavailable in this session. Confirm Coolify deployed commit, then conduct WEB-01 Chrome checks and attach screenshots.
 - [ ] Final WEB-01 status: **Acceptance pending**. Other public website acceptance milestones and new ERP expansion are not unlocked.
+
+
+### WEB-01 correction — restore video-only carousel (10 November 2026)
+- [x] Per university owner instruction, **reversed PR #64's campus photo poster** in the public homepage hero. Images are not carousel slides and must not appear as a first-frame placeholder.
+- [x] Added non-interactive loading spinner text while a selected video begins playing, including buffering, and explicit playback-error messaging without hiding player controls.
+- [x] Preserved original video playlist order, muted autoplay attempt, automatic progression, previous/next, play/pause, mute and administrator-published video support.
+- [x] Replaced the previous campus poster regression with a test that fails if any `poster=` attribute or the removed campus image is reintroduced to the carousel.
+- [ ] **Live review pending:** verify the first content shown is the **actual campus video** after loading, then the classroom clip and any administrator-published clips; spinner is not the first carousel slide.
+- [ ] Verify browser autoplay, buffering, published video playback, audio, mobile controls and actual staging deployed commit before WEB-01 acceptance.
+- [ ] Do not mark WEB-01 accepted based solely on successful CI; `main` remains unchanged.

@@ -55,6 +55,19 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveDropdown(null);
+        setSearchOpen(false);
+        setMobileMenuOpen(false);
+        setMobileExpandedSection(null);
+      }
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, []);
+
   const handleMouseEnter = (menuId: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setActiveDropdown(menuId);
@@ -350,7 +363,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               className="p-2 text-slate-700 hover:text-[#4A1249] hover:bg-purple-50 transition-colors cursor-pointer flex items-center gap-1.5 rounded-sm"
-              aria-label="Toggle site search"
+              aria-label="Find website section"
+              aria-expanded={searchOpen}
               title="Search university programs, admissions, and faculties"
             >
               <Search className="w-5 h-5 text-[#4A1249]" />
@@ -377,14 +391,15 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
         {/* Search Overlay Dropdown */}
         {searchOpen && (
-          <div className="py-3 px-4 bg-purple-50/70 border-t border-purple-200 animate-in fade-in flex items-center gap-3">
+          <div className="py-3 px-4 bg-purple-50/70 border-t border-purple-200 animate-in fade-in flex flex-wrap items-center gap-3">
             <Search className="w-4 h-4 text-[#4A1249] shrink-0" />
             <input
               type="text"
-              placeholder="Search colleges, degrees, admissions, academic calendar, or facilities..."
+              placeholder="Find a section: programs, admissions, scholarships, campus, calendar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white px-3 py-1.5 border border-purple-300 text-xs rounded-none focus:outline-none focus:border-[#4A1249] text-slate-900"
+              aria-label="Find a university website section"
+              className="min-w-[180px] flex-1 bg-white px-3 py-1.5 border border-purple-300 text-xs rounded-none focus:outline-none focus:border-[#4A1249] text-slate-900"
               autoFocus
               onKeyDown={(event) => { if (event.key === 'Enter') siteSearch(searchQuery); }}
             />
@@ -395,7 +410,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               Search
             </button>
             <button
-              onClick={() => setSearchOpen(false)}
+              onClick={() => { setSearchOpen(false); setSearchFeedback(''); }}
               className="p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
               aria-label="Close search"
             >
@@ -436,7 +451,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         : 'text-slate-700 hover:text-[#4A1249] border-transparent'
                     }`}
                     aria-expanded={isCurrentOpen}
-                    aria-haspopup={hasItems}
+                    aria-haspopup={hasItems ? 'menu' : undefined}
                   >
                     <span>{link.label}</span>
                     {hasItems && (
@@ -460,7 +475,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         <span className="text-[10px] text-[#C39A53] font-semibold">HIAU Liberia</span>
                       </div>
                       <div className="py-1 space-y-1">
-                        {submenus[link.id].filter(sub => !sub.restricted || !!currentUser).map((sub, idx) => (
+                        {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, idx) => (
                           <button
                             key={idx}
                             onClick={() => {
@@ -537,7 +552,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                       <button
                         onClick={() => setMobileExpandedSection(isExpanded ? null : link.id)}
                         className="p-1 text-[#4A1249] hover:bg-purple-50 rounded"
-                        aria-label={`Expand ${link.label} submenu`}
+                        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${link.label} submenu`}
+                         aria-expanded={isExpanded}
                       >
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -548,7 +564,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
                   {hasSub && isExpanded && (
                     <div className="pl-6 pr-3 py-1 space-y-1 bg-purple-50/50">
-                      {submenus[link.id].filter(sub => !sub.restricted || !!currentUser).map((sub, sidx) => (
+                      {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, sidx) => (
                         <button
                           key={sidx}
                           onClick={() => {

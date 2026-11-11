@@ -9,12 +9,10 @@ const parse=async(r:Response)=>{
   if(!r.ok)throw new Error(data.error||'Request failed');
   return data;
 };
-const csrf=()=>document.cookie.match(/(?:^|; )csrf=([^;]+)/)?.[1]||'';
 const request=async(url:string,method:string,body:object)=>{
-  // Use the CSRF value managed by the authenticated session, never an anonymous public request.
-  const {getSessionCsrf}=await import('../../services/session');
+  // The session fetch wrapper appends the authenticated CSRF header for writes.
   return parse(await fetch(url,{method,credentials:'same-origin',
-    headers:{'Content-Type':'application/json','x-csrf-token':getSessionCsrf()},body:JSON.stringify(body)}));
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
 };
 export const WebsiteStaffProfiles:React.FC<{currentUser:{role:string}}>=({currentUser})=>{
   const [records,setRecords]=useState<RecordEntry[]>([]);
@@ -33,7 +31,7 @@ export const WebsiteStaffProfiles:React.FC<{currentUser:{role:string}}>=({curren
     setSelected(entry.id);setForm({name:entry.name,title:entry.title,category:entry.category,biography:entry.biography});
     setMessage('');setError('');
   };
-  const act=async(kind:'save'|'publish'|'unpublish'|'delete',file?:File)=>{
+  const act=async(kind:'save'|'publish'|'unpublish'|'delete')=>{
     if(busy||currentUser.role!=='super_admin')return;
     setBusy(true);setError('');setMessage('');
     try{

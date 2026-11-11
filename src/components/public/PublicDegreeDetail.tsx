@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, GraduationCap, PlayCircl
 import { resolvePublicDegree } from './PublicColleges';
 import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
 import {PublicDegreeVideo} from './PublicDegreeVideo';
+import {ManagedText} from './ManagedText';
 
 type PublishedDegree = {
   programName:string;programCode:string;credential:string;college:string;
@@ -85,8 +86,9 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Program overview</p>
           <h2 id="degree-overview" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b] sm:text-3xl">About this degree</h2>
           <p className="mt-5 text-base leading-7 text-slate-700">
-            {program.name} is among the academic fields described by the {college.name}.
-            {explainer ? ' '+explainer.learn : ' Its focus includes '+program.focus.toLowerCase()+'.'}
+            <ManagedText section="academics" slot={`degree.${route}.overview`}
+              fallback={program.name+' is among the academic fields described by the '+college.name+'.'+
+                (explainer?' '+explainer.learn:' Its focus includes '+program.focus.toLowerCase()+'.')}/>
           </p>
           <p className="mt-4 text-sm leading-7 text-slate-700">
             To plan a suitable academic pathway, prospective students should verify official course
@@ -108,11 +110,13 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
         <section aria-labelledby="degree-world">
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#956a32]">Society, technology and work</p>
           <h2 id="degree-world" className="mt-2 text-2xl font-bold tracking-tight text-[#35103b]">Relevance in today's world</h2>
-          <p className="mt-4 text-base leading-7 text-slate-700">{explainer?.today ?? 'The importance of this field continues to evolve alongside technology, community needs and professional practice.'}</p>
+          <p className="mt-4 text-base leading-7 text-slate-700"><ManagedText section="academics" slot={`degree.${route}.relevance`}
+            fallback={explainer?.today ?? 'The importance of this field continues to evolve alongside technology, community needs and professional practice.'}/></p>
         </section>
         <section aria-labelledby="degree-careers">
           <h2 id="degree-careers" className="text-2xl font-bold tracking-tight text-[#35103b]">Possible professional directions</h2>
-          <p className="mt-4 text-base leading-7 text-slate-700">{explainer?.careers ?? 'Graduates may explore opportunities in their field or pursue further study, depending on professional qualifications and applicable regulations.'}</p>
+          <p className="mt-4 text-base leading-7 text-slate-700"><ManagedText section="academics" slot={`degree.${route}.careers`}
+            fallback={explainer?.careers ?? 'Graduates may explore opportunities in their field or pursue further study, depending on professional qualifications and applicable regulations.'}/></p>
           <p className="mt-3 text-xs leading-6 text-slate-600">Career paths are illustrative, not employment guarantees. Regulated professions may require additional training, certification or licensing.</p>
         </section>
         {released&&<section aria-labelledby="degree-curriculum" className="rounded-xl border border-[#dbc9de] bg-[#faf8fb] p-5 sm:p-7">

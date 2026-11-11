@@ -121,7 +121,7 @@ export function PortalLoginModal({
               />
             </label>
           )}
-          <button type="submit" className="hiau-dashboard-selected mt-1 rounded-md border border-[#C39A53] bg-[#4A1249] px-5 py-3 font-bold text-white transition-colors hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53] disabled:opacity-50" disabled={busy}>
+          <button type="submit" className="hiau-brand-action hiau-dashboard-selected mt-1 rounded-md border border-[#C39A53] bg-[#4A1249] px-5 py-3 font-bold text-white transition-colors hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53] disabled:opacity-50" disabled={busy}>
             {busy
               ? 'Please wait…'
               : activation

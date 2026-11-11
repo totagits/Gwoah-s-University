@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FileText,
   CheckCircle,
@@ -221,9 +222,9 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
     </section>}
 
       {/* ONLINE APPLICATION MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A051C]/85 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white border-2 border-[#4A1249] rounded-2xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative my-8 text-[#2E0F34] animate-in fade-in zoom-in-95">
+      {isModalOpen && createPortal(
+        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A051C]/85 backdrop-blur-sm p-4 overflow-y-auto">
+          <div role="dialog" aria-modal="true" aria-label="HIAU online application" className="bg-white border-2 border-[#4A1249] rounded-2xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative my-8 text-[#2E0F34] animate-in fade-in zoom-in-95">
             <button
               onClick={onCloseModal}
               className="absolute top-4 right-4 text-slate-400 hover:text-[#4A1249] p-2 rounded bg-slate-100 hover:bg-purple-100 cursor-pointer"
@@ -507,7 +508,8 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

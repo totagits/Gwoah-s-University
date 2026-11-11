@@ -178,3 +178,16 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - **Next active milestone: WEB-02 — Leadership and Governance.** Review leadership directory and all 19 profiles, photo authenticity/rights, official titles and bios, header navigation, visual alignment, and mobile usability.
 - **Exception to strict milestone order:** Owner has explicitly authorized proceeding to the next **public website** section despite the deferred WEB-01 defect. ERP development remains paused, and production `main` remains unchanged.
 - **Follow-up condition:** Return to DEF-07 during consolidated public-site defect closure before final G1 acceptance; any repair must include a true browser validation rather than source-only assertions.
+
+
+### WEB-02 implementation audit and new public staff profile controls (11 November 2026)
+- [x] Verified the 19 **existing, hard-coded** public university leaders and faculty are represented by detail-profile identifiers, with automated source and portrait presence checks. Authenticity, appointment validity, titles, contact details and permission to display the photographs remain institutional approval items.
+- [x] Fixed the invalid-profile fallback that could otherwise display the Chancellor's biography for a nonexistent leader URL. Invalid/retired profile links now display an explicit unavailable state.
+- [x] Introduced **Public Staff Profiles** as a Super Administrator-only website content management workspace: create draft, edit professional name/title/category/biography, upload a JPEG/PNG portrait (up to 2 MB), preview, publish, unpublish and remove. New staff can be categorized as executives, trustees or faculty/staff.
+- [x] Existing static leadership entries remain unchanged; newly published profiles appear in the leadership directory, filters and individual profile view. **Drafts, unpublished photos, and HR/employee records are not publicly exposed.** The feature records audit actions for publication changes.
+- [x] Public staff changes use existing persistent `DATA_DIR` SQLite settings and protected photo storage; file/record preservation across a Coolify restart still requires operational verification.
+- [x] Added API-level tests for unauthorized role denials, private drafts, required photo before publication, public visibility after publication and removal after unpublishing.
+- [ ] Verify in staging as university Super Administrator: create a fictional faculty/staff draft, upload an approved test portrait, preview, publish, open the public directory and individual link, then unpublish and verify both public routes disappear. Use only fictional data in staging.
+- [ ] Confirm official HIAU leadership details, staff appointment authority, photograph permission/identity, spelling, titles and qualifications, including all 19 existing profiles. Neither automated tests nor this content management feature constitutes such verification.
+- [ ] Verify desktop/mobile layout, shareable direct links, keyboard/filters, audit records and photo persistence after approved backup/redeploy test.
+- [ ] WEB-02 remains **acceptance pending** until browser acceptance and official content approval. WEB-01 Apply Now remains an explicitly deferred, separate defect.

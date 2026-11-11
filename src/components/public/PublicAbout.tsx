@@ -287,7 +287,7 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additio
               <span>Our Vision</span>
             </div>
             <h3 className="text-xl font-collegiate font-black text-[#4A1249] mb-3">
-              "A WORLD WHERE NO ONE LIVES OR DIES WITHOUT ACCESS TO QUALITY EDUCATION."
+              <ManagedText section="about" slot="vision" fallback="A WORLD WHERE NO ONE LIVES OR DIES WITHOUT ACCESS TO QUALITY EDUCATION." />
             </h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               We envision a future where geographical and socioeconomic barriers to world-class tertiary education are eliminated through accessible physical and digital campuses.
@@ -301,7 +301,7 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additio
               <span>Our Mission</span>
             </div>
             <h3 className="text-xl font-collegiate font-black text-[#4A1249] mb-3">
-              EMPOWERING FUTURE LEADERS THROUGH WHOLE-PERSON EDUCATION
+              <ManagedText section="about" slot="mission" fallback="EMPOWERING FUTURE LEADERS THROUGH WHOLE-PERSON EDUCATION" />
             </h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               To provide accessible, world-class academic, technical, and vocational education in underdeveloped nations (beginning in Sub-Saharan Africa), empowering students through emerging technologies, entrepreneurship, and developing the total person—spirit, soul, and body.
@@ -315,7 +315,7 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additio
               <span>University Motto</span>
             </div>
             <h3 className="text-xl font-collegiate font-black text-[#4A1249] mb-3">
-              "EDUCATING THE TOTAL PERSON: MIND, BODY AND SPIRIT, WITH EXCELLENCE IN ENTREPRENEURSHIP SKILLS."
+              <ManagedText section="about" slot="motto" fallback="EDUCATING THE TOTAL PERSON: MIND, BODY AND SPIRIT, WITH EXCELLENCE IN ENTREPRENEURSHIP SKILLS." />
             </h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Cultivating intellectual rigor, physical wellness, spiritual maturity, and hands-on entrepreneurial acumen so graduates become creators of jobs rather than mere seekers of employment.
@@ -338,10 +338,7 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additio
               <p className="text-xs font-semibold uppercase tracking-widest text-[#927139]">University background</p>
               <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#4A1249]">Our foundation and campus</h3>
               <p className="mt-4 text-sm leading-7 text-slate-700">
-                HIAU's development began in 2020 with an international task force
-                convened through Harvest Intercontinental Ministries Unlimited.
-                Its Old Road campus in Monrovia provides a home for academic and
-                administrative activities.
+                <ManagedText section="about" slot="institutional-history" fallback="HIAU's development began in 2020 with an international task force convened through Harvest Intercontinental Ministries Unlimited. Its Old Road campus in Monrovia provides a home for academic and administrative activities." />
               </p>
               <p className="mt-4 flex items-start gap-2 text-sm text-slate-600">
                 <MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#927139]" />

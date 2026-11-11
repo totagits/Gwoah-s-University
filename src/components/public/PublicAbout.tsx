@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import type {PublicStaffEntry} from '../../data/publicStaff';
 import {
   Building,
   MapPin,
@@ -26,6 +27,7 @@ interface LeaderItem {
 
 interface PublicAboutProps {
   onOpenProfile?: (profileId: string) => void;
+  additionalStaff?: PublicStaffEntry[];
 }
 
 const EXECUTIVE_ADMINISTRATORS: LeaderItem[] = [
@@ -243,17 +245,21 @@ const CORE_PRINCIPLES = [
   },
 ];
 
-export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile }) => {
+export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additionalStaff = [] }) => {
   const [activeLeaderTab, setActiveLeaderTab] = useState<'all' | 'executive' | 'trustee' | 'faculty'>('all');
 
-  const filteredLeaders =
-    activeLeaderTab === 'all'
-      ? [...EXECUTIVE_ADMINISTRATORS, ...BOARD_OF_TRUSTEES, ...PROFESSORS_AND_FACULTY]
-      : activeLeaderTab === 'executive'
-      ? EXECUTIVE_ADMINISTRATORS
-      : activeLeaderTab === 'trustee'
-      ? BOARD_OF_TRUSTEES
-      : PROFESSORS_AND_FACULTY;
+  const staffCards: LeaderItem[] = additionalStaff.map(p=>({
+    id:p.id,name:p.name,title:p.title,role:p.title,image:p.image,category:p.category,
+  }));
+  const allLeaders=[...EXECUTIVE_ADMINISTRATORS,...BOARD_OF_TRUSTEES,...PROFESSORS_AND_FACULTY,...staffCards];
+  const filteredLeaders=activeLeaderTab==='all'?allLeaders:
+    allLeaders.filter(leader=>leader.category===activeLeaderTab);
+  const counts={
+    all:allLeaders.length,
+    executive:allLeaders.filter(p=>p.category==='executive').length,
+    trustee:allLeaders.filter(p=>p.category==='trustee').length,
+    faculty:allLeaders.filter(p=>p.category==='faculty').length,
+  };
 
   return (
     <section id="about" className="py-16 bg-[#FAF8FB] border-b border-purple-100 text-[#2E0F34]">
@@ -393,10 +399,10 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile }) => {
             <div role="group" aria-label="Filter leadership directory"
               className="flex flex-wrap gap-2">
               {([
-                ['all', 'All', EXECUTIVE_ADMINISTRATORS.length + BOARD_OF_TRUSTEES.length + PROFESSORS_AND_FACULTY.length],
-                ['executive', 'Executives', EXECUTIVE_ADMINISTRATORS.length],
-                ['trustee', 'Trustees', BOARD_OF_TRUSTEES.length],
-                ['faculty', 'Faculty', PROFESSORS_AND_FACULTY.length],
+                ['all', 'All', counts.all],
+                ['executive', 'Executives', counts.executive],
+                ['trustee', 'Trustees', counts.trustee],
+                ['faculty', 'Faculty & Staff', counts.faculty],
               ] as const).map(([key,label,count])=>(
                 <button key={key} type="button"
                   onClick={() => setActiveLeaderTab(key)}

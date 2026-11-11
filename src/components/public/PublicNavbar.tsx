@@ -14,12 +14,9 @@ import {
   GraduationCap,
   FileText,
   Clock,
-  Download,
   ShieldCheck,
   Laptop,
   CheckCircle,
-  Wrench,
-  HelpCircle,
   Award,
   Sparkles,
 } from 'lucide-react';
@@ -136,7 +133,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     tour: [
       {
         label: 'Campus & Classroom Continuous Video Tour',
-        desc: 'Watch real campus facilities, grounds & laptop lab',
+        desc: 'Explore campus and classroom facilities',
         icon: <Compass className="w-4 h-4 text-[#C39A53]" />,
         action: () => onNavigateSection('tour'),
         badge: 'Video Tour',
@@ -149,18 +146,11 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       },
       {
         label: 'Central Library & Reading Commons',
-        desc: 'Polished mahogany study tables & 2.5M+ digital catalog access',
+        desc: 'Explore campus study spaces and library resources',
         icon: <BookOpen className="w-4 h-4 text-[#C39A53]" />,
         action: () => onNavigateSection('tour'),
       },
-      {
-        label: 'Campus Facilities Feedback & Repairs',
-        restricted: true,
-        desc: 'Submit maintenance work orders for rooms and equipment',
-        icon: <Wrench className="w-4 h-4 text-[#4A1249]" />,
-        action: () => onOpenPortal('facilities'),
-        badge: 'ERP Live',
-      },
+
     ],
     colleges: [
       {
@@ -206,13 +196,13 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     admissions: [
       {
         label: 'Start Online Application',
-        desc: 'Apply for Semester I 2026/2027 ($10 placement assessment fee)',
+        desc: 'Submit an application; confirm assessment fees and dates with Admissions',
         icon: <ArrowRight className="w-4 h-4 text-[#C39A53]" />,
         action: () => {
           if (onOpenApplicationModal) onOpenApplicationModal();
           else onNavigateSection('admissions');
         },
-        badge: 'Open Now',
+        badge: 'Apply',
       },
       {
         label: '5-Step Admission Requirements',
@@ -230,7 +220,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       {
         label: 'Admissions Officer Review Desk',
         restricted: true,
-        desc: 'Evaluate applicant transcripts and manage acceptances',
+        desc: 'Review applications in the authorized staff intake queue',
         icon: <Users className="w-4 h-4 text-[#4A1249]" />,
         action: () => onOpenPortal('admissions'),
         badge: 'ERP Staff',
@@ -239,10 +229,10 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     calendar: [
       {
         label: '2026/2027 Senate Academic Calendar',
-        desc: 'Official semester registration, instruction & exam dates',
+        desc: 'Review published registration, instruction and examination dates',
         icon: <Calendar className="w-4 h-4 text-[#C39A53]" />,
         action: () => onNavigateSection('calendar'),
-        badge: 'Official',
+        badge: 'Calendar',
       },
       {
         label: 'Mid-Term & Final Examination Schedules',
@@ -250,15 +240,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         icon: <Clock className="w-4 h-4 text-[#4A1249]" />,
         action: () => onNavigateSection('calendar'),
       },
-      {
-        label: 'Export Official Calendar (.ICS)',
-        desc: 'Sync directly to Apple Calendar, Google Calendar, or Outlook',
-        icon: <Download className="w-4 h-4 text-[#C39A53]" />,
-        action: () => {
-          window.location.href = '/api/calendar/export.ics';
-        },
-        badge: '.ICS Sync',
-      },
+
       {
         label: 'Commencement & Matriculation',
         desc: 'Annual convocation milestones and graduation ceremonies',
@@ -275,28 +257,40 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       },
       {
         label: 'DEI & Non-Discrimination Charter',
-        desc: 'Accessible education, Section 504 / ADA accommodations',
+        desc: 'Read university student inclusion and support information',
         icon: <ShieldCheck className="w-4 h-4 text-[#4A1249]" />,
         action: () => onNavigateSection('dei'),
         badge: 'Charter',
       },
-      {
-        label: 'Shared Resource Library (ERP)',
-        restricted: true,
-        desc: 'Document versioning, syllabi, study guides & past papers',
-        icon: <BookOpen className="w-4 h-4 text-[#C39A53]" />,
-        action: () => onOpenPortal('library'),
-        badge: 'Versioned',
-      },
-      {
-        label: 'Campus Facilities Feedback',
-        restricted: true,
-        desc: 'Report repair, plumbing, or classroom issues directly to staff',
-        icon: <Wrench className="w-4 h-4 text-[#4A1249]" />,
-        action: () => onOpenPortal('facilities'),
-        badge: 'Repair Log',
-      },
+
+
     ],
+  };
+
+  const [searchFeedback, setSearchFeedback] = useState('');
+  const siteSearch = (value: string) => {
+    const term = value.trim().toLowerCase();
+    if (!term) return;
+    const targets: Array<{ words: string[]; section: string }> = [
+      { words: ['financial aid', 'scholarship', 'bursary', 'grant'], section: 'financial-aid' },
+      { words: ['apply', 'application', 'admission', 'entrance'], section: 'admissions' },
+      { words: ['degree', 'college', 'program', 'course', 'tvet', 'certificate', 'major'], section: 'colleges' },
+      { words: ['leader', 'governance', 'trustee', 'president', 'chancellor', 'faculty'], section: 'about' },
+      { words: ['tour', 'campus', 'classroom', 'library', 'facility'], section: 'tour' },
+      { words: ['calendar', 'event', 'schedule', 'date'], section: 'calendar' },
+      { words: ['student life', 'fellowship', 'student experience', 'club'], section: 'dei' },
+      { words: ['home', 'welcome'], section: 'hero' },
+      { words: ['about', 'mission', 'vision', 'history'], section: 'about' },
+    ];
+    const match = targets.find(target => target.words.some(word => term.includes(word)));
+    if (!match) {
+      setSearchFeedback('No direct match. Try Scholarships, Admissions, Academics, Leadership, Campus Tour or Events.');
+      return;
+    }
+    onNavigateSection(match.section);
+    setSearchFeedback('');
+    setSearchOpen(false);
+    setSearchQuery('');
   };
 
   const navLinks = [
@@ -392,46 +386,10 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white px-3 py-1.5 border border-purple-300 text-xs rounded-none focus:outline-none focus:border-[#4A1249] text-slate-900"
               autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const q = searchQuery.toLowerCase();
-                  if (q.includes('admiss') || q.includes('apply')) {
-                    if (onOpenApplicationModal) onOpenApplicationModal();
-                    else onNavigateSection('admissions');
-                  } else if (q.includes('tour') || q.includes('camp') || q.includes('build')) {
-                    onNavigateSection('tour');
-                  } else if (q.includes('coll') || q.includes('deg') || q.includes('major')) {
-                    onNavigateSection('colleges');
-                  } else if (q.includes('cal') || q.includes('exam') || q.includes('date')) {
-                    onNavigateSection('calendar');
-                  } else if (q.includes('repair') || q.includes('facil') || q.includes('work')) {
-                    onNavigateSection('dei');
-                  } else {
-                    onNavigateSection('about');
-                  }
-                  setSearchOpen(false);
-                }
-              }}
+              onKeyDown={(event) => { if (event.key === 'Enter') siteSearch(searchQuery); }}
             />
             <button
-              onClick={() => {
-                const q = searchQuery.toLowerCase();
-                if (q.includes('admiss') || q.includes('apply')) {
-                  if (onOpenApplicationModal) onOpenApplicationModal();
-                  else onNavigateSection('admissions');
-                } else if (q.includes('tour') || q.includes('camp') || q.includes('build')) {
-                  onNavigateSection('tour');
-                } else if (q.includes('coll') || q.includes('deg') || q.includes('major')) {
-                  onNavigateSection('colleges');
-                } else if (q.includes('cal') || q.includes('exam') || q.includes('date')) {
-                  onNavigateSection('calendar');
-                } else if (q.includes('repair') || q.includes('facil') || q.includes('work')) {
-                  onNavigateSection('dei');
-                } else {
-                  onNavigateSection('about');
-                }
-                setSearchOpen(false);
-              }}
+              onClick={() => siteSearch(searchQuery)}
               className="px-4 py-1.5 bg-[#4A1249] hover:bg-[#661B69] text-white text-xs font-collegiate font-bold uppercase tracking-wider cursor-pointer transition-colors"
             >
               Search
@@ -443,6 +401,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             >
               <X className="w-4 h-4" />
             </button>
+            {searchFeedback && <p role="status" className="max-w-sm text-xs leading-5 text-[#4A1249]">{searchFeedback}</p>}
           </div>
         )}
 

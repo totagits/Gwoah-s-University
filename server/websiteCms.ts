@@ -33,8 +33,9 @@ const safe=(v:unknown,max:number)=>typeof v==='string'?v.trim().slice(0,max):'';
 const parseContent=(v:any):Content|null=>{
  const section=v?.section;
  const title=safe(v?.title,150),body=safe(v?.body,4000);
- if(!sections.includes(section)||title.length<3||body.length<15)return null;
  const slot=safe(v?.slot,60);
+ const shortField=slot.startsWith('label-')||slot.startsWith('phone-')||slot.startsWith('email-')||slot.endsWith('.duration')||slot.endsWith('.credential');
+ if(!sections.includes(section)||title.length<3||body.length<(shortField?2:15))return null;
  if(slot&&!((managedSlots as Record<string,readonly string[]>)[section]||[]).includes(slot))return null;
  if(slot.startsWith('label-')&&(body.length>32||/[\r\n]/.test(body)))return null;
  if(slot.startsWith('phone-')&&!/^\+?[0-9() .-]{7,25}$/.test(body))return null;

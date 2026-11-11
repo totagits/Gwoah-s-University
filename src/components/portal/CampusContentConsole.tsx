@@ -45,7 +45,7 @@ export const CampusContentConsole:React.FC<{currentUser:{role:string};openVideoL
   <div className="flex flex-wrap items-start justify-between gap-4">
    <div><h2 className="text-xl font-bold text-[#4A1249]">Campus & Community Content Manager</h2>
    <p className="mt-1 text-sm text-slate-600">Manage approved photos, campus details and video references. New items start as private drafts.</p></div>
-   <button type="button" onClick={()=>{setSelected('');setForm(initial);setMessage('');setError('');}} className="rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white">+ New item</button>
+   <button type="button" onClick={()=>{setSelected('');setForm(initial);setMessage('');setError('');}} className="hiau-brand-action rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white">+ New item</button>
   </div>
   {message&&<p role="status" className="rounded bg-green-50 p-3 text-sm text-green-900">{message}</p>}
   {error&&<p role="alert" className="rounded bg-red-50 p-3 text-sm text-red-900">{error}</p>}
@@ -82,7 +82,7 @@ export const CampusContentConsole:React.FC<{currentUser:{role:string};openVideoL
        <span>I have verified these institutional details and have permission to publish the media.</span>
      </label>
      <div className="flex flex-wrap gap-2">
-       <button type="button" disabled={busy} onClick={()=>void act('save')} className="rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Save draft</button>
+       <button type="button" disabled={busy} onClick={()=>void act('save')} className="hiau-brand-action rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Save draft</button>
        {active&&<><button type="button" disabled={busy} onClick={()=>void act('publish')} className="rounded border border-[#4A1249] px-4 py-2 text-sm font-semibold">Publish</button>
          <button type="button" disabled={busy} onClick={()=>void act('unpublish')} className="rounded border px-4 py-2 text-sm">Unpublish</button>
          <button type="button" disabled={busy} onClick={()=>void act('delete')} className="rounded border border-red-300 px-4 py-2 text-sm text-red-700">Delete</button></>}

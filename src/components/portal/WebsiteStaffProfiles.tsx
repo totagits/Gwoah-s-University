@@ -78,7 +78,7 @@ export const WebsiteStaffProfiles:React.FC<{currentUser:{role:string}}>=({curren
           <p className="mt-1 text-sm text-slate-600">Add, edit, upload a portrait, and publish public staff biographies. Private HR records remain separate.</p>
         </div>
         <button type="button" onClick={()=>{setSelected('');setForm(empty);setMessage('');setError('');}}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#4A1249] px-4 py-2 font-semibold text-white"><Plus className="h-4 w-4"/>New staff profile</button>
+          className="inline-flex items-center gap-2 hiau-dashboard-selected rounded-lg border border-[#C39A53] bg-[#4A1249] px-4 py-2 font-semibold text-white hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2"><Plus className="h-4 w-4"/>New staff profile</button>
       </div>
       {error&&<p role="alert" className="mt-4 rounded-md bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
       {message&&<p role="status" className="mt-4 rounded-md bg-emerald-50 p-3 text-sm text-emerald-800">{message}</p>}
@@ -116,7 +116,7 @@ export const WebsiteStaffProfiles:React.FC<{currentUser:{role:string}}>=({curren
             rows={5} maxLength={3000} className="mt-1 block w-full rounded-md border border-slate-300 p-2 text-slate-900"/>
         </label>
         <button type="button" disabled={busy} onClick={()=>void act('save')}
-          className="inline-flex items-center gap-2 rounded-md bg-[#4A1249] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+          className="inline-flex items-center gap-2 hiau-dashboard-selected rounded-md border border-[#C39A53] bg-[#4A1249] px-4 py-2 text-sm font-semibold text-white hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">
           <Save className="h-4 w-4"/>Save {active?'changes':'draft'}</button>
         {active&&<div className="space-y-4 border-t border-slate-200 pt-5">
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-[#D9CADC] px-4 py-2 text-sm font-semibold text-[#4A1249]">
@@ -130,7 +130,7 @@ export const WebsiteStaffProfiles:React.FC<{currentUser:{role:string}}>=({curren
           <p className="text-xs text-slate-600">Only publish with university approval of the appointment, biography and photograph rights.</p>
           <div className="flex flex-wrap gap-3">
             <button type="button" disabled={busy} onClick={()=>void act(active.status==='published'?'unpublish':'publish')}
-              className="inline-flex items-center gap-2 rounded-md bg-[#4A1249] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+              className="inline-flex items-center gap-2 hiau-dashboard-selected rounded-md border border-[#C39A53] bg-[#4A1249] px-4 py-2 text-sm font-semibold text-white hover:bg-[#661B69] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">
               {active.status==='published'?<EyeOff className="h-4 w-4"/>:<Globe className="h-4 w-4"/>}
               {active.status==='published'?'Unpublish':'Publish to website'}
             </button>

@@ -1,4 +1,10 @@
 import React,{useCallback,useEffect,useState} from 'react';
+import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
+const degreeSlug=(name:string)=>name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const degreeSlots=degreeExplainers.degrees.flatMap(degree=>{
+ const route=degree.college+'--'+degreeSlug(degree.name);
+ return ([['overview','Program overview'],['relevance','Relevance today'],['careers','Professional directions']] as const).map(([field,label])=>({id:'degree.'+route+'.'+field,label:degree.name+' — '+label}));
+});
 type Section='home'|'about'|'academics'|'admissions'|'events'|'student-life'|'footer';
 type Content={section:Section;title:string;body:string;verified:boolean;slot?:string};
 type Revision={revision:number;at:string;actor:string;action:string;content:Content|null};
@@ -7,8 +13,8 @@ const blank:Content={section:'home',title:'',body:'',verified:false,slot:''};
 const sections:Section[]=['home','about','academics','admissions','events','student-life','footer'];
 const slots:Record<Section,Array<{id:string;label:string}>>={
  home:[{id:'hero-heading',label:'Homepage hero heading'},{id:'hero-description',label:'Homepage introduction'}],
- about:[{id:'page-heading',label:'About page heading'},{id:'page-description',label:'About introduction'}],
- academics:[{id:'page-heading',label:'Academics page heading'},{id:'page-description',label:'Academics introduction'}],
+ about:[{id:'page-heading',label:'About page heading'},{id:'page-description',label:'About introduction'},{id:'vision',label:'University vision'},{id:'mission',label:'University mission'},{id:'motto',label:'University motto'},{id:'institutional-history',label:'University history'}],
+ academics:[{id:'page-heading',label:'Academics page heading'},{id:'page-description',label:'Academics introduction'},...degreeSlots],
  admissions:[{id:'page-heading',label:'Admissions page heading'},{id:'page-description',label:'Admissions introduction'}],
  events:[],'student-life':[],footer:[]
 };

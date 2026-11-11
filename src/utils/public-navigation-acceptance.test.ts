@@ -30,3 +30,13 @@ test('WEB-01: public mobile disclosure and keyboard closing remain available',()
   assert.match(navbar,/aria-expanded=\{isExpanded\}/);
   assert.match(navbar,/aria-expanded=\{mobileMenuOpen\}/);
 });
+
+test('WEB-05: About offers concise public destinations and leadership anchor',()=>{
+  assert.match(navbar,/label: 'University Overview'/);
+  assert.match(navbar,/label: 'Leadership & Governance'/);
+  assert.match(navbar,/label: 'Campus & Facilities'/);
+  assert.match(navbar,/onNavigateSection\('hiau-leadership'\)/);
+  assert.doesNotMatch(navbar,/label: 'Founder & Chancellor:/);
+  const about=readFileSync(new URL('../components/public/PublicAbout.tsx',import.meta.url),'utf8');
+  assert.match(about,/id="hiau-leadership"/);
+});

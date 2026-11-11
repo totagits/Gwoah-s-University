@@ -15,6 +15,7 @@ export const PORTAL_MODULES = [
   { id: 'website_staff', label: 'Public Staff Profiles', group: 'secondary' },
   { id: 'campus_content', label: 'Campus Content Manager', group: 'secondary' },
   { id: 'website_cms', label: 'Website Content CMS', group: 'secondary' },
+  { id: 'website_news', label: 'Website News & Events', group: 'secondary' },
   { id: 'admissions', label: 'Admissions', group: 'primary' },
   { id: 'finance', label: 'Finance', group: 'primary' },
   { id: 'compliance', label: 'Compliance & Audit', group: 'primary' },

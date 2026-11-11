@@ -1,4 +1,13 @@
 # HIAU — Public Website Acceptance Register
+
+> **Archived detailed evidence annex — status superseded.** The authoritative project order,
+> workstream status, current blockers and acceptance decisions are maintained in
+> [HIAU Master Development and Acceptance Register](HIAU_MASTER_DEVELOPMENT_AND_ACCEPTANCE_REGISTER.md).
+> Historical checklist statements below are not continuously updated. In particular,
+> the earlier claim that `POST /api/applications` does not exist was superseded by
+> PR #58 (endpoint implemented) and PR #59 (county field fixed). Neither PR
+> by itself verifies a live submission or production release.
+>
 **Review opened:** 10 November 2026  
 **Repository:** totagits/Harvest-Intercontinental-American-University  
 **Working branch:** staging  

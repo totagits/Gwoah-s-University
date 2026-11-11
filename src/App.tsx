@@ -54,7 +54,19 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+  // A stable public URL makes Apply Now work from standalone degree/profile pages,
+  // copied links and browser refreshes, not just an in-memory click handler.
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(
+    () => new URLSearchParams(window.location.search).has('apply')
+  );
+  const closeApplicationModal = () => {
+    setIsApplicationModalOpen(false);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('apply')) {
+      url.searchParams.delete('apply');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+  };
 
   // Active ERP Tab
   const [activePortalTab, setActivePortalTab] = useState<string>('tasks');
@@ -306,7 +318,6 @@ export default function App() {
             currentUser={currentUser}
             onNavigateSection={handleNavigateSection}
             activeSection={activePublicSection}
-            onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
             onOpenProfile={handleOpenProfile}
           />
 
@@ -345,7 +356,7 @@ export default function App() {
               <PublicColleges initialCollegeId={lastPublicCollegeId} />
               <PublicAdmissions
                 isModalOpen={isApplicationModalOpen}
-                onCloseModal={() => setIsApplicationModalOpen(false)}
+                onCloseModal={closeApplicationModal}
                 onOpenModal={() => setIsApplicationModalOpen(true)}
               />
               <PublicCalendar />
@@ -357,7 +368,7 @@ export default function App() {
             <PublicAdmissions
               isModalOpen={isApplicationModalOpen}
               showSection={false}
-              onCloseModal={() => setIsApplicationModalOpen(false)}
+              onCloseModal={closeApplicationModal}
               onOpenModal={() => setIsApplicationModalOpen(true)}
             />
           )}

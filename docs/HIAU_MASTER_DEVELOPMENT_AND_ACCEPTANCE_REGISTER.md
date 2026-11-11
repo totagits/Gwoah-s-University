@@ -158,3 +158,14 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] Mobile 375 px and 768 px menu actions, website search results/no-match, scroll targets, keyboard navigation and viewport overflow remain to be observed in Chrome.
 - [ ] No actual applicant data or paid transaction is authorized for this navigation acceptance. Use only fictional records if submission later becomes necessary under WEB-07.
 - [ ] WEB-01 remains **Acceptance pending** until a dated browser observation and institutional sign-off are documented. Prior user-confirmed playback of campus/classroom videos is a functional observation, not full homepage approval.
+
+
+### WEB-01 corrective retest — Apply Now failed on Accounting degree page (11 November 2026)
+- **User evidence:** staging screenshot at `#degree=business--bachelor-of-business-administration-in-accounting` shows public header **Apply Now** button; user reports clicking it did **not** open the application form. The prior source-level PR #67 was insufficient; browser acceptance **failed**.
+- **Remediation:** the header Apply Now controls are now real desktop/mobile links to `/?apply=1`, and the Admissions menu uses the same explicit destination. The URL can be pasted or refreshed, and the application dialog initializes from this public query parameter.
+- **Layering correction:** application dialog is rendered via `createPortal(..., document.body)` above public header/dropdown stacking contexts. Closing the dialog removes the `apply` query without discarding other URL state.
+- **Regression protection:** tests cover native links, query-controlled modal entry, degree/leader views, existing homepage application, underlying no-charge API payload and dialog layering.
+- [ ] Confirm staging is deployed to the resulting commit, open the Accounting degree URL, click Apply Now, and verify the application form appears without signing in.
+- [ ] Repeat on a leadership page and on a 375px mobile menu; cancel rather than submit personal details.
+- [ ] Test direct `https://hiau-staging.totag.network/?apply=1` entry and close/reload behavior.
+- [ ] **WEB-01 remains OPEN:** a green CI build is not an end-to-end browser acceptance.

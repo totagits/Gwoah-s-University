@@ -11,7 +11,7 @@ const catalog=JSON.parse(read('../../scripts/hiau-degree-video-content.json'));
 test('WEB-07: all 19 degree pages have validated overview, relevance and career slots',()=>{
  assert.equal(catalog.degrees.length,19);
  assert.match(backend,/degreeExplainers\.degrees\.map/);
- assert.match(backend,/degreeFields=\['overview','relevance','careers'\]/);
+ assert.match(backend,/degreeFields=\['overview','relevance','careers','focus','duration','credential'\]/);
  assert.match(backend,/degreeContentSlots=degreeRoutes\.flatMap/);
  for(const field of ['overview','relevance','careers'])
    assert.match(detail,new RegExp('degree\.\\$\\{route\\}\.'+field));

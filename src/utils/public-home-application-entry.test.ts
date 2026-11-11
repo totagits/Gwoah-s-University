@@ -11,7 +11,7 @@ test('WEB-01: all Apply Now and Become a Student actions open the shared applica
   assert.match(navbar,/href="\/\?apply=1"/);
   assert.match(hero,/onClick=\{onOpenApplicationModal\}/);
   assert.match(app,/searchParams\(window\.location\.search\)\.has\('apply'\)/);
-  assert.match(admissions,/\{isModalOpen && \(/);
+  assert.match(admissions,/\{isModalOpen && createPortal\(/);
 });
 
 test('WEB-01: degree and leader profile pages can open admissions without adding a duplicate admissions section',()=>{

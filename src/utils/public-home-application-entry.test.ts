@@ -8,9 +8,9 @@ const navbar=fs.readFileSync(new URL('../components/public/PublicNavbar.tsx',imp
 const hero=fs.readFileSync(new URL('../components/public/PublicHero.tsx',import.meta.url),'utf8');
 
 test('WEB-01: all Apply Now and Become a Student actions open the shared application workflow',()=>{
-  assert.match(navbar,/onOpenApplicationModal\(\)/);
+  assert.match(navbar,/href="\/\?apply=1"/);
   assert.match(hero,/onClick=\{onOpenApplicationModal\}/);
-  assert.match(app,/onOpenApplicationModal=\{\(\) => setIsApplicationModalOpen\(true\)\}/);
+  assert.match(app,/searchParams\(window\.location\.search\)\.has\('apply'\)/);
   assert.match(admissions,/\{isModalOpen && \(/);
 });
 
@@ -33,4 +33,16 @@ test('WEB-01: application submission still uses authenticated-free public intake
   assert.match(admissions,/applyingForScholarship: formData\.applyingForScholarship/);
   assert.match(admissions,/county: formData\.county/);
   assert.match(admissions,/Submit application \(no online charge\)/);
+});
+
+test('WEB-01: Apply Now from standalone degree pages has a native URL and dialog mounts above navigation',()=>{
+  assert.equal((navbar.match(/href="\/\?apply=1"/g) || []).length,2,
+    'Desktop and mobile Apply Now must be native links');
+  assert.match(navbar,/window\.location\.assign\('\/\?apply=1'\)/);
+  assert.match(admissions,/createPortal\(/);
+  assert.match(admissions,/document\.body/);
+  assert.match(admissions,/aria-modal="true"/);
+  assert.match(admissions,/z-\[200\]/);
+  assert.match(app,/closeApplicationModal/);
+  assert.match(app,/searchParams\.delete\('apply'\)/);
 });

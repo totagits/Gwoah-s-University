@@ -11,7 +11,8 @@ const publicUi=read('../components/public/PublicCmsSection.tsx');
 test('WEB-06: public content is published and archive-filtered, never exposed as private drafts',()=>{
  assert.match(backend,/filter\(v=>!v\.archived&&v\.published\)/);
  assert.match(backend,/id:v\.id,\.\.\.v\.published/);
- assert.match(backend,/if\(!editor\(res\)\)return res\.sendStatus\(403\)/);
+ assert.match(backend,/if\(!author\(res\)\)return res\.sendStatus\(403\)/);
+ assert.match(backend,/if\(!reviewer\(res\)\)return res\.sendStatus\(403\)/);
  assert.match(backend,/actorOf\(res\)\?\.role==='super_admin'/);
  assert.match(firewall,/endpoint === '\/api\/public\/site-content'/);
 });

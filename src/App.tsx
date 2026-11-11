@@ -148,8 +148,8 @@ export default function App() {
   useEffect(() => {
     const handleUrlRouting = () => {
       const params = new URLSearchParams(window.location.search);
-      // URL parameters never grant privileges.
-      if (params.has('portal') || params.has('activate')) setIsLoginModalOpen(true);
+      // A public URL must never open an administrative sign-in automatically.
+      // Portal authentication is initiated only by an explicit user action. 
 
       // Check query params: ?leader=chancellor or ?profile=president
       const queryLeader = params.get('leader') || params.get('profile');

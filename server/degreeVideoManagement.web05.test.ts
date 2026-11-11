@@ -67,6 +67,21 @@ test('WEB-05: admin can privately draft, publish, stream and restore an individu
   const publicVideo=await request('/api/public/video/'+encodeURIComponent(slot),'visitor','GET',undefined,{range:'bytes=4-7'});
   assert.equal(publicVideo.status,206);
   assert.equal(await publicVideo.text(),'ftyp');
+  // Replacing a video creates a draft without disrupting the published version.
+  const replacement=Buffer.from(original);
+  replacement.write('NEW!',16,'ascii');
+  assert.equal((await request(url,'super_admin','PUT',replacement)).status,201);
+  assert.equal((await request(url+'/draft','registrar','DELETE',{confirmation:'DISCARD_WEBSITE_VIDEO_DRAFT'})).status,403);
+  assert.equal((await request(url+'/draft','super_admin','DELETE',{confirmation:'WRONG'})).status,400);
+  const stillLive=await request('/api/public/video/'+encodeURIComponent(slot),'visitor','GET',undefined,{range:'bytes=16-19'});
+  assert.equal(stillLive.status,206);
+  assert.notEqual(await stillLive.text(),'NEW!');
+  assert.equal((await request(url+'/draft','super_admin','DELETE',{confirmation:'DISCARD_WEBSITE_VIDEO_DRAFT'})).status,200);
+  const afterDiscard=(await (await request('/api/admin/website-videos','super_admin')).json() as any).videos.find((v:any)=>v.slot===slot);
+  assert.ok(!afterDiscard.draft&&afterDiscard.published,'Discard keeps published original replacement');
+  assert.equal((await request(url+'/draft','super_admin','DELETE',{confirmation:'DISCARD_WEBSITE_VIDEO_DRAFT'})).status,409);
+  const secondSlot=expectedSlots[1],other=(await (await request('/api/admin/website-videos','super_admin')).json() as any).videos.find((v:any)=>v.slot===secondSlot);
+  assert.ok(!other.draft&&!other.published,'Other degree remains unchanged');
   assert.equal((await request(url,'super_admin','DELETE',{confirmation:'RESTORE_DEFAULT_WEBSITE_VIDEO'})).status,200);
   const restored=(await (await request('/api/admin/website-videos','super_admin')).json() as any).videos.find((v:any)=>v.slot===slot);
   assert.ok(!restored.published&&!restored.draft);

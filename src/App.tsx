@@ -6,6 +6,7 @@ import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
 import { PublicVirtualTour } from './components/public/PublicVirtualTour';
 import { PublicCampusContent } from './components/public/PublicCampusContent';
+import { PublicCmsSection } from './components/public/PublicCmsSection';
 import { PublicColleges, resolvePublicDegree } from './components/public/PublicColleges';
 import { PublicDegreeDetail } from './components/public/PublicDegreeDetail';
 import { PublicAdmissions } from './components/public/PublicAdmissions';
@@ -17,6 +18,7 @@ import type {PublicStaffEntry} from './data/publicStaff';
 import {isPublicStaffEntry} from './data/publicStaff';
 import {WebsiteStaffProfiles} from './components/portal/WebsiteStaffProfiles';
 import {CampusContentConsole} from './components/portal/CampusContentConsole';
+import {WebsiteCmsConsole} from './components/portal/WebsiteCmsConsole';
 import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
@@ -381,20 +383,26 @@ export default function App() {
                 onNavigateSection={handleNavigateSection}
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
               />
+              <PublicCmsSection section="home" />
               <PublicAbout onOpenProfile={handleOpenProfile} additionalStaff={publishedStaff} />
+              <PublicCmsSection section="about" />
               <PublicVirtualTour
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
                 onOpenPortal={handleOpenPortal}
               />
               <PublicCampusContent />
               <PublicColleges initialCollegeId={lastPublicCollegeId} />
+              <PublicCmsSection section="academics" />
               <PublicAdmissions
                 isModalOpen={isApplicationModalOpen}
                 onCloseModal={closeApplicationModal}
                 onOpenModal={() => setIsApplicationModalOpen(true)}
               />
+              <PublicCmsSection section="admissions" />
               <PublicCalendar />
+              <PublicCmsSection section="events" />
               <PublicDEI />
+              <PublicCmsSection section="student-life" />
             </main>
           )}
 
@@ -407,6 +415,7 @@ export default function App() {
             />
           )}
 
+          <PublicCmsSection section="footer" />
           <PublicFooter
             onOpenPortal={handleOpenPortal}
             onNavigateSection={handleNavigateSection}
@@ -485,6 +494,9 @@ export default function App() {
             )}
             {activePortalTab === 'campus_content' && (
               <CampusContentConsole currentUser={currentUser} openVideoLibrary={() => setActivePortalTab('website_media')} />
+            )}
+            {activePortalTab === 'website_cms' && (
+              <WebsiteCmsConsole currentUser={currentUser} openModule={(id) => { if (isPortalModuleAvailable(currentUser.role,id)) setActivePortalTab(id); }} />
             )}
 
             {activePortalTab === 'student_portal' && (

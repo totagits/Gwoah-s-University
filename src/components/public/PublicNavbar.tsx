@@ -225,14 +225,6 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         action: () => onNavigateSection('financial-aid'),
         badge: 'Aid',
       },
-      {
-        label: 'Admissions Officer Review Desk',
-        restricted: true,
-        desc: 'Review applications in the authorized staff intake queue',
-        icon: <Users className="w-4 h-4 text-[#4A1249]" />,
-        action: () => onOpenPortal('admissions'),
-        badge: 'ERP Staff',
-      },
     ],
     calendar: [
       {
@@ -312,7 +304,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-purple-200 text-[#2A082C] shadow-sm">
+    <header onKeyDown={(event) => { if (event.key === 'Escape') { setActiveDropdown(null); setSearchOpen(false); setMobileMenuOpen(false); } }} className="sticky top-0 z-40 bg-white border-b border-purple-200 text-[#2A082C] shadow-sm">
       {/* HIAU Primary Institutional Header Row */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -416,7 +408,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         )}
 
         {/* HIAU Navigation Sub-Bar with horizontal items and interactive submenus */}
-        <div className="hidden lg:flex items-center justify-between border-t border-purple-100 py-2">
+        <div className="relative hidden lg:flex items-center justify-between border-t border-purple-100 py-2">
           <nav className="flex items-center gap-6">
             {navLinks.map((link) => {
               const hasItems = link.hasDropdown && !!submenus[link.id];
@@ -425,7 +417,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               return (
                 <div
                   key={link.id}
-                  className="relative"
+                  className="static"
                   onMouseEnter={() => hasItems && handleMouseEnter(link.id)}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -446,7 +438,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         : 'text-slate-700 hover:text-[#4A1249] border-transparent'
                     }`}
                     aria-expanded={isCurrentOpen}
-                    aria-haspopup={hasItems ? 'menu' : undefined}
+                    aria-haspopup={hasItems ? 'true' : undefined}
                   >
                     <span>{link.label}</span>
                     {hasItems && (
@@ -461,7 +453,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   {/* Rich Desktop Submenu Dropdown */}
                   {hasItems && isCurrentOpen && (
                     <div
-                      className="absolute left-0 mt-1 w-80 bg-white border-2 border-purple-200 rounded-none shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-1"
+                      className="absolute left-0 right-0 top-full mt-0 bg-white border border-purple-200 border-t-4 border-t-[#C39A53] rounded-b-lg shadow-2xl p-5 z-50 animate-in fade-in slide-in-from-top-1 max-h-[min(66vh,570px)] overflow-y-auto"
                       onMouseEnter={() => handleMouseEnter(link.id)}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -469,7 +461,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         <span>{link.label} Directory</span>
                         <span className="text-[10px] text-[#C39A53] font-semibold">HIAU Liberia</span>
                       </div>
-                      <div className="py-1 space-y-1">
+                      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 pt-4">
                         {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, idx) => (
                           <button
                             key={idx}
@@ -477,7 +469,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                               sub.action();
                               setActiveDropdown(null);
                             }}
-                            className="w-full text-left p-2.5 rounded-sm hover:bg-purple-50 group flex items-start justify-between cursor-pointer transition-colors"
+                            className="w-full min-h-20 text-left p-3 rounded-md border border-transparent hover:border-purple-200 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249] group flex items-start justify-between cursor-pointer transition-colors"
                           >
                             <div className="flex items-start gap-2.5">
                               <div className="p-1.5 bg-purple-50 group-hover:bg-[#4A1249] group-hover:text-white rounded transition-colors shrink-0 mt-0.5">
@@ -487,7 +479,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                                 <div className="text-xs font-bold text-slate-900 group-hover:text-[#4A1249] flex items-center gap-1.5">
                                   <span>{sub.label}</span>
                                 </div>
-                                <div className="text-[11px] text-slate-500 line-clamp-1">
+                                <div className="text-[11px] text-slate-600 leading-5 line-clamp-2">
                                   {sub.desc}
                                 </div>
                               </div>

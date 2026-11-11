@@ -5,7 +5,7 @@ type Entry={id:string;category:Category;kind:Kind;title:string;description:strin
 const initial={category:'campus' as Category,kind:'information' as Kind,title:'',description:'',mediaUrl:'',verified:false};
 type Form=typeof initial;
 const parse=async(r:Response)=>{const data=await r.json().catch(()=>({error:'Invalid response'}));if(!r.ok)throw new Error(data.error||'Request failed');return data;};
-const send=(url:string,method:string,body:object)=>parse(fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
+const send=async(url:string,method:string,body:object)=>parse(await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
 export const CampusContentConsole:React.FC<{currentUser:{role:string};openVideoLibrary?:()=>void}>=({currentUser,openVideoLibrary})=>{
  const [items,setItems]=useState<Entry[]>([]),[selected,setSelected]=useState(''),[form,setForm]=useState<Form>(initial);
  const [message,setMessage]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);

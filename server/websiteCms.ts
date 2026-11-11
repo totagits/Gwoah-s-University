@@ -2,14 +2,19 @@ import crypto from 'node:crypto';
 import express,{type Express,type Response} from 'express';
 import {actorOf} from './identity';
 import type {Operations} from './operations';
+import degreeExplainers from '../scripts/hiau-degree-video-content.json';
 
 // Plain-text CMS content only. No arbitrary HTML, scripts, URLs or application settings.
+const degreeSlug=(name:string)=>name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const degreeRoutes=degreeExplainers.degrees.map(d=>d.college+'--'+degreeSlug(d.name));
+const degreeFields=['overview','relevance','careers'] as const;
+export const degreeContentSlots=degreeRoutes.flatMap(route=>degreeFields.map(field=>'degree.'+route+'.'+field));
 const sections=['home','about','academics','admissions','events','student-life','footer'] as const;
 type Section=(typeof sections)[number];
 export const managedSlots={
  home:['hero-heading','hero-description'],
- about:['page-heading','page-description'],
- academics:['page-heading','page-description'],
+ about:['page-heading','page-description','vision','mission','motto','institutional-history'],
+ academics:['page-heading','page-description',...degreeContentSlots],
  admissions:['page-heading','page-description'],
  events:[],
  'student-life':[],

@@ -49,6 +49,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
+  const [mobileAboutCategory, setMobileAboutCategory] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -85,62 +86,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
   // Submenu configuration for all public navigation items
   const submenus: Record<string, SubmenuItem[]> = {
-    about: [
-      {
-        label: 'Mission, Vision & Core Principles',
-        desc: '"A world where no one lives or dies without access to quality education"',
-        icon: <Building className="w-4 h-4 text-[#C39A53]" />,
-        action: () => onNavigateSection('about'),
-      },
-      {
-        label: 'Founder & Chancellor: Bishop Dr. Darlingston G. Johnson',
-        desc: 'Presiding Bishop of HIM-U & Visionary Founder of HIAU',
-        icon: <Award className="w-4 h-4 text-[#4A1249]" />,
-        action: () => (onOpenProfile ? onOpenProfile('chancellor') : onNavigateSection('about')),
-        badge: 'Official Profile',
-      },
-      {
-        label: 'President: Asst. Professor Mamawa M. Freeman-Moore',
-        desc: 'Founding President message, philosophy of education & leadership',
-        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
-        action: () => (onOpenProfile ? onOpenProfile('president') : onNavigateSection('about')),
-        badge: 'President Page',
-      },
-      {
-        label: 'Deputy Chancellor: Dr. Kona-Facia Freeman-Nepay',
-        desc: 'Executive academic direction & 2020 task force leadership',
-        icon: <Award className="w-4 h-4 text-[#C39A53]" />,
-        action: () => (onOpenProfile ? onOpenProfile('deputy_chancellor') : onNavigateSection('about')),
-        badge: 'Deputy Chancellor',
-      },
-      {
-        label: 'Board of Trustees (Dr. Jonathan C. Taylor, Chair)',
-        desc: 'Fiduciary governance, statutory oversight & university council',
-        icon: <Users className="w-4 h-4 text-[#4A1249]" />,
-        action: () => (onOpenProfile ? onOpenProfile('board_chair') : onNavigateSection('about')),
-        badge: 'Board Chair',
-      },
-      {
-        label: 'Global & National Board Head: Stanton B. Johnson',
-        desc: 'International executive leadership & strategic partnerships',
-        icon: <Users className="w-4 h-4 text-[#C39A53]" />,
-        action: () => (onOpenProfile ? onOpenProfile('board_head') : onNavigateSection('about')),
-        badge: 'Board Head',
-      },
-      {
-        label: 'Main Academic Campus — Old Road, Chugbor',
-        desc: 'Administrative headquarters, lecture halls, and lab in Monrovia',
-        icon: <Building className="w-4 h-4 text-[#C39A53]" />,
-        action: () => onNavigateSection('about'),
-      },
-      {
-        label: 'NCHE Licensure & Oral Roberts University Partner',
-        desc: 'Chartered in Liberia with global academic collaboration in Tulsa, USA',
-        icon: <ShieldCheck className="w-4 h-4 text-[#4A1249]" />,
-        action: () => onNavigateSection('about'),
-        badge: 'Chartered',
-      },
-    ],
+    about: [],
     tour: [
       {
         label: 'Campus & Classroom Continuous Video Tour',
@@ -225,14 +171,6 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         action: () => onNavigateSection('financial-aid'),
         badge: 'Aid',
       },
-      {
-        label: 'Admissions Officer Review Desk',
-        restricted: true,
-        desc: 'Review applications in the authorized staff intake queue',
-        icon: <Users className="w-4 h-4 text-[#4A1249]" />,
-        action: () => onOpenPortal('admissions'),
-        badge: 'ERP Staff',
-      },
     ],
     calendar: [
       {
@@ -275,6 +213,39 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     ],
   };
 
+  // About is a public information architecture, not a directory of names in one dropdown.
+  const aboutGroups: Array<{ id: string; title: string; links: Array<{ label: string; action: () => void }> }> = [
+    {
+      id: 'university', title: 'Our University', links: [
+        { label: 'Overview & History', action: () => onNavigateSection('about') },
+        { label: 'Mission, Vision & Values', action: () => onNavigateSection('about') },
+        { label: 'Institutional Identity', action: () => onNavigateSection('about') },
+      ],
+    },
+    {
+      id: 'leadership', title: 'Leadership', links: [
+        { label: 'Chancellor', action: () => onOpenProfile ? onOpenProfile('chancellor') : onNavigateSection('hiau-leadership') },
+        { label: 'President', action: () => onOpenProfile ? onOpenProfile('president') : onNavigateSection('hiau-leadership') },
+        { label: 'Deputy Chancellor', action: () => onOpenProfile ? onOpenProfile('deputy_chancellor') : onNavigateSection('hiau-leadership') },
+        { label: 'Leadership Directory', action: () => onNavigateSection('hiau-leadership') },
+      ],
+    },
+    {
+      id: 'governance', title: 'Governance', links: [
+        { label: 'Board of Trustees', action: () => onNavigateSection('hiau-leadership') },
+        { label: 'Institutional Governance', action: () => onNavigateSection('about') },
+        { label: 'Licensure & Partnerships', action: () => onNavigateSection('about') },
+      ],
+    },
+    {
+      id: 'campus', title: 'Campus & Community', links: [
+        { label: 'Campus Overview', action: () => onNavigateSection('tour') },
+        { label: 'Facilities', action: () => onNavigateSection('tour') },
+        { label: 'Campus Tour', action: () => onNavigateSection('tour') },
+      ],
+    },
+  ];
+
   const [searchFeedback, setSearchFeedback] = useState('');
   const siteSearch = (value: string) => {
     const term = value.trim().toLowerCase();
@@ -312,7 +283,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-purple-200 text-[#2A082C] shadow-sm">
+    <header onKeyDown={(event) => { if (event.key === 'Escape') { setActiveDropdown(null); setSearchOpen(false); setMobileMenuOpen(false); } }} className="sticky top-0 z-40 bg-white border-b border-purple-200 text-[#2A082C] shadow-sm">
       {/* HIAU Primary Institutional Header Row */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -416,16 +387,16 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         )}
 
         {/* HIAU Navigation Sub-Bar with horizontal items and interactive submenus */}
-        <div className="hidden lg:flex items-center justify-between border-t border-purple-100 py-2">
+        <div className="relative hidden lg:flex items-center justify-between border-t border-purple-100 py-2">
           <nav className="flex items-center gap-6">
             {navLinks.map((link) => {
-              const hasItems = link.hasDropdown && !!submenus[link.id];
+              const hasItems = link.hasDropdown && (link.id === 'about' || !!submenus[link.id]);
               const isCurrentOpen = activeDropdown === link.id;
 
               return (
                 <div
                   key={link.id}
-                  className="relative"
+                  className="static"
                   onMouseEnter={() => hasItems && handleMouseEnter(link.id)}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -446,7 +417,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         : 'text-slate-700 hover:text-[#4A1249] border-transparent'
                     }`}
                     aria-expanded={isCurrentOpen}
-                    aria-haspopup={hasItems ? 'menu' : undefined}
+                    aria-haspopup={hasItems ? 'true' : undefined}
                   >
                     <span>{link.label}</span>
                     {hasItems && (
@@ -458,48 +429,51 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                     )}
                   </button>
 
-                  {/* Rich Desktop Submenu Dropdown */}
+                  {/* Desktop public navigation; About uses four scannable content categories. */}
                   {hasItems && isCurrentOpen && (
                     <div
-                      className="absolute left-0 mt-1 w-80 bg-white border-2 border-purple-200 rounded-none shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-1"
+                      className="absolute left-0 right-0 top-full bg-white border border-purple-200 border-t-4 border-t-[#C39A53] rounded-b-lg shadow-2xl z-50 max-h-[min(66vh,570px)] overflow-y-auto p-5"
                       onMouseEnter={() => handleMouseEnter(link.id)}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="px-3 py-2 border-b border-purple-100 text-[11px] font-black text-[#4A1249] uppercase tracking-wider flex items-center justify-between">
-                        <span>{link.label} Directory</span>
-                        <span className="text-[10px] text-[#C39A53] font-semibold">HIAU Liberia</span>
+                      <div className="px-2 pb-3 border-b border-purple-100 flex items-center justify-between">
+                        <span className="text-sm font-black text-[#4A1249]">{link.id === 'about' ? 'About HIAU' : `${link.label} Directory`}</span>
+                        <span className="text-xs text-slate-600">Harvest Intercontinental American University</span>
                       </div>
-                      <div className="py-1 space-y-1">
-                        {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              sub.action();
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full text-left p-2.5 rounded-sm hover:bg-purple-50 group flex items-start justify-between cursor-pointer transition-colors"
-                          >
-                            <div className="flex items-start gap-2.5">
-                              <div className="p-1.5 bg-purple-50 group-hover:bg-[#4A1249] group-hover:text-white rounded transition-colors shrink-0 mt-0.5">
-                                {sub.icon}
+                      {link.id === 'about' ? (
+                        <div className="grid grid-cols-2 xl:grid-cols-4 gap-6 pt-5" aria-label="About HIAU categories">
+                          {aboutGroups.map(group => (
+                            <section key={group.id} aria-label={group.title} className="min-w-0">
+                              <h3 className="border-b border-[#C39A53]/40 pb-2 text-sm font-bold text-[#4A1249]">{group.title}</h3>
+                              <div className="flex flex-col gap-1 pt-2">
+                                {group.links.map(item => (
+                                  <button key={item.label} type="button"
+                                    onClick={() => { item.action(); setActiveDropdown(null); }}
+                                    className="rounded px-2 py-2 text-left text-sm leading-5 text-slate-700 hover:bg-purple-50 hover:text-[#4A1249] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4A1249]">
+                                    {item.label}
+                                  </button>
+                                ))}
                               </div>
-                              <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-[#4A1249] flex items-center gap-1.5">
-                                  <span>{sub.label}</span>
-                                </div>
-                                <div className="text-[11px] text-slate-500 line-clamp-1">
-                                  {sub.desc}
+                            </section>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 pt-4">
+                          {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, idx) => (
+                            <button key={idx} type="button" onClick={() => { sub.action(); setActiveDropdown(null); }}
+                              className="w-full min-h-20 text-left p-3 rounded-md border border-transparent hover:border-purple-200 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249] group flex items-start justify-between cursor-pointer transition-colors">
+                              <div className="flex items-start gap-2.5">
+                                <div className="p-1.5 bg-purple-50 rounded shrink-0 mt-0.5">{sub.icon}</div>
+                                <div>
+                                  <div className="text-xs font-bold text-slate-900 group-hover:text-[#4A1249]">{sub.label}</div>
+                                  <div className="text-[11px] text-slate-600 leading-5 line-clamp-2">{sub.desc}</div>
                                 </div>
                               </div>
-                            </div>
-                            {sub.badge && (
-                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-[#C39A53]/20 text-[#4A1249] border border-[#C39A53]/50 rounded shrink-0">
-                                {sub.badge}
-                              </span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
+                              {sub.badge && <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-[#C39A53]/20 text-[#4A1249] rounded shrink-0">{sub.badge}</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -526,7 +500,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-purple-200 space-y-2 bg-white max-h-[75vh] overflow-y-auto">
             {navLinks.map((link) => {
-              const hasSub = link.hasDropdown && !!submenus[link.id];
+              const hasSub = link.hasDropdown && (link.id === 'about' || !!submenus[link.id]);
               const isExpanded = mobileExpandedSection === link.id;
 
               return (
@@ -557,25 +531,28 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   </div>
 
                   {hasSub && isExpanded && (
-                    <div className="pl-6 pr-3 py-1 space-y-1 bg-purple-50/50">
-                      {submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, sidx) => (
-                        <button
-                          key={sidx}
-                          onClick={() => {
-                            sub.action();
-                            setMobileMenuOpen(false);
-                          }}
-                          className="w-full text-left py-2 px-2 text-xs font-semibold text-slate-700 hover:text-[#4A1249] flex items-center justify-between border-b border-purple-100 last:border-0"
-                        >
-                          <span className="flex items-center gap-2">
-                            {sub.icon}
-                            <span>{sub.label}</span>
-                          </span>
-                          {sub.badge && (
-                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 bg-[#C39A53]/20 text-[#4A1249] rounded">
-                              {sub.badge}
-                            </span>
-                          )}
+                    <div className="pl-5 pr-3 py-2 bg-purple-50/50">
+                      {link.id === 'about' ? aboutGroups.map(group => {
+                        const open = mobileAboutCategory === group.id;
+                        return <div key={group.id} className="border-b border-purple-100">
+                          <button type="button"
+                            onClick={() => setMobileAboutCategory(open ? null : group.id)}
+                            aria-expanded={open}
+                            className="flex w-full items-center justify-between py-3 text-left text-sm font-bold text-[#4A1249]">
+                            {group.title}<ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`}/>
+                          </button>
+                          {open && <div className="flex flex-col pb-2 pl-3">
+                            {group.links.map(item => (
+                              <button type="button" key={item.label}
+                                onClick={() => { item.action(); setMobileMenuOpen(false); setMobileExpandedSection(null); setMobileAboutCategory(null); }}
+                                className="py-2 text-left text-sm text-slate-700 hover:text-[#4A1249]">{item.label}</button>
+                            ))}
+                          </div>}
+                        </div>;
+                      }) : submenus[link.id].filter(sub => !sub.restricted || (!!currentUser && ['super_admin','registrar','admissions_officer'].includes(currentUser.role))).map((sub, sidx) => (
+                        <button key={sidx} onClick={() => { sub.action(); setMobileMenuOpen(false); }}
+                          className="w-full text-left py-2 px-2 text-xs font-semibold text-slate-700 hover:text-[#4A1249] border-b border-purple-100 last:border-0">
+                          {sub.label}
                         </button>
                       ))}
                     </div>

@@ -384,7 +384,7 @@ export const PublicAbout: React.FC<PublicAboutProps> = ({ onOpenProfile, additio
         </div>
 
         {/* One restrained, unified leadership directory for all 19 profiles. */}
-        <section aria-labelledby="hiau-leaders-heading" className="mb-14 rounded-xl border border-[#E5DEE8] bg-white px-4 py-8 shadow-sm sm:px-8">
+        <section id="hiau-leadership" aria-labelledby="hiau-leaders-heading" className="mb-14 scroll-mt-32 rounded-xl border border-[#E5DEE8] bg-white px-4 py-8 shadow-sm sm:px-8">
           <div className="flex flex-col gap-5 border-b border-[#EEE8F0] pb-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-[#927139]">Our people</p>

@@ -12,6 +12,9 @@ import { PublicCalendar } from './components/public/PublicCalendar';
 import { PublicDEI } from './components/public/PublicDEI';
 import { PublicFooter } from './components/public/PublicFooter';
 import { PublicLeaderProfile } from './components/public/PublicLeaderProfile';
+import type {PublicStaffEntry} from './data/publicStaff';
+import {isPublicStaffEntry} from './data/publicStaff';
+import {WebsiteStaffProfiles} from './components/portal/WebsiteStaffProfiles';
 import { resolveLeaderProfile } from './data/leadershipData';
 
 import { PortalHeader } from './components/portal/PortalHeader';
@@ -47,8 +50,27 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'public' | 'portal'>('public');
   const [activePublicSection, setActivePublicSection] = useState('hero');
   const [activeLeaderProfileId, setActiveLeaderProfileId] = useState<string | null>(null);
+  const [publishedStaff,setPublishedStaff]=useState<PublicStaffEntry[]>([]);
   const [activeDegreeRoute, setActiveDegreeRoute] = useState<string | null>(null);
   const [lastPublicCollegeId, setLastPublicCollegeId] = useState<string>('business');
+
+  // Read-only public profiles are managed by an authorized site administrator.
+  useEffect(()=>{
+    let cancelled=false;
+    fetch('/api/public/staff',{cache:'no-store'})
+      .then(r=>r.ok?r.json():Promise.reject(new Error('staff directory unavailable')))
+      .then(data=>{
+        if(cancelled)return;
+        const people=Array.isArray(data.profiles)?data.profiles.filter(isPublicStaffEntry):[];
+        setPublishedStaff(people);
+        const hash=window.location.hash.replace(/^#/,'');
+        const linked=hash.startsWith('leader=')||hash.startsWith('profile=')?hash.split('=')[1]:'';
+        if(people.some((p:PublicStaffEntry)=>p.id===linked)){
+          setActiveDegreeRoute(null);setActiveLeaderProfileId(linked);setViewMode('public');
+        }
+      }).catch(()=>{/* Static university leadership remains accessible. */});
+    return ()=>{cancelled=true;};
+  },[]);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -264,7 +286,9 @@ export default function App() {
 
   const handleOpenProfile = (profileId: string) => {
     const found = resolveLeaderProfile(profileId);
-    const validId = found ? found.id : profileId;
+    const published = publishedStaff.find(p=>p.id===profileId);
+    if(!found&&!published)return;
+    const validId = found ? found.id : published!.id;
     setActiveLeaderProfileId(validId);
     setActiveDegreeRoute(null);
     setViewMode('public');
@@ -336,6 +360,7 @@ export default function App() {
           ) : activeLeaderProfileId ? (
             <PublicLeaderProfile
               profileId={activeLeaderProfileId}
+              additionalStaff={publishedStaff}
               onClose={handleCloseProfile}
               onSelectProfile={handleOpenProfile}
               onNavigateSection={handleNavigateSection}
@@ -348,7 +373,7 @@ export default function App() {
                 onNavigateSection={handleNavigateSection}
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
               />
-              <PublicAbout onOpenProfile={handleOpenProfile} />
+              <PublicAbout onOpenProfile={handleOpenProfile} additionalStaff={publishedStaff} />
               <PublicVirtualTour
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
                 onOpenPortal={handleOpenPortal}
@@ -438,6 +463,9 @@ export default function App() {
             )}
             {activePortalTab === 'website_media' && (
               <WebsiteVideoLibrary currentUser={currentUser} />
+            )}
+            {activePortalTab === 'website_staff' && (
+              <WebsiteStaffProfiles currentUser={currentUser} />
             )}
 
             {activePortalTab === 'student_portal' && (

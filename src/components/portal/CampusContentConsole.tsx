@@ -8,9 +8,12 @@ const parse=async(r:Response)=>{const data=await r.json().catch(()=>({error:'Inv
 const send=async(url:string,method:string,body:object)=>parse(await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
 export const CampusContentConsole:React.FC<{currentUser:{role:string};openVideoLibrary?:()=>void}>=({currentUser,openVideoLibrary})=>{
  const [items,setItems]=useState<Entry[]>([]),[selected,setSelected]=useState(''),[form,setForm]=useState<Form>(initial);
+ const [videoSlots,setVideoSlots]=useState<Array<{slot:string;label:string;defaultAvailable:boolean;published?:string}>>([]);
  const [message,setMessage]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const load=useCallback(async()=>{const data=await parse(await fetch('/api/admin/campus-content',{credentials:'same-origin',cache:'no-store'}));setItems(data.entries||[]);},[]);
- useEffect(()=>{void load().catch(e=>setError(e.message));},[load]);
+ useEffect(()=>{void load().catch(e=>setError(e.message));
+   fetch('/api/admin/website-videos',{credentials:'same-origin'}).then(parse).then(data=>setVideoSlots((data.videos||[]).filter((v:{slot:string})=>/^hero-(?:campus|classroom|extra-[a-f0-9-]{36})$/.test(v.slot)))).catch(()=>{});
+ },[load]);
  const active=items.find(x=>x.id===selected);
  const edit=(x:Entry)=>{setSelected(x.id);setForm({category:x.category,kind:x.kind,title:x.title,description:x.description,mediaUrl:x.kind==='photo'?'':x.mediaUrl,verified:x.verified});setMessage('');setError('');};
  const act=async(action:'save'|'publish'|'unpublish'|'delete')=>{
@@ -64,10 +67,15 @@ export const CampusContentConsole:React.FC<{currentUser:{role:string};openVideoL
      <label className="block text-sm font-semibold">Title<input maxLength={120} value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="mt-1 w-full rounded border p-2"/></label>
      <label className="block text-sm font-semibold">Verified information / caption<textarea rows={5} maxLength={1800} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="mt-1 w-full rounded border p-2"/></label>
      {form.kind==='video'&&<div className="space-y-2">
-       <label className="block text-sm font-semibold">Published video from Website Video Library
-         <input placeholder="/api/public/video/hero-campus" value={form.mediaUrl} onChange={e=>setForm({...form,mediaUrl:e.target.value})} className="mt-1 w-full rounded border p-2"/>
+       <label className="block text-sm font-semibold">Approved campus video
+         <select value={form.mediaUrl} onChange={e=>setForm({...form,mediaUrl:e.target.value})} className="mt-1 w-full rounded border p-2">
+           <option value="">Choose a video from Website Video Library</option>
+           {videoSlots.map(v=><option key={v.slot} value={'/api/public/video/'+v.slot} disabled={!v.published&&!v.defaultAvailable}>
+             {v.label}{!v.published&&!v.defaultAvailable?' (not published)':''}
+           </option>)}
+         </select>
        </label>
-       <p className="text-xs text-slate-600">Use an approved HIAU video slot, such as /api/public/video/hero-campus or /api/public/video/hero-classroom. Upload or replace actual MP4 files in Website Video Library first.</p>
+       <p className="text-xs text-slate-600">MP4 files are uploaded, replaced and published in the protected Website Video Library. Return here to link an approved campus video to a public section.</p>
        {openVideoLibrary&&<button type="button" onClick={openVideoLibrary} className="text-sm font-bold text-[#4A1249] underline">Open Website Video Library</button>}
      </div>}
      <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={form.verified} onChange={e=>setForm({...form,verified:e.target.checked})}/>

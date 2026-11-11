@@ -31,12 +31,22 @@ test('WEB-01: public mobile disclosure and keyboard closing remain available',()
   assert.match(navbar,/aria-expanded=\{mobileMenuOpen\}/);
 });
 
-test('WEB-05: About offers concise public destinations and leadership anchor',()=>{
-  assert.match(navbar,/label: 'University Overview'/);
-  assert.match(navbar,/label: 'Leadership & Governance'/);
-  assert.match(navbar,/label: 'Campus & Facilities'/);
+test('WEB-05: About groups public destinations into four desktop categories',()=>{
+  for (const heading of ["Our University", "Leadership", "Governance", "Campus & Community"]) {
+    assert.match(navbar, new RegExp("title: '" + heading.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + "'"));
+  }
+  assert.match(navbar,/aria-label="About HIAU categories"/);
+  assert.match(navbar,/grid grid-cols-2 xl:grid-cols-4/);
+  assert.match(navbar,/label: 'Leadership Directory'/);
   assert.match(navbar,/onNavigateSection\('hiau-leadership'\)/);
   assert.doesNotMatch(navbar,/label: 'Founder & Chancellor:/);
+  assert.doesNotMatch(navbar,/Admissions Officer Review Desk/);
   const about=readFileSync(new URL('../components/public/PublicAbout.tsx',import.meta.url),'utf8');
   assert.match(about,/id="hiau-leadership"/);
+});
+test('WEB-05: About mobile categories disclose nested public links',()=>{
+  assert.match(navbar,/mobileAboutCategory/);
+  assert.match(navbar,/setMobileAboutCategory\(open \? null : group.id\)/);
+  assert.match(navbar,/aria-expanded=\{open\}/);
+  assert.match(navbar,/group.links.map/);
 });

@@ -26,6 +26,7 @@ const put=(store:Operations,x:Entry)=>store.run(
  PREFIX+x.id,JSON.stringify(x));
 const fileFor=(dir:string,id:string)=>path.join(dir,'campus-public-media',id+'.img');
 const view=(x:Entry)=>({...x,mediaUrl:x.kind==='photo'?'/api/public/campus-content/'+x.id+'/photo?v='+x.photoVersion:x.mediaUrl});
+const adminView=(x:Entry)=>({...view(x),mediaUrl:x.kind==='photo'?'/api/admin/campus-content/'+x.id+'/photo?v='+x.photoVersion:x.mediaUrl});
 const parseInput=(body:any)=>{
  const category=body?.category,kind=body?.kind,title=clean(body?.title,120),
   description=clean(body?.description,1800),mediaUrl=clean(body?.mediaUrl,250);
@@ -50,7 +51,15 @@ export const installCampusContent=(app:Express,store:Operations,dir:string)=>{
  });
  app.get('/api/admin/campus-content',(_req,res)=>{
    if(!admin(res))return res.sendStatus(403);
-   res.set('Cache-Control','no-store');return res.json({entries:list(store).map(view)});
+   res.set('Cache-Control','no-store');return res.json({entries:list(store).map(adminView)});
+ });
+ app.get('/api/admin/campus-content/:id/photo',(req,res)=>{
+   if(!admin(res))return res.sendStatus(403);
+   const entry=validId(req.params.id)?get(store,req.params.id):undefined;
+   if(!entry||entry.kind!=='photo')return res.sendStatus(404);
+   const filename=fileFor(dir,entry.id);if(!fs.existsSync(filename))return res.sendStatus(404);
+   res.set('Cache-Control','private, no-store');
+   return res.type(fs.readFileSync(filename).subarray(0,4).equals(Buffer.from([137,80,78,71]))?'png':'jpeg').sendFile(filename);
  });
  app.post('/api/admin/campus-content',express.json({limit:'12kb'}),(req,res)=>{
    if(!admin(res))return res.sendStatus(403);

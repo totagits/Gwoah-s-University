@@ -8,6 +8,8 @@ import { sendMail, integrationStatus } from './integrations';
 
 export const roles = [
   'super_admin',
+  'website_editor',
+  'website_reviewer',
   'registrar',
   'dean',
   'lecturer',
@@ -439,6 +441,7 @@ export function installIdentity(
       if (endpoint === '/api/reset-demo') return deny();
       if (
         /^\/api\/admin\//.test(endpoint) &&
+        !/^\/api\/admin\/(?:site-content|news-events)(?:\/|$)/.test(endpoint) &&
         !administrators.includes(actor.role)
       )
         return deny();

@@ -27,7 +27,6 @@ interface PublicNavbarProps {
   currentUser: UserProfile | null;
   onNavigateSection: (sectionId: string) => void;
   activeSection: string;
-  onOpenApplicationModal?: () => void;
   onOpenProfile?: (profileId: string) => void;
 }
 
@@ -45,7 +44,6 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   currentUser,
   onNavigateSection,
   activeSection,
-  onOpenApplicationModal,
   onOpenProfile,
 }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);

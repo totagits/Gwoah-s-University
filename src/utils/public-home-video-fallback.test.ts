@@ -1,19 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import path from 'node:path';
 
-test('WEB-01: campus video shows an existing local still while initial frames load',()=>{
+test('WEB-01: homepage carousel is video-first without any static poster',()=>{
   const hero=fs.readFileSync(new URL('../components/public/PublicHero.tsx',import.meta.url),'utf8');
-  const filename='image_29eb5504.png';
-  const local=path.join(process.cwd(),'public','assets','aistudio',filename);
-  assert.ok(fs.existsSync(local),'Campus fallback still must be an actual tracked asset');
-  assert.ok(fs.statSync(local).size>1024,'Campus still must contain image data');
-  assert.match(hero,/poster=\{currentVideo\.id === 'hero-campus'/);
-  assert.match(hero,/\/assets\/aistudio\/image_29eb5504\.png/);
-  assert.match(hero,/onError=\{\(\)=>setVideoError/);
+  assert.doesNotMatch(hero,/poster\s*=/);
+  assert.doesNotMatch(hero,/image_29eb5504\.png/);
+  assert.match(hero,/src=\{currentVideo\.src\}/);
+  assert.match(hero,/autoPlay/);
+  assert.match(hero,/muted=\{isMuted\}/);
   assert.match(hero,/onEnded=\{\(\)=>switchVideo\(activeVideoIndex\+1\)\}/);
+  assert.match(hero,/onPlaying=\{\(\)=>\{setIsActuallyPlaying\(true\);setIsVideoLoading\(false\)/);
+  assert.match(hero,/onWaiting=\{\(\)=>\{setIsVideoLoading\(true\)/);
+  assert.match(hero,/onError=\{\(\)=>\{setIsVideoLoading\(false\);setVideoError/);
+  assert.match(hero,/isVideoLoading && !videoError && wantsPlayback/);
+  assert.match(hero,/aria-label="Loading homepage video"/);
+  assert.match(hero,/pointer-events-none absolute inset-0/);
   assert.match(hero,/aria-label=\{isActuallyPlaying \? 'Pause video' : 'Play video'\}/);
-  assert.ok(!hero.includes('poster="/assets/aistudio/image_29eb5504.png"'),
-    'Campus photo must not be falsely presented as a preview for every other video');
+  assert.match(hero,/onClick=\{handlePrevVideo\}/);
+  assert.match(hero,/onClick=\{handleNextVideo\}/);
+  assert.match(hero,/onClick=\{toggleMute\}/);
 });

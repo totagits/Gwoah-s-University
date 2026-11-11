@@ -148,3 +148,15 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] **Live review pending:** verify the first content shown is the **actual campus video** after loading, then the classroom clip and any administrator-published clips; spinner is not the first carousel slide.
 - [ ] Verify browser autoplay, buffering, published video playback, audio, mobile controls and actual staging deployed commit before WEB-01 acceptance.
 - [ ] Do not mark WEB-01 accepted based solely on successful CI; `main` remains unchanged.
+
+
+### WEB-01 live defect follow-up — failed video and broken university seal (10 November 2026)
+- **Observed in supplied staging screenshot:** homepage shows “The video could not load” on the first campus clip; header university seal shows a broken-image indicator and partial alt text. Neither element meets WEB-01 acceptance.
+- **Diagnostic CI:** verified all three original files are present in source, have valid PNG/MP4 signatures, and were copied into the Vite production build. This does **not** establish that a running Coolify container can serve them.
+- **Code correction:** default MP4 content streams directly from built files with byte-range responses, independent of staging `NODE_ENV`; administrator-published media remains the preferred source. A dedicated read-only public seal route serves the bundled university image without relying on SPA fallback.
+- **Deployment diagnostic:** `GET /api/public/media-status` exposes only three booleans identifying runtime presence of public seal, campus MP4, and classroom MP4; it discloses no filesystem paths, credentials, applicant records, or private uploads.
+- [ ] After deploying the new staging commit, open `https://hiau-staging.totag.network/api/public/media-status`: verify three `available: true` values.
+- [ ] Open `https://hiau-staging.totag.network/assets/aistudio/image_bfcc4a11.png` and confirm the image displays.
+- [ ] Open `https://hiau-staging.totag.network/api/public/video/hero-campus` and confirm MP4 plays; verify 206 Partial Content for byte-range requests.
+- [ ] Retest homepage video playlist, first clip and second clip, administrator media, no photo poster, and header seal in actual Chrome. If runtime booleans are false, inspect Coolify image/build/deploy and persistent mounts instead of making speculative UI changes.
+- **Status:** Confirmed visual failure; remediation in code; live staging acceptance pending. Production `main` unchanged.

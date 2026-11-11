@@ -100,6 +100,31 @@ const checkMp4=(name:string)=>{
 export function installPublicWebsiteMedia(app:Express,store:Operations,directory:string){
   const storage=path.join(directory,'public-media');
   fs.mkdirSync(storage,{recursive:true,mode:0o700});
+  // Validate only the three public, non-sensitive assets used by WEB-01.
+  // Useful for deployment acceptance without exposing paths or credentials.
+  app.get('/api/public/media-status',(_req,res)=>{
+    const assets=[
+      {name:'university-seal',relative:'assets/aistudio/image_bfcc4a11.png'},
+      {name:'campus-video',relative:'assets/aistudio/image_20261105_121706_f720baa0.mp4'},
+      {name:'classroom-video',relative:'assets/aistudio/image_20261105_102657_b174d32f.mp4'},
+    ];
+    res.set('Cache-Control','no-store');
+    return res.json({assets:assets.map(asset=>{
+      const built=path.join(process.cwd(),'dist',asset.relative);
+      const source=path.join(process.cwd(),'public',asset.relative);
+      return {name:asset.name,available:fs.existsSync(built)||fs.existsSync(source)};
+    })});
+  });
+  // Explicitly serve the approved public university seal, independently of SPA fallback.
+  app.get('/assets/aistudio/image_bfcc4a11.png',(_req,res)=>{
+    const relative='assets/aistudio/image_bfcc4a11.png';
+    const built=path.join(process.cwd(),'dist',relative);
+    const source=path.join(process.cwd(),'public',relative);
+    const file=fs.existsSync(built)?built:source;
+    if(!fs.existsSync(file))return res.status(404).end();
+    return res.type('png').sendFile(file);
+  });
+
   // The existing two original clips always remain available; new slots are public only after publishing.
   app.get('/api/public/hero-videos',(_req,res)=>{
     const builtIns=DEFAULTS.filter(v=>v.slot==='hero-campus'||v.slot==='hero-classroom');
@@ -121,13 +146,16 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     const published=parse(store,item.slot).published;
     if(published&&fs.existsSync(mediaPath(directory,published)))
       return sendMedia(req,res,mediaPath(directory,published),true);
-    // In production, stream the bundled original MP4 with HTTP ranges.
-    // Avoid the extra 302 request that delays the very first carousel frame.
-    if(item.defaultSrc&&process.env.NODE_ENV==='production'){
-      const file=path.join(process.cwd(),'dist',item.defaultSrc.slice(1));
-      if(fs.existsSync(file))return sendMedia(req,res,file,true);
+    // Stream the bundled MP4 without redirects in both production and staging.
+    // Do not depend on NODE_ENV matching a specific value in Coolify.
+    if(item.defaultSrc){
+      const relative=item.defaultSrc.slice(1);
+      const built=path.join(process.cwd(),'dist',relative);
+      const source=path.join(process.cwd(),'public',relative);
+      const file=fs.existsSync(built)?built:source;
+      return fs.existsSync(file)?sendMedia(req,res,file,true):res.status(404).end();
     }
-    return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
+    return res.status(404).end();
   });
   app.head('/api/public/video/:slot',(req,res)=>{
     const item=resolveSlot(store,req.params.slot);
@@ -135,13 +163,16 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     const published=parse(store,item.slot).published;
     if(published&&fs.existsSync(mediaPath(directory,published)))
       return sendMedia(req,res,mediaPath(directory,published),true);
-    // In production, stream the bundled original MP4 with HTTP ranges.
-    // Avoid the extra 302 request that delays the very first carousel frame.
-    if(item.defaultSrc&&process.env.NODE_ENV==='production'){
-      const file=path.join(process.cwd(),'dist',item.defaultSrc.slice(1));
-      if(fs.existsSync(file))return sendMedia(req,res,file,true);
+    // Stream the bundled MP4 without redirects in both production and staging.
+    // Do not depend on NODE_ENV matching a specific value in Coolify.
+    if(item.defaultSrc){
+      const relative=item.defaultSrc.slice(1);
+      const built=path.join(process.cwd(),'dist',relative);
+      const source=path.join(process.cwd(),'public',relative);
+      const file=fs.existsSync(built)?built:source;
+      return fs.existsSync(file)?sendMedia(req,res,file,true):res.status(404).end();
     }
-    return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
+    return res.status(404).end();
   });
   app.post('/api/admin/website-videos',(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);

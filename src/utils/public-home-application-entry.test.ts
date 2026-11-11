@@ -10,7 +10,7 @@ const hero=fs.readFileSync(new URL('../components/public/PublicHero.tsx',import.
 test('WEB-01: all Apply Now and Become a Student actions open the shared application workflow',()=>{
   assert.match(navbar,/href="\/\?apply=1"/);
   assert.match(hero,/onClick=\{onOpenApplicationModal\}/);
-  assert.match(app,/searchParams\(window\.location\.search\)\.has\('apply'\)/);
+  assert.match(app,/new URLSearchParams\(window\.location\.search\)\.has\('apply'\)/);
   assert.match(admissions,/\{isModalOpen && createPortal\(/);
 });
 

@@ -211,10 +211,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         label: 'Start Online Application',
         desc: 'Submit an application; confirm assessment fees and dates with Admissions',
         icon: <ArrowRight className="w-4 h-4 text-[#C39A53]" />,
-        action: () => {
-          if (onOpenApplicationModal) onOpenApplicationModal();
-          else onNavigateSection('admissions');
-        },
+        action: () => { window.location.assign('/?apply=1'); },
         badge: 'Apply',
       },
       {
@@ -516,16 +513,14 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
           {/* Right: Solid Rectangular APPLY NOW button in HIAU Imperial Purple */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (onOpenApplicationModal) onOpenApplicationModal();
-                else onNavigateSection('admissions');
-              }}
+            <a
+              href="/?apply=1"
+              aria-label="Apply now to HIAU"
               className="px-6 py-2.5 bg-[#4A1249] hover:bg-[#661B69] text-white font-collegiate font-black text-sm uppercase tracking-wider rounded-none transition-all flex items-center gap-3 shadow-md cursor-pointer border-2 border-[#C39A53] active:scale-98"
             >
               <span className="text-white font-black tracking-wider text-sm drop-shadow-xs" style={{ color: '#FFFFFF' }}>APPLY NOW</span>
               <ArrowRight className="w-4 h-4 text-[#C39A53]" />
-            </button>
+            </a>
           </div>
         </div>
 
@@ -593,17 +588,14 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
             {/* Mobile Actions: Apply Now & ERP Access */}
             <div className="pt-2 px-3 flex flex-col gap-2">
-              <button
-                onClick={() => {
-                  if (onOpenApplicationModal) onOpenApplicationModal();
-                  else onNavigateSection('admissions');
-                  setMobileMenuOpen(false);
-                }}
+              <a
+                href="/?apply=1"
+                aria-label="Apply now to HIAU"
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#4A1249] text-white font-collegiate font-bold text-sm uppercase rounded-none cursor-pointer border border-[#C39A53]/50"
               >
                 <span className="text-white font-bold" style={{ color: '#FFFFFF' }}>APPLY NOW</span>
                 <ArrowRight className="w-4 h-4 text-[#C39A53]" />
-              </button>
+              </a>
 
             </div>
           </div>

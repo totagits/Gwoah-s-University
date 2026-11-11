@@ -7,6 +7,7 @@ import {
   VolumeX,
   ChevronLeft,
   ChevronRight,
+  LoaderCircle,
   Video,
 } from 'lucide-react';
 
@@ -56,6 +57,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const [isActuallyPlaying,setIsActuallyPlaying]=useState(false);
   const [isMuted,setIsMuted]=useState(true);
   const [videoError,setVideoError]=useState('');
+  const [isVideoLoading,setIsVideoLoading]=useState(true);
   const videoRef=useRef<HTMLVideoElement|null>(null);
   const currentVideo=videos[activeVideoIndex]||videos[0];
 
@@ -81,8 +83,10 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     void element.play().catch(error=>{
       // Do not turn playback intention off on early AbortError/NotAllowedError.
       // The visitor can still use the visible Play button.
-      if(error?.name==='NotAllowedError')
+      if(error?.name==='NotAllowedError') {
+        setIsVideoLoading(false);
         setVideoError('Autoplay was blocked by the browser. Press Play to start.');
+      }
     });
   };
 
@@ -99,6 +103,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     const next=(index+videos.length)%videos.length;
     if(next===activeVideoIndex)return;
     setIsActuallyPlaying(false);
+    setIsVideoLoading(true);
     setVideoError('');
     setWantsPlayback(true);
     setActiveVideoIndex(next);
@@ -109,10 +114,14 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
       videoRef.current?.pause();
     }else{
       setWantsPlayback(true);
+      setIsVideoLoading(true);
       const element=videoRef.current;
       if(element){
         element.muted=isMuted;
-        void element.play().catch(()=>setVideoError('Unable to start playback. Try reloading the page.'));
+        void element.play().catch(()=>{
+          setIsVideoLoading(false);
+          setVideoError('Unable to start playback. Try reloading the page.');
+        });
       }
     }
   };
@@ -128,13 +137,11 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
         <div
           className="lg:absolute lg:inset-y-0 lg:left-0 lg:w-[52%] xl:w-[51%] w-full h-84 sm:h-96 lg:h-full relative overflow-hidden z-10 bg-[#2A082C]"
         >
-          {/* Only the active video is mounted; other clips cannot compete for
-              browser decoding or the initial network connection. No image poster. */}
+          {/* Only an actual video is mounted for each carousel item. No image poster or photo slide. */}
           <video
             key={currentVideo.id}
             ref={videoRef}
             src={currentVideo.src}
-            poster={currentVideo.id === 'hero-campus' ? '/assets/aistudio/image_29eb5504.png' : undefined}
             preload="auto"
             autoPlay
             muted={isMuted}
@@ -144,12 +151,22 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             onLoadedData={attemptPlayback}
             onCanPlay={attemptPlayback}
             onPlay={()=>{setIsActuallyPlaying(true);setVideoError('');}}
-            onPlaying={()=>{setIsActuallyPlaying(true);setVideoError('');}}
+            onPlaying={()=>{setIsActuallyPlaying(true);setIsVideoLoading(false);setVideoError('');}}
+            onWaiting={()=>{setIsVideoLoading(true);}}
+            onStalled={()=>{setIsVideoLoading(true);}}
             onPause={()=>setIsActuallyPlaying(false)}
-            onError={()=>setVideoError('The video could not load. Select another video or try refreshing.')}
+            onError={()=>{setIsVideoLoading(false);setVideoError('The video could not load. Select another video or try refreshing.');}}
             onEnded={()=>switchVideo(activeVideoIndex+1)}
             className="absolute inset-0 z-10 h-full w-full object-cover"
           />
+          {isVideoLoading && !videoError && wantsPlayback && !isActuallyPlaying && (
+            <div role="status" aria-label="Loading homepage video" className="pointer-events-none absolute inset-0 z-[11] flex items-center justify-center bg-[#2A082C] text-[#F0CE8D]">
+              <div className="flex flex-col items-center gap-3 rounded-xl bg-[#2A082C]/85 px-6 py-5">
+                <LoaderCircle aria-hidden="true" className="h-8 w-8 animate-spin" />
+                <span className="text-xs font-semibold uppercase tracking-wide">Loading campus video…</span>
+              </div>
+            </div>
+          )}
           {videoError&&<div role="status" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">
             {videoError}
           </div>}

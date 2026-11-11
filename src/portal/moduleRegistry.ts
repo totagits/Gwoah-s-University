@@ -28,6 +28,8 @@ export const PORTAL_MODULE_IDS: ReadonlySet<string> = new Set(PORTAL_MODULES.map
 
 const visibleByRole: Record<UserRole, readonly PortalModuleId[]> = {
   super_admin: PORTAL_MODULES.filter(m => m.id !== 'student_portal').map(m => m.id),
+  website_editor: ['website_cms','website_news'],
+  website_reviewer: ['website_cms','website_news'],
   registrar: ['tasks', 'academics', 'admissions', 'curriculum'],
   dean: ['tasks', 'analytics', 'faculty_admin', 'academics', 'compliance', 'classroom'],
   lecturer: ['tasks', 'faculty_admin', 'classroom'],

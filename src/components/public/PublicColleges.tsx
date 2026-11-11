@@ -428,9 +428,9 @@ export const PublicColleges: React.FC<{initialCollegeId?: string}> = ({initialCo
                 {matchingPrograms.map(program=>(
                   <article key={program.name} className="group h-full rounded-lg border border-[#e4dce5] bg-white transition-colors hover:border-[#a684aa] hover:bg-[#fcfafc] focus-within:border-[#4a1249] focus-within:ring-2 focus-within:ring-[#4a1249]/20">
                     <a href={degreeLink(program)} className="flex h-full flex-col p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]" aria-label={`Explore ${program.name} degree details`}>
-                      <p className="text-xs font-bold uppercase tracking-wider text-[#916a37]">{program.degreeType} · {program.duration}</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#916a37]"><ManagedText section="academics" slot={`degree.${activeCollege.id}--${degreeSlug(program.name)}.credential`} fallback={program.degreeType}/> · <ManagedText section="academics" slot={`degree.${activeCollege.id}--${degreeSlug(program.name)}.duration`} fallback={program.duration}/></p>
                       <h6 className="mt-3 text-lg font-semibold leading-snug text-[#35103b] group-hover:underline">{program.name}</h6>
-                      <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{program.focus}</p>
+                      <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700"><ManagedText section="academics" slot={`degree.${activeCollege.id}--${degreeSlug(program.name)}.focus`} fallback={program.focus}/></p>
                       <span className="mt-5 inline-flex items-center gap-2 border-t border-[#eee8ee] pt-3 text-sm font-bold text-[#4a1249]">
                         Explore this degree <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                       </span>

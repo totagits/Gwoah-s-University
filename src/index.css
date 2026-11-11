@@ -238,3 +238,24 @@ html.theme-light .hiau-erp-site .hiau-dashboard-selected {
 .hiau-erp-site .hiau-erp-sidebar nav {
   scrollbar-width: thin;
 }
+
+
+/* HIAU brand-action accessibility: light-mode blanket text-white overrides
+   must never render dark labels on deep-purple primary actions. The dedicated
+   semantic class also covers the login screen outside the ERP shell. */
+button.hiau-brand-action,
+[data-theme="light"] button.hiau-brand-action,
+html.theme-light button.hiau-brand-action,
+body.theme-light button.hiau-brand-action {
+  background-color: #4a1249 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+}
+button.hiau-brand-action:hover:not(:disabled) {
+  background-color: #661b69 !important;
+  color: #ffffff !important;
+}
+button.hiau-brand-action:focus-visible {
+  outline: 3px solid #c39a53;
+  outline-offset: 2px;
+}

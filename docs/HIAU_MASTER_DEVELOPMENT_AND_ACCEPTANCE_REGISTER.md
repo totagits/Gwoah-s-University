@@ -148,3 +148,13 @@ All listed defects remain open until a recorded retest passes; the presence of a
 - [ ] **Live review pending:** verify the first content shown is the **actual campus video** after loading, then the classroom clip and any administrator-published clips; spinner is not the first carousel slide.
 - [ ] Verify browser autoplay, buffering, published video playback, audio, mobile controls and actual staging deployed commit before WEB-01 acceptance.
 - [ ] Do not mark WEB-01 accepted based solely on successful CI; `main` remains unchanged.
+
+
+### WEB-01 public CTA and mobile navigation review (10 November 2026)
+- [x] Source confirmed **Apply Now** on the public navbar is rendered while browsing a standalone degree or leadership page, but the admissions modal was previously mounted only inside the homepage. Fixed by making the same form available on degree/profile views without duplicating the homepage Admissions section or changing its position.
+- [x] Mobile top-level section navigation now closes the menu after selection instead of leaving a dropdown covering the destination section.
+- [x] Added source regressions for hero **Become a Student**, header **Apply Now**, profile/degree entry points, application cancellation, and public intake payload invariants (including county and scholarship interest).
+- [ ] **Live staging verification pending:** from homepage, a degree page and a leadership profile, open Apply Now/Become a Student, verify the form appears, cancel without submitting, and verify navigation remains usable.
+- [ ] Mobile 375 px and 768 px menu actions, website search results/no-match, scroll targets, keyboard navigation and viewport overflow remain to be observed in Chrome.
+- [ ] No actual applicant data or paid transaction is authorized for this navigation acceptance. Use only fictional records if submission later becomes necessary under WEB-07.
+- [ ] WEB-01 remains **Acceptance pending** until a dated browser observation and institutional sign-off are documented. Prior user-confirmed playback of campus/classroom videos is a functional observation, not full homepage approval.

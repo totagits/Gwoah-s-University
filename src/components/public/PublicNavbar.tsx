@@ -542,7 +542,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                     <button
                       onClick={() => {
                         onNavigateSection(link.id);
-                        if (!hasSub) setMobileMenuOpen(false);
+                        setMobileMenuOpen(false);
+                        setMobileExpandedSection(null);
                       }}
                       className="text-left text-sm font-bold text-slate-800 hover:text-[#4A1249]"
                     >

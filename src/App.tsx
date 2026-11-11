@@ -353,6 +353,15 @@ export default function App() {
             </main>
           )}
 
+          {(activeDegreeRoute || activeLeaderProfileId) && (
+            <PublicAdmissions
+              isModalOpen={isApplicationModalOpen}
+              showSection={false}
+              onCloseModal={() => setIsApplicationModalOpen(false)}
+              onOpenModal={() => setIsApplicationModalOpen(true)}
+            />
+          )}
+
           <PublicFooter
             onOpenPortal={handleOpenPortal}
             onNavigateSection={handleNavigateSection}

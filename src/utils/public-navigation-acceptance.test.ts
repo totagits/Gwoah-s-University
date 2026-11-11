@@ -8,8 +8,10 @@ const app=readFileSync(new URL('../App.tsx',import.meta.url),'utf8');
 test('WEB-01: public navigation does not advertise nonexistent ERP modules or unsupported calendar export',()=>{
   assert.doesNotMatch(navbar,/onOpenPortal\('facilities'\)|onOpenPortal\('library'\)/);
   assert.doesNotMatch(navbar,/\/api\/calendar\/export\.ics/);
-  assert.match(navbar,/onOpenPortal\('admissions'\)/);
-  assert.match(navbar,/\['super_admin','registrar','admissions_officer'\]/);
+  assert.doesNotMatch(navbar,/onOpenPortal\('admissions'\)/);
+  assert.doesNotMatch(navbar,/Admissions Officer Review Desk/);
+  assert.match(navbar,/grid grid-cols-2 xl:grid-cols-3/);
+  assert.match(navbar,/absolute left-0 right-0 top-full/);
 });
 test('WEB-01: site search maps public topics and reports unknown query without wrong navigation',()=>{
   assert.match(navbar,/const siteSearch =/);

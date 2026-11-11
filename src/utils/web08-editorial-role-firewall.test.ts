@@ -15,7 +15,7 @@ test('WEB-08: editorial roles are registered but not granted ERP sidebar or API 
   assert.match(modules,new RegExp(role+": \\[\\'website_cms\\',\\'website_news\\'\\]"));
  }
  assert.match(firewall,/Website editorial accounts cannot access institutional ERP APIs/);
- assert.match(firewall,/admin\\\/(?:site-content|news-events)/);
+ assert.match(firewall,/site-content\|news-events/);
  assert.doesNotMatch(modules,/website_editor: \[.*admissions/);
  assert.doesNotMatch(modules,/website_reviewer: \[.*finance/);
 });

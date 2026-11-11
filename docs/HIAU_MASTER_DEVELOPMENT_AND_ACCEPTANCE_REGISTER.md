@@ -117,3 +117,16 @@ All listed defects remain open until a recorded retest passes; the presence of a
 **Next single milestone: WEB-01 — Public homepage and navigation acceptance on the latest actually deployed staging commit.** Record the deployed SHA, review the home hero, header menus, CTAs, media and first-page mobile layout; log every observed failure before deciding on code changes. Then work through WEB-02 to WEB-11 in order.
 
 **Change-control rule:** Every future PR cites a WEB/ERP/DEF identifier and its acceptance result. Do not start another unrelated feature simply because the previous PR merged. Production `main` remains unchanged without explicit release authorization.
+
+
+## WEB-01 evidence update — navigation source audit (10 November 2026)
+
+- [x] Audited source for HIAU home navigation and footer destinations. Removed links invoking nonexistent `facilities` and `library` ERP tabs; removed unverified `/api/calendar/export.ics` link from the public menu rather than advertise a dead download.
+- [x] Changed the public-site keyword navigation to report no match instead of silently sending unknown search terms to About; added Financial Aid/Scholarship lookup, responsive search wrapping and accessible labels.
+- [x] Adjusted the Admissions menu to describe the existing intake rather than unimplemented acceptance decisions; restricted staff shortcut is now shown only to eligible authenticated roles.
+- [x] Added Escape-to-close and mobile disclosure state for public navigation; supplied a source regression test.
+- [ ] **Live staging review outstanding:** staging URL could not be retrieved through the external browsing tool in this session. Do not call browser behavior accepted on the basis of code alone.
+- [ ] User/authorized reviewer must open Home, About, Campus Tour, Academics, Admissions/Financial Aid, Current Events, Student Experience, search, primary CTAs and footer on desktop and mobile; record screenshots and live deployment commit.
+- [ ] Verify homepage hero autoplay and video controls, public text claims/approved media, and keyboard focus in Chrome; not established by these navigation fixes.
+
+**WEB-01 remains Acceptance pending.** This change is a focused navigation repair, not overall public-site acceptance. Continue WEB-01 browser checks; no ERP work was added.

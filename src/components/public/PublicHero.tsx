@@ -134,6 +134,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             key={currentVideo.id}
             ref={videoRef}
             src={currentVideo.src}
+            poster={currentVideo.id === 'hero-campus' ? '/assets/aistudio/image_29eb5504.png' : undefined}
             preload="auto"
             autoPlay
             muted={isMuted}

@@ -15,7 +15,7 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
  const active=items.find(x=>x.id===activeId);
  const act=async(kind:'save'|'approve'|'schedule'|'publish'|'unpublish'|'delete')=>{
   if(busy||(kind==='save'?!isAuthor:!isReviewer))return;
-  if(kind==='delete'&&!window.confirm('Permanently delete this news or event item?'))return;
+  if(kind==='delete'&&!window.confirm('Permanently delete this item? To remove it from the public site but keep it as a draft, choose Unpublish instead.'))return;
   setBusy(true);setError('');setMessage('');
   try{
     let result:{item:Item}|null=null;

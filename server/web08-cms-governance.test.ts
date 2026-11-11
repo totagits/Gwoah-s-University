@@ -64,7 +64,10 @@ test('WEB-08: authenticated editorial workflow, scheduled publishing and SQLite 
  assert.equal(schedule.status,200);
  assert.equal((await call('GET',cmsPublic,visitor)).payload.items[0].body,input.body,'future publication should not appear early');
  // Simulate a restart: the due schedule is held in the on-disk SQLite settings.
- store.close();store=new Operations(directory);
+ store.close();
+ const reopened=new Operations(directory);
+ // Keep the installed route handlers' Operations reference and replace only its reopened SQLite connection.
+ store.sql=reopened.sql;
  assert.equal(store.one('SELECT value FROM settings WHERE key=?','website-cms:'+cmsId)!=null,true,'persistent CMS row exists after reopen');
  const persisted=JSON.parse(store.one('SELECT value FROM settings WHERE key=?','website-cms:'+cmsId).value);
  persisted.scheduledAt=new Date(Date.now()-1000).toISOString();

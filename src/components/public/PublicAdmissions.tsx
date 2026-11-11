@@ -1,3 +1,4 @@
+import { ManagedText } from './ManagedText';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -122,10 +123,10 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
             Enrolment & Admissions Standards
           </span>
           <h2 className="text-4xl sm:text-5xl font-collegiate font-black mt-3 tracking-tight text-[#4A1249]">
-            ADMISSIONS FOR ACADEMIC YEAR 2026/2027
+            <ManagedText section="admissions" slot="page-heading" fallback="ADMISSIONS FOR ACADEMIC YEAR 2026/2027" />
           </h2>
           <p className="text-slate-600 mt-2 text-base leading-relaxed">
-            Transparent, merit-based, and non-discriminatory admission pathways for undergraduate degrees, vocational tracks, and whole-person education at Harvest Intercontinental American University.
+            <ManagedText section="admissions" slot="page-description" fallback="Transparent, merit-based, and non-discriminatory admission pathways for undergraduate degrees, vocational tracks, and whole-person education at Harvest Intercontinental American University." />
           </p>
         </div>
 

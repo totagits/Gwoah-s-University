@@ -56,7 +56,9 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const publishedCount=degreeSlots.filter(s=>Boolean(s.published)).length;
   const draftCount=degreeSlots.filter(s=>Boolean(s.draft)).length;
   const missingCount=degreeSlots.filter(s=>!s.published&&s.defaultAvailable===false).length;
-  const active=slots.find(s=>s.slot===selected);
+  // Keep the editor scoped to a visible degree after the college/search changes.
+  // Never allow a stale hidden selection to receive an upload or publication.
+  const active=visibleSlots.find(s=>s.slot===selected)??visibleSlots[0];
   const extras=slots.filter(s=>s.slot.startsWith('hero-extra-')).sort((a,b)=>(a.order??0)-(b.order??0));
   const chooseView=(next:'home'|'degree')=>{
     setLibraryView(next);setError('');setMessage('');setFile(null);
@@ -251,8 +253,8 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
         <div className="max-h-[520px] space-y-2 overflow-y-auto">
           {visibleSlots.map(item=><button type="button" key={item.slot}
             onClick={()=>{setSelected(item.slot);setFile(null);setError('');setMessage('');}}
-            aria-current={selected===item.slot?'true':undefined}
-            className={`block w-full rounded-lg border p-3 text-left text-sm ${selected===item.slot?'border-[#4a1249] bg-[#faf2fb]':'border-slate-200 hover:bg-slate-50'}`}>
+            aria-current={active?.slot===item.slot?'true':undefined}
+            className={`block w-full rounded-lg border p-3 text-left text-sm ${active?.slot===item.slot?'border-[#4a1249] bg-[#faf2fb]':'border-slate-200 hover:bg-slate-50'}`}>
             <span className="block font-semibold text-[#35103b]">{item.label}</span>
             {libraryView==='degree'&&<span className="mt-1 block text-xs text-slate-500">{collegeNames[collegeOf(item.slot)]||collegeOf(item.slot)}</span>}
             <span className="mt-1 block text-xs text-slate-600">{item.published?'Published replacement':item.slot.startsWith('hero-extra-')?'Not yet published':item.defaultAvailable===false?'Original video unavailable':'Original explainer'}{item.draft?' · Private draft ready':''}</span>

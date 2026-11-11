@@ -318,7 +318,6 @@ export default function App() {
             currentUser={currentUser}
             onNavigateSection={handleNavigateSection}
             activeSection={activePublicSection}
-            onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
             onOpenProfile={handleOpenProfile}
           />
 

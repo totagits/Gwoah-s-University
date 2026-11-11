@@ -4,6 +4,7 @@ import { resolvePublicDegree } from './PublicColleges';
 import degreeExplainers from '../../../scripts/hiau-degree-video-content.json';
 import {PublicDegreeVideo} from './PublicDegreeVideo';
 import {ManagedText} from './ManagedText';
+import {usePublicContentSlot} from './ManagedContactLink';
 
 type PublishedDegree = {
   programName:string;programCode:string;credential:string;college:string;
@@ -34,6 +35,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
       .finally(()=>{if(!controller.signal.aborted)setReleaseLoading(false);});
     return ()=>controller.abort();
   },[route]);
+  const publishedFocus=usePublicContentSlot('academics',`degree.${route}.focus`,'');
   const match=resolvePublicDegree(route);
   if(!match) return <main className="mx-auto min-h-[50vh] max-w-5xl px-5 py-20 sm:px-8">
     <h1 className="text-3xl font-bold text-[#4a1249]">Degree information unavailable</h1>
@@ -42,7 +44,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
   </main>;
   const {college,program}=match;
   const explainer=degreeExplainers.degrees.find(item=>item.college===college.id&&item.name===program.name);
-  const focusAreas=program.focus.split(',').map(area=>area.trim()).filter(Boolean);
+  const focusAreas=(publishedFocus||program.focus).split(',').map(area=>area.trim()).filter(Boolean);
   const hasConfirmedCredit=program.name==='Bachelor of Science in Civil Engineering';
   const degreeVideoSource=`/api/public/video/${encodeURIComponent(route)}`;
   const academicNote=hasConfirmedCredit
@@ -59,7 +61,7 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
         <div>
           <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#966a32]">{college.name}</p>
           <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-[#4a1249] sm:text-4xl lg:text-5xl">{program.name}</h1>
-          <p className="mt-4 text-base font-semibold text-[#503353]">{program.degreeType} · {program.duration} listed in the academic directory</p>
+          <p className="mt-4 text-base font-semibold text-[#503353]"><ManagedText section="academics" slot={`degree.${route}.credential`} fallback={program.degreeType}/> · <ManagedText section="academics" slot={`degree.${route}.duration`} fallback={program.duration}/> listed in the academic directory</p>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-700">
             Explore a field of study centered on {focusAreas.slice(0,3).join(', ').toLowerCase()}.
             The academic focus areas below reflect HIAU's current program description.
@@ -166,8 +168,8 @@ export const PublicDegreeDetail: React.FC<DegreeDetailProps> = ({route,onBack,on
         <section className="rounded-xl border border-[#dfd0e1] bg-[#faf8fb] p-5">
           <div className="flex items-center gap-2 text-[#4a1249]"><GraduationCap className="h-5 w-5" aria-hidden="true"/><h2 className="font-bold">Degree at a glance</h2></div>
           <dl className="mt-5 space-y-4 text-sm">
-            <div><dt className="font-semibold text-slate-500">Credential</dt><dd className="mt-1 font-semibold text-[#35103b]">{program.degreeType}</dd></div>
-            <div><dt className="font-semibold text-slate-500">Listed duration</dt><dd className="mt-1 font-semibold text-[#35103b]">{program.duration}</dd></div>
+            <div><dt className="font-semibold text-slate-500">Credential</dt><dd className="mt-1 font-semibold text-[#35103b]"><ManagedText section="academics" slot={`degree.${route}.credential`} fallback={program.degreeType}/></dd></div>
+            <div><dt className="font-semibold text-slate-500">Listed duration</dt><dd className="mt-1 font-semibold text-[#35103b]"><ManagedText section="academics" slot={`degree.${route}.duration`} fallback={program.duration}/></dd></div>
             <div><dt className="font-semibold text-slate-500">Academic college</dt><dd className="mt-1 font-semibold text-[#35103b]">{college.name}</dd></div>
             {hasConfirmedCredit&&<div><dt className="font-semibold text-slate-500">University-confirmed credit total</dt><dd className="mt-1 text-xl font-extrabold text-[#4a1249]">179 credits</dd></div>}
           </dl>

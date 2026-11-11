@@ -15,7 +15,7 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
  const active=items.find(x=>x.id===activeId);
  const act=async(kind:'save'|'approve'|'schedule'|'publish'|'unpublish'|'delete')=>{
   if(busy||(kind==='save'?!isAuthor:!isReviewer))return;
-  if(kind==='delete'&&!window.confirm('Permanently delete this news or event item?'))return;
+  if(kind==='delete'&&!window.confirm('Permanently delete this item? To remove it from the public site but keep it as a draft, choose Unpublish instead.'))return;
   setBusy(true);setError('');setMessage('');
   try{
     let result:{item:Item}|null=null;
@@ -34,7 +34,7 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
  if(!isAuthor&&!isReviewer)return <p role="alert">Website news requires an authorized editor or reviewer.</p>;
  return <section className="rounded-xl border bg-white p-5">
   <div className="flex flex-wrap justify-between gap-3"><div><h2 className="text-xl font-bold text-[#4A1249]">Website News & Events</h2><p className="mt-1 text-sm text-slate-600">Draft, verify and publish announcements without changing academic calendar records.</p></div>
-  <button type="button" disabled={!isAuthor} onClick={()=>{setActiveId('');setDraft(blank);setMessage('');setError('');}} className="rounded bg-[#4A1249] px-4 py-2 font-bold text-white">+ New announcement</button></div>
+  <button type="button" disabled={!isAuthor} onClick={()=>{setActiveId('');setDraft(blank);setMessage('');setError('');}} className="hiau-brand-action rounded bg-[#4A1249] px-4 py-2 font-bold text-white">+ New announcement</button></div>
   {error&&<p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}{message&&<p role="status" className="mt-3 text-sm text-green-700">{message}</p>}
   <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(180px,1fr)_minmax(0,1.7fr)]">
    <div className="space-y-2">{items.map(item=><button key={item.id} type="button" onClick={()=>{setActiveId(item.id);setDraft({kind:item.kind,title:item.title,summary:item.summary,eventDate:item.eventDate,location:item.location,verified:item.verified});}} className="block w-full rounded border p-3 text-left text-sm hover:bg-purple-50">
@@ -49,7 +49,7 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
     </div>
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" disabled={!isAuthor} checked={draft.verified} onChange={e=>setDraft({...draft,verified:e.target.checked})}/> I have verified the event date and details and obtained publication approval.</label>
     <div className="flex flex-wrap gap-2">
-     <button disabled={busy||!isAuthor} onClick={()=>void act('save')} className="rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white">Save draft</button>
+     <button disabled={busy||!isAuthor} onClick={()=>void act('save')} className="hiau-brand-action rounded bg-[#4A1249] px-4 py-2 text-sm font-bold text-white">Save draft</button>
      {active&&<>{isReviewer&&!active.verified&&<button disabled={busy} onClick={()=>void act('approve')} className="rounded border px-4 py-2 text-sm font-bold">Approve draft</button>}
      <button disabled={busy||!isReviewer||!active.verified} onClick={()=>void act('publish')} className="rounded border px-4 py-2 text-sm">Publish</button><button disabled={busy||!isReviewer} onClick={()=>void act('unpublish')} className="rounded border px-4 py-2 text-sm">Unpublish</button><button disabled={busy||!isReviewer} onClick={()=>void act('delete')} className="rounded border border-red-300 px-4 py-2 text-sm text-red-700">Delete</button></>}
     </div>

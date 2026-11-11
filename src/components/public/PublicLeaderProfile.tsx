@@ -48,6 +48,23 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [profileId]);
 
+  if (!profile) {
+    return (
+      <main className="min-h-[45vh] bg-[#FAF9FB] px-6 py-16 text-[#28192B]">
+        <div className="mx-auto max-w-3xl rounded-lg border border-[#E7DDE7] bg-white p-8">
+          <h1 className="text-2xl font-bold text-[#4A1249]">Leadership profile unavailable</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            This profile link could not be matched to the published university leadership directory.
+          </p>
+          <button type="button" onClick={() => { onClose(); onNavigateSection('about'); }}
+            className="mt-6 inline-flex items-center gap-2 rounded-md bg-[#4A1249] px-4 py-2 text-sm font-semibold text-white">
+            <ArrowLeft className="h-4 w-4" /> Return to leadership directory
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   const index = directoryMembers.findIndex(member => member.id === profile.id);
   const prev = index > 0 ? directoryMembers[index - 1] : null;
   const next = index >= 0 && index < directoryMembers.length - 1 ? directoryMembers[index + 1] : null;
@@ -89,22 +106,6 @@ export const PublicLeaderProfile: React.FC<PublicLeaderProfileProps> = ({
     profile.socialLinks?.website && { label: 'Official website', href: profile.socialLinks.website },
   ].filter((link): link is { label: string; href: string } => Boolean(link));
 
-  if (!profile) {
-    return (
-      <main className="min-h-[45vh] bg-[#FAF9FB] px-6 py-16 text-[#28192B]">
-        <div className="mx-auto max-w-3xl rounded-lg border border-[#E7DDE7] bg-white p-8">
-          <h1 className="text-2xl font-bold text-[#4A1249]">Leadership profile unavailable</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
-            This profile link could not be matched to the published university leadership directory.
-          </p>
-          <button type="button" onClick={() => { onClose(); onNavigateSection('about'); }}
-            className="mt-6 inline-flex items-center gap-2 rounded-md bg-[#4A1249] px-4 py-2 text-sm font-semibold text-white">
-            <ArrowLeft className="h-4 w-4" /> Return to leadership directory
-          </button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#FAF9FB] text-[#28192B]">

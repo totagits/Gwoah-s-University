@@ -34,6 +34,8 @@ import { AcademicPlanningRegistration } from './components/portal/AcademicPlanni
 import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import { PartnerAdministration } from './components/portal/PartnerAdministration';
 import {PartnerResourceExchange} from './components/portal/PartnerResourceExchange';
+import {PartnerDistributionConsole} from './components/portal/PartnerDistributionConsole';
+import {PartnerAcademicLibrary} from './components/portal/PartnerAcademicLibrary';
 import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import {StudentCoursePlanning} from './components/portal/StudentCoursePlanning';
@@ -520,6 +522,12 @@ export default function App() {
 
             {activePortalTab === 'curriculum' && (
               <CurriculumStudio currentUser={currentUser} />
+            )}
+            {activePortalTab === 'partner_distribution' && (
+              <PartnerDistributionConsole currentUser={currentUser} />
+            )}
+            {activePortalTab === 'partner_library' && (
+              <PartnerAcademicLibrary currentUser={currentUser} />
             )}
             {activePortalTab === 'partner_resources' && (
               <PartnerResourceExchange currentUser={currentUser} />

@@ -38,6 +38,7 @@ import {StudentCoursePlanning} from './components/portal/StudentCoursePlanning';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
 import {RegistrarStudentLinking} from './components/portal/RegistrarStudentLinking';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
+import {FinanceRegistrationHandoff} from './components/portal/FinanceRegistrationHandoff';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';
 import { PrintableDocumentModal } from './components/portal/PrintableDocumentModal';
 import { PortalThemeSettingsModal } from './components/portal/PortalThemeSettingsModal';
@@ -541,7 +542,10 @@ export default function App() {
             )}
 
             {activePortalTab === 'finance' && (
-              <FinanceBursarModule currentUser={currentUser} />
+              <>
+                <FinanceBursarModule currentUser={currentUser} />
+                <FinanceRegistrationHandoff currentUser={currentUser} />
+              </>
             )}
 
             {activePortalTab === 'compliance' && (

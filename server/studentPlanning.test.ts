@@ -12,10 +12,10 @@ import {installStudentPlanning} from './studentPlanning';
 test('ERP-STUDENT-01A plans are private, scoped, audited and do not create enrollment or tuition',async t=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-erp-student-'));
  const db=new Operations(dir);
- const [studentId,otherStudentId,studentUser,otherUser,registrar,courseId,sectionId,termId,programId,appId,appOther,lecturer]=Array.from({length:12},()=>randomUUID());
+ const [studentId,otherStudentId,studentUser,otherUser,registrar,courseId,sectionId,termId,programId,appId,appOther,lecturer,bursar]=Array.from({length:13},()=>randomUUID());
  const stamp=new Date().toISOString();
  for(const [id,role,email] of [[studentUser,'student','one@example.test'],[otherUser,'student','two@example.test'],
-    [registrar,'registrar','registrar@example.test'],[lecturer,'lecturer','lecturer@example.test']] as const)
+    [registrar,'registrar','registrar@example.test'],[lecturer,'lecturer','lecturer@example.test'],[bursar,'bursar','bursar@example.test']] as const)
   db.run('INSERT INTO users(id,email,name,role,title,department) VALUES(?,?,?,?,?,?)',id,email,id,role,role,'');
  db.run('INSERT INTO programs VALUES(?,?,?,?,?)',programId,'P-01','Approved sample program',120,stamp);
  db.run('INSERT INTO terms VALUES(?,?,?,?,?,?,?,?)',termId,'T-01','Test term','2026-11-01','2027-03-01','open',18,stamp);
@@ -28,7 +28,7 @@ test('ERP-STUDENT-01A plans are private, scoped, audited and do not create enrol
  const app=express();
  app.use(express.json());
  app.use((req,res,next)=>{const id=req.header('x-actor')||'visitor';res.locals.actor={
-   id,role:id===registrar?'registrar':id===lecturer?'lecturer':id===studentUser||id===otherUser?'student':'visitor',
+   id,role:id===registrar?'registrar':id===bursar?'bursar':id===lecturer?'lecturer':id===studentUser||id===otherUser?'student':'visitor',
    email:'test@example.test',name:'Test',title:'',department:''
  };next();});
  installStudentPlanning(app,db);
@@ -61,14 +61,35 @@ test('ERP-STUDENT-01A plans are private, scoped, audited and do not create enrol
  assert.equal((await request('POST',endpoint,studentUser,{termId,sectionIds:[sectionId],note:'Revised'})).status,201);
  assert.equal((await request('POST',endpoint+'/'+planId+'/submit',studentUser,{})).status,200);
  assert.equal((await request('POST',endpoint+'/'+planId+'/review',registrar,{decision:'approved',note:'Meets planning rules'})).status,200);
- assert.equal((await request('GET',endpoint,registrar)).payload.plans.length,0);
+ assert.equal((await request('GET',endpoint,registrar)).payload.plans.length,1,'Approved plans must await explicit Registrar enrollment.');
+ assert.equal((await request('GET',endpoint,registrar)).payload.plans[0].status,'approved');
  assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations').n,0,'approval must not enroll');
  assert.equal(db.one('SELECT COUNT(*) AS n FROM invoices').n,0,'approval must not bill');
  assert.ok(db.one('SELECT id FROM audit WHERE action=?','COURSE_PLAN_REVIEW'));
  assert.equal((await request('POST',endpoint,studentUser,{termId,sectionIds:[sectionId],note:'Overwrite approved'})).status,409);
+ assert.equal((await request('GET','/api/student/finance-handoff',studentUser)).status,403);
+ assert.equal((await request('POST',endpoint+'/'+planId+'/register',studentUser,{confirmation:'CONFIRM_OFFICIAL_REGISTRATION'})).status,403);
+ assert.equal((await request('POST',endpoint+'/'+planId+'/register',registrar,{})).status,400);
+ const commit=await request('POST',endpoint+'/'+planId+'/register',registrar,{confirmation:'CONFIRM_OFFICIAL_REGISTRATION'});
+ assert.equal(commit.status,201);
+ assert.equal(commit.payload.registeredSections,1);
+ assert.equal(commit.payload.billingStatus,'awaiting_finance_review');
+ assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations').n,1,'Only Registrar commits actual enrollment');
+ assert.equal(db.one('SELECT COUNT(*) AS n FROM invoices').n,0,'Registrar must not issue invoice');
+ assert.equal((await request('POST',endpoint+'/'+planId+'/register',registrar,{confirmation:'CONFIRM_OFFICIAL_REGISTRATION'})).status,409);
+ assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations').n,1,'Commit must be idempotent');
+ const queue=await request('GET','/api/student/finance-handoff',bursar);
+ assert.equal(queue.status,200);
+ assert.equal(queue.payload.items.length,1);
+ assert.equal(queue.payload.items[0].unbilled_sections,1);
+ assert.equal((await request('GET','/api/student/finance-handoff',lecturer)).status,403);
+ assert.ok(db.one('SELECT id FROM audit WHERE action=?','COURSE_PLAN_REGISTERED'));
+ assert.equal((await request('GET',endpoint,registrar)).payload.plans.length,0,'Registered plans leave Registrar queue');
+
  db.close();
  const reopened=new Operations(dir);
  assert.equal(reopened.one('SELECT status FROM student_course_plans WHERE id=?',planId).status,'approved');
+ assert.equal(reopened.one('SELECT COUNT(*) AS n FROM student_course_plan_commits').n,1);
  assert.ok(reopened.exportSnapshot);
  reopened.close();
  // before hook must not close the already closed handle

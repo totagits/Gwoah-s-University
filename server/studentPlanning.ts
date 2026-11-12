@@ -72,7 +72,9 @@ export function installStudentPlanning(app:Express,store:Operations){
     const record=studentFor(res);
     if(actor.role==='student'){
       if(!record)return res.json({plans:[],linked:false,terms:[],sections:[]});
-      const plans=store.all('SELECT * FROM student_course_plans WHERE student_id=? ORDER BY updated_at DESC',record.id).map(inspect);
+      const plans=store.all(`SELECT p.*,x.created_at AS committed_at
+        FROM student_course_plans p LEFT JOIN student_course_plan_commits x ON x.plan_id=p.id
+        WHERE p.student_id=? ORDER BY p.updated_at DESC`,record.id).map(inspect);
       const terms=store.all("SELECT id,title,status,max_credits FROM terms WHERE status='open' ORDER BY start_date");
       const sections=store.all(`SELECT s.id,s.term_id,s.code,s.capacity,c.code AS course_code,c.title AS course_title,c.credits
         FROM sections s JOIN terms t ON t.id=s.term_id JOIN courses c ON c.id=s.course_id WHERE t.status='open'`);

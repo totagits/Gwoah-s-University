@@ -669,7 +669,7 @@ export const TaskManagementDashboard: React.FC<TaskManagementDashboardProps> = (
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl shadow cursor-pointer disabled:opacity-50"
+                  className="hiau-action-primary px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl shadow cursor-pointer disabled:opacity-50"
                 >
                   {creating ? 'Saving Task...' : 'Save & Publish Task'}
                 </button>

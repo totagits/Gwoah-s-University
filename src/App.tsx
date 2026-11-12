@@ -443,6 +443,7 @@ export default function App() {
       {viewMode === 'portal' && currentUser && canUseInstalledApp(currentUser.role) && (
         <div className="hiau-erp-site flex flex-col min-h-screen bg-[#FAF8FB]">
           <PortalHeader
+            installedAppKind={appKind}
             currentUser={currentUser}
             activeTab={activePortalTab}
             onSelectTab={handleSelectTabWithSubAction}

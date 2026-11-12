@@ -36,6 +36,7 @@ import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import {StudentCoursePlanning} from './components/portal/StudentCoursePlanning';
 import {StudentFinancialStatement} from './components/portal/StudentFinancialStatement';
+import {StudentAssistanceRequests} from './components/portal/StudentAssistanceRequests';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
 import {RegistrarStudentLinking} from './components/portal/RegistrarStudentLinking';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
@@ -528,6 +529,7 @@ export default function App() {
                 <SecureStudentWorkspace currentUser={currentUser} />
                 <StudentCoursePlanning currentUser={currentUser} />
                 <StudentFinancialStatement currentUser={currentUser} />
+                <StudentAssistanceRequests currentUser={currentUser} />
               </>
             )}
 
@@ -539,6 +541,7 @@ export default function App() {
               <>
                 <AdmissionsReviewModule currentUser={currentUser} />
                 <RegistrarStudentLinking currentUser={currentUser} />
+                <StudentAssistanceRequests currentUser={currentUser} />
                 <StudentCoursePlanning currentUser={currentUser} />
               </>
             )}
@@ -547,6 +550,7 @@ export default function App() {
               <>
                 <FinanceBursarModule currentUser={currentUser} />
                 <FinanceRegistrationHandoff currentUser={currentUser} />
+                <StudentAssistanceRequests currentUser={currentUser} />
               </>
             )}
 

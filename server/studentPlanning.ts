@@ -49,7 +49,7 @@ export function installStudentPlanning(app:Express,store:Operations){
     const credits=sections.reduce((n,s)=>n+s.credits,0);
     if(credits>term.max_credits)return 'The plan exceeds the term credit maximum.';
     for(const section of sections){
-      const registered=store.one(`SELECT id FROM registrations r JOIN sections s ON s.id=r.section_id
+      const registered=store.one(`SELECT r.id FROM registrations r JOIN sections s ON s.id=r.section_id
         WHERE r.student_id=? AND s.term_id=? AND s.course_id=? AND r.status='enrolled'`,
         student.id,termId,section.course_id);
       if(registered)return 'One selected course is already registered for the term.';

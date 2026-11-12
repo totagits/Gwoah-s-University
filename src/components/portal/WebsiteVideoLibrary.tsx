@@ -226,7 +226,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
             <Download className="h-4 w-4" aria-hidden="true"/>
             Export degree video audit CSV
           </button>
-          <p className="text-xs text-slate-600">All ${degreeSlots.length} programs · private verification worksheet · no student data</p>
+          <p className="text-xs text-slate-600">All {degreeSlots.length} programs · private verification worksheet · no student data</p>
         </div>
         <dl className="mt-4 grid gap-3 sm:grid-cols-4">
           {[

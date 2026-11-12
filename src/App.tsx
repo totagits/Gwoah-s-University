@@ -271,6 +271,25 @@ export default function App() {
     }
   };
 
+  const handleRequestFacilitiesLogin = async () => {
+    // An internal ERP link from a public page must demand a fresh credential
+    // check, even if this browser has an existing university session.
+    try {
+      if (currentUser) {
+        const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+        if (!response.ok) throw new Error('Unable to close the current session');
+        setCurrentUser(null);
+        setSessionCsrf('');
+      }
+      setViewMode('public');
+      setPendingPortalTab('facilities');
+      setIsLoginModalOpen(true);
+    } catch (error) {
+      console.error('Could not establish a fresh Facilities login:', error);
+      window.alert('Unable to open a secure staff sign-in. Please use Sign out and retry.');
+    }
+  };
+
   const handleLoginSuccess = (user: UserProfile, _token: string) => {
     setCurrentUser(user);
     setIsLoginModalOpen(false);
@@ -390,7 +409,7 @@ export default function App() {
               <PublicCmsSection section="about" />
               <PublicVirtualTour
                 onOpenApplicationModal={() => setIsApplicationModalOpen(true)}
-                onOpenPortal={handleOpenPortal}
+                onRequestFacilitiesLogin={handleRequestFacilitiesLogin}
               />
               <PublicCampusContent />
               <PublicColleges initialCollegeId={lastPublicCollegeId} />

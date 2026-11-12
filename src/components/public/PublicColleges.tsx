@@ -280,7 +280,7 @@ const SPECIALIZED_PROGRAMS = [
   },
   {
     title: 'Online & Hybrid Learning',
-    desc: 'Flexible, Christ-centered virtual learning platform enabling working professionals across Liberia and Africa to pursue degrees digitally.',
+    desc: 'Flexible, Christ-centered online and hybrid learning for students and working professionals, with a planned secure academic collaboration hub for approved partner institutions to share lectures, seminars, research and licensed library resources. Availability is subject to institutional agreements and academic approval.',
     icon: Laptop,
   },
 ];
@@ -499,6 +499,33 @@ export const PublicColleges: React.FC<{initialCollegeId?: string}> = ({initialCo
                 </article>;
               })}
             </div>
+          </section>
+          <section aria-labelledby="hiau-global-collaboration-heading" className="mt-10 rounded-2xl border border-[#e6dce7] bg-[#faf8fb] p-5 sm:p-7">
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#956a32]">Future academic collaboration</p>
+            <h3 id="hiau-global-collaboration-heading" className="mt-2 text-2xl font-bold text-[#4a1249]">Online, Hybrid Learning & Global Academic Collaboration</h3>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-700">
+              HIAU envisions accessible Christ-centered learning alongside a secure space for authorized partner
+              institutions to exchange educational resources and scholarly knowledge. The capabilities below
+              are planned; their availability depends on approved partnerships, licensing and implementation.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {[
+                ['Online and hybrid instruction','Live and recorded classes, coursework and academic discussions designed for campus and distance learners.'],
+                ['Guest lectures and symposiums','Partner-led lectures, research seminars, academic conferences and professional-development events.'],
+                ['Collaborative research','Approved scholarly projects, supervised knowledge exchange and institution-controlled research sharing.'],
+                ['Digital library access','Permission-based access to licensed publications, partner repositories and open-access learning materials.'],
+              ].map(([heading,detail])=>(
+                <article key={heading} className="rounded-xl border border-[#e5d9e7] bg-white p-4">
+                  <h4 className="font-semibold text-[#35103b]">{heading}</h4>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-700">{detail}</p>
+                </article>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-slate-600">
+              Participation, publication rights and resource access require authorization. Guest activities
+              do not automatically confer academic credit; credit transfer or recognition requires separate
+              documented academic approval.
+            </p>
           </section>
         </div>
       </div>

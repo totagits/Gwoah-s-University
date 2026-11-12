@@ -212,7 +212,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
           </div>
           <button
             onClick={onOpenModal}
-            className="px-6 py-3.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-collegiate font-black text-xs uppercase tracking-wider rounded-sm shadow-lg transition-transform hover:scale-105 shrink-0 flex items-center gap-2 cursor-pointer"
+            className="px-6 py-3.5 bg-[#4A1249] hover:bg-[#35103B] !text-white font-collegiate font-black text-xs uppercase tracking-wider rounded-sm shadow-lg transition-transform hover:scale-105 shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53]"
           >
             <FileText className="w-4 h-4 text-[#2A082C]" />
             <span>Open online application</span>
@@ -269,7 +269,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                       setSubmissionSuccess(null);
                       onCloseModal();
                     }}
-                    className="px-6 py-2.5 bg-[#C39A53] text-[#2A082C] font-bold text-xs uppercase tracking-wider rounded hover:bg-[#D4B06F] cursor-pointer"
+                    className="px-6 py-2.5 bg-[#4A1249] !text-white font-bold text-xs uppercase tracking-wider rounded hover:bg-[#35103B] cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53]"
                   >
                     Close Window
                   </button>
@@ -491,7 +491,7 @@ export const PublicAdmissions: React.FC<PublicAdmissionsProps> = ({
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-2.5 bg-[#C39A53] hover:bg-[#DDB86C] text-[#2A082C] font-bold text-xs uppercase tracking-wider rounded flex items-center gap-2 shadow disabled:opacity-50 cursor-pointer"
+                    className="px-6 py-2.5 bg-[#4A1249] hover:bg-[#35103B] !text-white font-bold text-xs uppercase tracking-wider rounded flex items-center gap-2 shadow disabled:bg-[#E8E4EA] disabled:!text-[#544B59] disabled:opacity-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53]"
                   >
                     {submitting ? (
                       <>

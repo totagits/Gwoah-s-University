@@ -18,6 +18,7 @@ import { installLiveAnalytics } from './server/liveAnalytics';
 import { installDirectMessages } from './server/directMessages';
 import { installInstitutionalPartners } from './server/institutionalPartners';
 import {installPartnerCollaboration,partnerInviteAllowed} from './server/partnerCollaboration';
+import {installPartnerDistribution} from './server/partnerDistribution';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -56,6 +57,7 @@ installLiveAnalytics(app, operations);
 installDirectMessages(app, operations);
 installInstitutionalPartners(app, operations);
 installPartnerCollaboration(app, operations);
+installPartnerDistribution(app, operations);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

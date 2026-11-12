@@ -85,6 +85,36 @@ test('ERP-STUDENT-01A plans are private, scoped, audited and do not create enrol
  assert.equal((await request('GET','/api/student/finance-handoff',lecturer)).status,403);
  assert.ok(db.one('SELECT id FROM audit WHERE action=?','COURSE_PLAN_REGISTERED'));
  assert.equal((await request('GET',endpoint,registrar)).payload.plans.length,0,'Registered plans leave Registrar queue');
+ // Fee preview is advisory, Bursar-only, and never posts an invoice.
+ assert.equal((await request('GET','/api/student/finance-quote/'+commit.payload.commitId,studentUser)).status,403);
+ assert.equal((await request('GET','/api/student/finance-quote/'+commit.payload.commitId,lecturer)).status,403);
+ const quote=await request('GET','/api/student/finance-quote/'+commit.payload.commitId,bursar);
+ assert.equal(quote.status,200);
+ assert.equal(quote.payload.unbilledCount,1);
+ assert.equal(quote.payload.indicativeUnbilledCents,30000);
+ assert.equal(quote.payload.readyForPosting,false);
+ assert.equal(db.one('SELECT COUNT(*) AS n FROM invoices').n,0,'Preview must not post charges');
+ assert.equal((await request('GET','/api/student/my-statement',bursar)).status,403);
+ const emptyStatement=await request('GET','/api/student/my-statement',studentUser);
+ assert.equal(emptyStatement.status,200);
+ assert.equal(emptyStatement.payload.invoices.length,0);
+ assert.equal((await request('GET','/api/student/my-statement',otherUser)).payload.invoices.length,0);
+ // Existing Bursar invoice route is independent of the quote preview.
+ const invoice=db.execute({id:bursar,role:'bursar'} as any,'invoice',{
+   studentId,termId,dueDate:'2027-02-01'
+ });
+ assert.equal(invoice.amount_cents,30000);
+ const posted=await request('GET','/api/student/my-statement',studentUser);
+ assert.equal(posted.status,200);
+ assert.equal(posted.payload.invoices.length,1);
+ assert.equal(posted.payload.totalBalanceCents,30000);
+ assert.equal(posted.payload.invoices[0].lines.length,1);
+ assert.equal((await request('GET','/api/student/my-statement',otherUser)).payload.invoices.length,0,'Other student cannot see posted charges');
+ const afterInvoice=await request('GET','/api/student/finance-quote/'+commit.payload.commitId,bursar);
+ assert.equal(afterInvoice.payload.unbilledCount,0);
+ assert.equal(afterInvoice.payload.indicativeUnbilledCents,0);
+ assert.equal(afterInvoice.payload.lines[0].invoice_number,invoice.number);
+
 
  db.close();
  const reopened=new Operations(dir);

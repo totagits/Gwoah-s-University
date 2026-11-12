@@ -1174,7 +1174,7 @@ export class Operations {
     if (
       data?.schemaVersion !== 1 ||
       !data.tables ||
-      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications'].includes(name)).every((name) => Array.isArray(data.tables[name]))
+      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications','student_assistance_requests','student_course_plans','student_course_plan_commits'].includes(name)).every((name) => Array.isArray(data.tables[name]))
     )
       throw new WorkflowError(
         'Snapshot is not a relational operations snapshot.',

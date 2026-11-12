@@ -31,7 +31,7 @@ export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({current
  },[termId,plans,isStudent]);
  const options=useMemo(()=>sections.filter(x=>x.term_id===termId),[sections,termId]);
  const totalCredits=options.filter(x=>chosen.includes(x.id)).reduce((n,x)=>n+x.credits,0);
- const change=async(kind:'save'|'submit'|'review',id?:string,decision?:string)=>{
+ const change=async(kind:'save'|'submit'|'review'|'register',id?:string,decision?:string)=>{
   if(busy)return;
   setBusy(true);setError('');setMessage('');
   try{
@@ -44,6 +44,10 @@ export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({current
    }else if(kind==='review'&&id&&decision){
     await send('/api/student/course-plans/'+id+'/review',{decision,note:reviewNotes[id]||''});
     setMessage('Registrar decision saved and audited. Approval does not automatically enroll or bill the student.');
+   }else if(kind==='register'&&id){
+    if(!window.confirm('Commit all courses in this approved plan as official registration? This cannot be undone here and will be audited. Finance billing remains separate.'))return;
+    await send('/api/student/course-plans/'+id+'/register',{confirmation:'CONFIRM_OFFICIAL_REGISTRATION'});
+    setMessage('Official registration completed. The enrolled sections are now in the Finance billing review queue; no invoice was posted automatically.');
    }
    await refresh();
   }catch(e){setError(e instanceof Error?e.message:'Request failed');}finally{setBusy(false);}
@@ -86,20 +90,25 @@ export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({current
     </>}
    </div>)}
   {isRegistrar&&<div className="mt-4 space-y-3">{plans.length===0?
-   <p className="rounded border border-dashed p-4 text-sm text-slate-600">No course plans awaiting Registrar review.</p>:
+   <p className="rounded border border-dashed p-4 text-sm text-slate-600">No submitted or approved course plans awaiting Registrar action.</p>:
    plans.map(plan=><article key={plan.id} className="rounded-lg border border-purple-200 p-4">
     <h3 className="font-semibold">{plan.student_number} — {plan.full_name}</h3>
-    <p className="mt-1 text-sm text-slate-600">{plan.term_title} · {plan.sectionIds.length} sections · Submitted</p>
+    <p className="mt-1 text-sm text-slate-600">{plan.term_title} · {plan.sectionIds.length} sections · <strong className="capitalize">{plan.status}</strong></p>
     <p className="mt-2 text-sm">{plan.student_note||'No student note.'}</p>
     <label className="mt-3 block text-sm font-semibold">Decision note
      <textarea rows={2} maxLength={1200} value={reviewNotes[plan.id]||''}
        onChange={e=>setReviewNotes(prev=>({...prev,[plan.id]:e.target.value}))}
        className="mt-1 block w-full rounded border p-2"/></label>
     <div className="mt-3 flex flex-wrap gap-2">
-     {(['approved','returned','rejected'] as const).map(decision=><button key={decision} type="button"
+     {plan.status==='submitted'&&(['approved','returned','rejected'] as const).map(decision=><button key={decision} type="button"
       disabled={busy||((decision!=='approved')&&!reviewNotes[plan.id]?.trim())}
       onClick={()=>void change('review',plan.id,decision)}
       className="rounded border border-[#4A1249] px-3 py-2 text-xs font-semibold capitalize text-[#4A1249] disabled:opacity-50">{decision}</button>)}
+     {plan.status==='approved'&&<button type="button" disabled={busy}
+       onClick={()=>void change('register',plan.id)}
+       className="hiau-brand-action rounded bg-[#4A1249] px-3 py-2 text-xs font-bold text-white disabled:opacity-50">
+       Commit official registration
+     </button>}
     </div>
    </article>)}</div>}
  </section>;

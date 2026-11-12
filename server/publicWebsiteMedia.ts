@@ -73,7 +73,7 @@ const bundledPath=(src:string)=>{
 };
 const publishedPath=(store:Operations,directory:string,slot:string)=>{
   const published=parse(store,slot).published;
-  if(!published||!/^[a-f0-9-]{36}\\.mp4$/.test(published))return null;
+  if(!published||!/^[a-f0-9-]{36}\.mp4$/.test(published))return null;
   const file=mediaPath(directory,published);
   return fs.existsSync(file)?file:null;
 };

@@ -161,11 +161,17 @@ test('clean relational workflow enforces billing, review, publication and gradua
     });
     assert.equal(profile.user_id, student.id);
     assert.equal(db.eligibility(profile.id).earnedCredits, 0);
-    const registration = db.execute(student, 'register', {
+    assert.throws(
+      () => db.execute(student, 'register', { sectionId: section.id }),
+      /role/,
+      'A student cannot bypass the Registrar-reviewed planning workflow.',
+    );
+    const registration = run('register', {
+      studentId: profile.id,
       sectionId: section.id,
     });
     assert.throws(
-      () => db.execute(student, 'register', { sectionId: section.id }),
+      () => run('register', { studentId: profile.id, sectionId: section.id }),
       /capacity|already/,
     );
     assert.throws(

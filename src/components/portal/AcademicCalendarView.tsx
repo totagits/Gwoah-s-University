@@ -197,7 +197,7 @@ export const AcademicCalendarView: React.FC<AcademicCalendarViewProps> = ({ curr
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
             <button
               onClick={handleExportAll}
-              className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md cursor-pointer hover:shadow-amber-500/20"
+              className="hiau-action-primary flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md cursor-pointer hover:shadow-amber-500/20"
               title="Download RFC 5545 iCalendar file for all events"
             >
               <Download className="w-4 h-4" />

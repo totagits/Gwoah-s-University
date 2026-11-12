@@ -470,7 +470,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                   <div>
                     <span className="font-bold text-sm text-white">{msg.subject}</span>
                     <div className="text-xs text-slate-400 mt-0.5">
-                      From: <strong className="text-amber-400">{msg.senderName}</strong> ({msg.senderRole}) • To: <strong className="text-slate-200">{msg.recipientName}</strong>
+                      From: <strong className="font-semibold text-[#4a1249]">{msg.senderName}</strong> ({msg.senderRole}) • To: <strong className="font-semibold text-[#4a1249]">{msg.recipientName}</strong>
                     </div>
                   </div>
                   <span className="font-mono text-[10px] text-slate-500">

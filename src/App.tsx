@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { setSessionCsrf } from './services/session';
 import { defaultPortalModule, isPortalModuleAvailable, PORTAL_MODULES } from './portal/moduleRegistry';
 import { PublicNavbar } from './components/public/PublicNavbar';
+import {DedicatedAppEntry} from './components/portal/DedicatedAppEntry';
 import { PublicHero } from './components/public/PublicHero';
 import { PublicAbout } from './components/public/PublicAbout';
 import { PublicVirtualTour } from './components/public/PublicVirtualTour';
@@ -77,6 +78,13 @@ export default function App() {
       }).catch(()=>{/* Static university leadership remains accessible. */});
     return ()=>{cancelled=true;};
   },[]);
+
+  // Installable student and staff apps are isolated by their own URL and
+  // manifest scope. The user role is always checked against the server session.
+  const appKind=window.location.pathname.startsWith('/student/')?'student'
+    :window.location.pathname.startsWith('/staff/')?'staff':null;
+  const canUseInstalledApp=(role:string)=>appKind===null||
+    (appKind==='student'?role==='student':role!=='student'&&role!=='alumni');
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -215,9 +223,10 @@ export default function App() {
       setSessionCsrf(session.csrf);
       setCurrentUser(session.user);
       setActivePortalTab(defaultPortalModule(session.user.role) ?? 'tasks');
-      if (params.has('portal')) setViewMode('portal');
+      if ((params.has('portal')||appKind!==null)&&canUseInstalledApp(session.user.role)) setViewMode('portal');
+      else if(appKind!==null)setViewMode('public');
     }).catch(() => {
-      if (active && (params.has('portal') || params.has('activate'))) setIsLoginModalOpen(true);
+      if (active && (params.has('portal') || params.has('activate') || appKind!==null)) setIsLoginModalOpen(true);
     });
     const expire = () => { setSessionCsrf(''); setCurrentUser(null); setViewMode('public'); setIsLoginModalOpen(true); };
     window.addEventListener('gu:session-expired', expire);
@@ -274,7 +283,7 @@ export default function App() {
   const handleLoginSuccess = (user: UserProfile, _token: string) => {
     setCurrentUser(user);
     setIsLoginModalOpen(false);
-    setViewMode('portal');
+    setViewMode(canUseInstalledApp(user.role)?'portal':'public');
     const safeTab = pendingPortalTab && isPortalModuleAvailable(user.role, pendingPortalTab)
       ? pendingPortalTab
       : defaultPortalModule(user.role);
@@ -346,8 +355,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF8FB] text-[#2E0F34] font-sans selection:bg-[#C39A53]/30 selection:text-[#4A1249]">
+      {viewMode === 'public' && appKind!==null && (
+        <DedicatedAppEntry kind={appKind} currentUser={currentUser}
+          onSignIn={()=>setIsLoginModalOpen(true)} onSignOut={()=>void handleLogout()}/>
+      )}
       {/* RENDER PUBLIC WEBSITE VIEW */}
-      {viewMode === 'public' && (
+      {viewMode === 'public' && appKind===null && (
         <div className="hiau-public-site flex flex-col min-h-screen bg-[#FAF8FB]">
           <PublicNavbar
             onOpenPortal={handleOpenPortal}
@@ -427,7 +440,7 @@ export default function App() {
       )}
 
       {/* RENDER PROTECTED ERP SUBSYSTEM VIEW */}
-      {viewMode === 'portal' && currentUser && (
+      {viewMode === 'portal' && currentUser && canUseInstalledApp(currentUser.role) && (
         <div className="hiau-erp-site flex flex-col min-h-screen bg-[#FAF8FB]">
           <PortalHeader
             currentUser={currentUser}
@@ -435,6 +448,7 @@ export default function App() {
             onSelectTab={handleSelectTabWithSubAction}
             onLogout={handleLogout}
             onBackToPublic={() => {
+              if(appKind!==null){window.location.assign('/');return;}
               setViewMode('public');
               const url = new URL(window.location.href);
               if (url.searchParams.has('portal')) {

@@ -15,6 +15,7 @@ import {installCampusContent} from './server/campusContent';
 import {installWebsiteCms} from './server/websiteCms';
 import {installPublicNewsEvents} from './server/publicNewsEvents';
 import { installLiveAnalytics } from './server/liveAnalytics';
+import { installDirectMessages } from './server/directMessages';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -49,6 +50,7 @@ installCampusContent(app, operations, directory);
 installWebsiteCms(app, operations);
 installPublicNewsEvents(app, operations, directory);
 installLiveAnalytics(app, operations);
+installDirectMessages(app, operations);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

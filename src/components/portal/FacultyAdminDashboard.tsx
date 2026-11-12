@@ -45,7 +45,10 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
   // Messaging state
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [composeModalOpen, setComposeModalOpen] = useState(false);
-  const [msgRecipient, setMsgRecipient] = useState('u-student');
+  const [msgRecipient, setMsgRecipient] = useState('');
+  const [formError, setFormError] = useState('');
+  const [inviteLink, setInviteLink] = useState('');
+  const [creatingUser, setCreatingUser] = useState(false);
   const [msgSubject, setMsgSubject] = useState('');
   const [msgContent, setMsgContent] = useState('');
   const [sendingMsg, setSendingMsg] = useState(false);
@@ -92,7 +95,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
         if (userRes.users) setAllUsers(userRes.users);
         if (msgRes.messages) setMessages(msgRes.messages);
       } catch (err) {
-        console.error('Failed to initialize faculty/admin dashboard:', err);
+        setFormError(err instanceof Error ? err.message : 'Could not load messaging directory.');
       }
     };
     init();
@@ -145,6 +148,8 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
   // Handle sending message
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
+    if (!msgRecipient || !allUsers.some(u => u.id === msgRecipient)) { setFormError('Choose a real recipient before sending.'); return; }
     setSendingMsg(true);
     try {
       const targetUser = allUsers.find((u) => u.id === msgRecipient);
@@ -165,9 +170,9 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
         setMsgContent('');
         setNotification('Message delivered successfully.');
         setTimeout(() => setNotification(null), 4000);
-      }
+      } else { setFormError('Message was not saved.'); }
     } catch (err) {
-      console.error('Failed to send message:', err);
+      setFormError(err instanceof Error ? err.message : 'Could not send message.');
     } finally {
       setSendingMsg(false);
     }
@@ -176,16 +181,20 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
   // Handle creating user
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(''); setInviteLink(''); setCreatingUser(true);
     try {
-      const res = await api.createAdminUser(newUserData);
-      if (res.success && res.user) {
-        setAllUsers((prev) => [...prev, res.user]);
-        setNewUserModalOpen(false);
-        setNotification(`Created new user account for ${res.user.name}`);
-        setTimeout(() => setNotification(null), 4000);
-      }
+      const response = await api.createAdminUser(newUserData);
+      if (!response.activationUrl) throw new Error('No activation link returned by server.');
+      const link = new URL(response.activationUrl, window.location.origin);
+      if (!/^[a-f0-9]{64}$/.test(link.hash.slice(1))) throw new Error('Invalid activation link from server.');
+      setInviteLink(window.location.origin + '/?activate=1' + link.hash);
+      setNotification('Invitation created; account not active until recipient sets a password.');
+      const recipients = await api.getUsers();
+      if (recipients.users) setAllUsers(recipients.users);
     } catch (err) {
-      console.error('Failed to create user:', err);
+      setFormError(err instanceof Error ? err.message : 'Could not create invitation.');
+    } finally {
+      setCreatingUser(false);
     }
   };
 
@@ -440,7 +449,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
               </p>
             </div>
             <button
-              onClick={() => setComposeModalOpen(true)}
+              onClick={() => {setFormError(''); setComposeModalOpen(true);}}
               className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
@@ -494,7 +503,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
               </p>
             </div>
             <button
-              onClick={() => setNewUserModalOpen(true)}
+              onClick={() => {setFormError('');setInviteLink('');setNewUserModalOpen(true);}}
               className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -595,13 +604,17 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </h3>
 
             <form onSubmit={handleSendMessage} className="space-y-4 text-xs">
+              {formError && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">{formError}</p>}
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">Recipient</label>
                 <select
+                  required
+                  aria-label="Recipient"
                   value={msgRecipient}
                   onChange={(e) => setMsgRecipient(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
                 >
+                  <option value="">{allUsers.length ? 'Choose a recipient' : 'No recipients available'}</option>
                   {allUsers.filter((u) => u.id !== currentUser.id).map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.name} ({u.title})
@@ -644,7 +657,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                 </button>
                 <button
                   type="submit"
-                  disabled={sendingMsg}
+                  disabled={sendingMsg || !msgRecipient || !msgSubject.trim() || !msgContent.trim()}
                   className="hiau-action-primary px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl disabled:opacity-50"
                 >
                   {sendingMsg ? 'Sending...' : 'Send Message'}
@@ -665,6 +678,9 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </h3>
 
             <form onSubmit={handleCreateUser} className="space-y-4 text-xs">
+              <p className="text-sm text-slate-700">Create a secure invitation, not an immediately activated login. The recipient chooses their own password through a private, time-limited link.</p>
+              {formError && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">{formError}</p>}
+              {inviteLink && <div role="status" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p className="font-bold">Invitation created — not yet activated</p><p>Share this link privately with its intended recipient; expires in 48 hours. It has not been emailed automatically.</p><button type="button" onClick={() => void navigator.clipboard.writeText(inviteLink)} className="hiau-action-secondary mt-2 rounded-lg px-3 py-2 font-semibold">Copy private activation link</button></div>}
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">Full Name</label>
                 <input
@@ -739,9 +755,10 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                 </button>
                 <button
                   type="submit"
+                  disabled={creatingUser || !!inviteLink}
                   className="hiau-action-primary px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl"
                 >
-                  Save Account
+                  {creatingUser ? 'Creating invitation…' : 'Create Account Invitation'}
                 </button>
               </div>
             </form>

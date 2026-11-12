@@ -61,6 +61,17 @@ export interface AnalyticsOverview {
 }
 
 const API_BASE = '/api';
+async function checkedJson(response: Response) {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Request could not be completed.');
+  return data;
+}
+async function csrfHeaders() {
+  const response = await fetch('/api/auth/me', {credentials:'same-origin',cache:'no-store'});
+  const data = await checkedJson(response);
+  if (!data.csrf) throw new Error('Session verification unavailable. Sign in again.');
+  return {'Content-Type':'application/json','x-csrf-token':String(data.csrf)};
+}
 
 export const api = {
   // Auth
@@ -74,7 +85,7 @@ export const api = {
   },
 
   async getUsers(): Promise<{ users: UserProfile[] }> {
-    const res = await fetch(`${API_BASE}/auth/users`);
+    const res = await fetch(`${API_BASE}/directory/messaging-recipients`);
     return res.json();
   },
 
@@ -268,27 +279,27 @@ export const api = {
   // Messaging (Faculty - Student)
   async getMessages(userId?: string): Promise<{ messages: any[] }> {
     const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
-    const res = await fetch(`${API_BASE}/messages${query}`);
-    return res.json();
+    const res = await fetch(`${API_BASE}/messages${query}`, {credentials:"same-origin"});
+    return checkedJson(res);
   },
 
   async sendMessage(payload: any) {
     const res = await fetch(`${API_BASE}/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      method: 'POST', credentials:'same-origin',
+      headers: await csrfHeaders(),
+      body: JSON.stringify({recipientId:payload.recipientId,subject:payload.subject,content:payload.content}),
     });
-    return res.json();
+    return checkedJson(res);
   },
 
   // Admin User & Catalog Management
   async createAdminUser(payload: any) {
-    const res = await fetch(`${API_BASE}/admin/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+    const res = await fetch(`${API_BASE}/identity/invite`, {
+      method: 'POST', credentials:'same-origin',
+      headers: await csrfHeaders(),
+      body: JSON.stringify({name:payload.name,email:payload.email,role:payload.role}),
     });
-    return res.json();
+    return checkedJson(res);
   },
 
   async updateAdminUser(id: string, payload: any) {

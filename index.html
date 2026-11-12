@@ -7,7 +7,24 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#4A1249" />
-    <title>Harvest Intercontinental American University ERP & Portal</title>
+    <script>
+      // Separate PWA identities: only the dedicated Student and Staff routes
+      // expose install manifests. The public brochure itself is not an ERP app.
+      (function () {
+        var app = /^\/student(?:\/|$)/.test(location.pathname) ? 'student'
+          : /^\/staff(?:\/|$)/.test(location.pathname) ? 'staff' : null;
+        if (app) {
+          var link = document.createElement('link');
+          link.rel = 'manifest';
+          link.href = '/' + app + '.webmanifest';
+          document.head.appendChild(link);
+          document.title = app === 'student' ? 'HIAU Student App' : 'HIAU Staff ERP';
+        }
+      })();
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="HIAU" />
+    <title>Harvest Intercontinental American University | HIAU Liberia</title>
     <meta name="description" content="Comprehensive university platform for Liberia featuring admissions, curriculum, academic planning, student portal, role-based ERP, institutional task management, and integrated analytics aligned with NCHE standards." />
     <meta property="og:title" content="Harvest Intercontinental American University ERP & Portal" />
     <meta property="og:description" content="Comprehensive university platform for Liberia featuring admissions, curriculum, academic planning, student portal, role-based ERP, institutional task management, and integrated analytics aligned with NCHE standards." />

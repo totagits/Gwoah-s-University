@@ -17,7 +17,7 @@ test('WEB-05: stale portal query does not re-open admin login on public hash nav
   assert.ok(begin>=0&&end>begin);
   const router=app.slice(begin,end);
   assert.doesNotMatch(router,/setIsLoginModalOpen\(true\)/);
-  assert.match(app,/if \(active && \(params\.has\('portal'\) \|\| params\.has\('activate'\)\)\) setIsLoginModalOpen\(true\)/);
+  assert.match(app,/if \(active && \(params\.has\('portal'\) \|\| params\.has\('activate'\) \|\| appKind!==null\)\) setIsLoginModalOpen\(true\)/);
   assert.match(app,/const handleNavigateSection = \(sectionId: string\) => \{/);
   assert.match(app,/url\.searchParams\.delete\('portal'\)/);
   assert.match(app,/onBackToPublic=\{\(\) => \{/);
@@ -30,6 +30,6 @@ test('WEB-05: portal login renders no literal backslash n text and submit text i
 
 test('WEB-05: initial protected portal entry still depends on verified server session',()=>{
   assert.match(app,/fetch\('\/api\/auth\/me', \{ credentials: 'same-origin' \}\)/);
-  assert.match(app,/if \(params\.has\('portal'\)\) setViewMode\('portal'\)/);
-  assert.match(app,/if \(active && \(params\.has\('portal'\) \|\| params\.has\('activate'\)\)\) setIsLoginModalOpen\(true\)/);
+  assert.match(app,/\(params\.has\('portal'\)\|\|appKind!==null\)\&\&canUseInstalledApp\(session\.user\.role\)/);
+  assert.match(app,/if \(active && \(params\.has\('portal'\) \|\| params\.has\('activate'\) \|\| appKind!==null\)\) setIsLoginModalOpen\(true\)/);
 });

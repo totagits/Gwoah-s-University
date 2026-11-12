@@ -60,6 +60,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const [videoError,setVideoError]=useState('');
   const [isVideoLoading,setIsVideoLoading]=useState(true);
   const videoRef=useRef<HTMLVideoElement|null>(null);
+  const [retryCount,setRetryCount]=useState(0);
   const currentVideo=videos[activeVideoIndex]||videos[0];
 
   useEffect(()=>{
@@ -79,7 +80,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
 
   const attemptPlayback=()=>{
     const element=videoRef.current;
-    if(!element||!wantsPlayback)return;
+    if(!element||!wantsPlayback||!element.paused)return;
     element.muted=isMuted;
     void element.play().catch(error=>{
       // Do not turn playback intention off on early AbortError/NotAllowedError.
@@ -97,7 +98,29 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     element.muted=isMuted;
     if(wantsPlayback)attemptPlayback();
     else element.pause();
-  },[currentVideo.id,isMuted,wantsPlayback]);
+  },[currentVideo.id,isMuted,wantsPlayback,retryCount]);
+
+  // Do not leave visitors on an indefinite spinner when a video cannot start.
+  // Retain the current clip and offer a user-controlled retry or next video.
+  useEffect(()=>{
+    if (!wantsPlayback || !isVideoLoading || isActuallyPlaying || videoError) return;
+    const timeout=window.setTimeout(()=>{
+      setIsVideoLoading(false);
+      setVideoError('Video is taking too long to start. Retry or switch to the next clip.');
+    },12000);
+    return ()=>window.clearTimeout(timeout);
+  },[currentVideo.id,retryCount,wantsPlayback,isVideoLoading,isActuallyPlaying,videoError]);
+
+  const retryVideo=()=>{
+    const element=videoRef.current;
+    setVideoError('');
+    setIsVideoLoading(true);
+    setWantsPlayback(true);
+    if(element) {
+      element.load();
+      setRetryCount(value=>value+1);
+    }
+  };
 
   const switchVideo=(index:number)=>{
     if(!videos.length)return;
@@ -107,6 +130,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     setIsVideoLoading(true);
     setVideoError('');
     setWantsPlayback(true);
+    setRetryCount(0);
     setActiveVideoIndex(next);
   };
   const togglePlayback=()=>{
@@ -143,13 +167,11 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             key={currentVideo.id}
             ref={videoRef}
             src={currentVideo.src}
-            preload="auto"
+            preload="metadata"
             autoPlay
             muted={isMuted}
             playsInline
             disablePictureInPicture
-            onLoadedMetadata={attemptPlayback}
-            onLoadedData={attemptPlayback}
             onCanPlay={attemptPlayback}
             onPlay={()=>{setIsActuallyPlaying(true);setVideoError('');}}
             onPlaying={()=>{setIsActuallyPlaying(true);setIsVideoLoading(false);setVideoError('');}}
@@ -168,8 +190,12 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               </div>
             </div>
           )}
-          {videoError&&<div role="status" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">
-            {videoError}
+          {videoError&&<div role="alert" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">
+            <p>{videoError}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button type="button" onClick={retryVideo} className="rounded border border-[#C39A53] bg-[#4A1249] px-3 py-2 font-semibold !text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53]">Retry video</button>
+              <button type="button" onClick={handleNextVideo} className="rounded border border-white/60 bg-[#2A082C] px-3 py-2 font-semibold !text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C39A53]">Next clip</button>
+            </div>
           </div>}
 
           {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}

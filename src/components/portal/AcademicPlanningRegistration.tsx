@@ -46,10 +46,11 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const studentId = currentUser.role === 'student' ? currentUser.id : 'u-student';
+  const studentId = currentUser.role === 'student' ? currentUser.id : ''; // Never silently choose a demo student for staff.
 
   const loadData = async () => {
     setLoading(true);
+    if (!studentId) { setStudent(null); setRegistrations([]); setLoading(false); return; }
     try {
       const [courseRes, studentRes] = await Promise.all([
         api.getCoursesAndSections(),
@@ -137,7 +138,7 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
               Semester Planning & Add/Drop Management
             </h2>
             <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold px-2 py-0.5 rounded-full">
-              Semester I 2026/2027
+              Term subject to Registrar confirmation
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -148,7 +149,9 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
         <div className="flex items-center gap-3">
           <button
             onClick={() => onOpenPrintModal('registration_plan')}
-            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-2 shadow transition-all cursor-pointer"
+            disabled={!student || activeRegistrations.length === 0}
+            title={!student ? 'Select an authorized student record before printing' : activeRegistrations.length === 0 ? 'No recorded registration to print' : 'Print recorded registration'}
+            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-2 shadow transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]"
           >
             <Printer className="w-4 h-4" />
             <span>Print Official Registration Slip</span>
@@ -196,15 +199,15 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
           <div className="text-xs text-slate-400 uppercase font-semibold">Add / Drop Policy Window</div>
           <div className="text-base font-bold text-emerald-400 mt-1 flex items-center gap-1.5">
             <Clock className="w-4 h-4" />
-            Week 2 (100% Refund)
+            Not configured
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Drop without transcript notation</div>
+          <div className="text-[11px] text-slate-400 mt-1">Refund and withdrawal rules require an approved academic policy</div>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
           <div className="text-xs text-slate-400 uppercase font-semibold">Advisor Status</div>
           <div className="text-base font-bold text-white mt-1">
-            Approved by Advisor
+            No approval recorded
           </div>
           <div className="text-[11px] text-slate-400 mt-1">{student?.advisorName}</div>
         </div>
@@ -446,9 +449,9 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
                   Senate Add & Drop Policy Implications:
                 </div>
                 <ul className="space-y-1 text-slate-300 list-disc list-inside">
-                  <li><strong>Semester Window:</strong> Week 2 (100% Tuition Fee Refund eligible)</li>
-                  <li><strong>Financial Adjustment:</strong> -$180.00 USD credited back to student ledger</li>
-                  <li><strong>Transcript Record:</strong> Dropped cleanly with no "W" withdrawal penalty</li>
+                  <li><strong>Semester Window:</strong> Must be verified against approved term deadlines.</li>
+                  <li><strong>Financial Adjustment:</strong> Calculated only from actual posted charges and authorized policy; no automatic refund is promised.</li>
+                  <li><strong>Transcript Record:</strong> Subject to Registrar approval and institution policy.</li>
                   <li><strong>Full-Time Status:</strong> Resulting load ({totalRegisteredCredits - selectedRegToDrop.credits} credits) remains ≥ 12 credit floor</li>
                 </ul>
               </div>

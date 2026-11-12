@@ -7,6 +7,8 @@ import type { ThemeMode } from '../../utils/themeManager';
 import { LanguagePicker } from '../../i18n/Localization';
 import { GlobalSearch } from './CampusServices';
 import { PortalNotificationsPopover } from './PortalNotificationsPopover';
+import {PwaInstallControl} from './PwaInstallControl';
+import {StagingStudentInvite} from './StagingStudentInvite';
 
 interface PortalHeaderProps {
   currentUser: UserProfile;
@@ -17,11 +19,12 @@ interface PortalHeaderProps {
   currentTheme: ThemeMode;
   onToggleTheme: () => void;
   onOpenThemeSettings: () => void;
+  installedAppKind?: 'student'|'staff'|null;
 }
 
 export const PortalHeader: React.FC<PortalHeaderProps> = ({
   currentUser, activeTab, onSelectTab, onLogout, onBackToPublic,
-  currentTheme, onToggleTheme, onOpenThemeSettings,
+  currentTheme, onToggleTheme, onOpenThemeSettings,installedAppKind,
 }) => {
 
   return (
@@ -35,6 +38,8 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
             <span className="rounded-full border border-[#e6dce7] bg-white px-2.5 py-1 font-semibold text-[#4a1249]">Staging</span>
             <span className="hidden sm:inline">Signed in as {currentUser.name}</span>
+            {installedAppKind&&<PwaInstallControl kind={installedAppKind} compact/>}
+            {currentUser.role==='super_admin'&&window.location.hostname==='hiau-staging.totag.network'&&<StagingStudentInvite/>}
             <button type="button" onClick={onToggleTheme} aria-label="Toggle display theme"
               className="inline-flex items-center gap-1.5 rounded-md p-2 hover:bg-[#f1eaf2]">
               {currentTheme === 'dark' ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}

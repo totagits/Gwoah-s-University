@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useState} from 'react';
 import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle,Trash2,Download} from 'lucide-react';
 import {createDegreeVideoAuditCsv} from '../../utils/degreeVideoAudit';
+import {probeDegreeVideo,type VideoHttpResult} from '../../utils/degreeVideoHttpProbe';
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
@@ -32,6 +33,8 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const [file,setFile]=useState<File|null>(null);
   const [newHeroTitle,setNewHeroTitle]=useState('');
   const [previewVersion,setPreviewVersion]=useState(0);
+  const [httpChecks,setHttpChecks]=useState<Record<string,VideoHttpResult>>({});
+  const [checkingMedia,setCheckingMedia]=useState(false);
   const [uploadProgress,setUploadProgress]=useState<number|null>(null);
   const load=useCallback(async()=>{
     const r=await fetch('/api/admin/website-videos',{cache:'no-store'});
@@ -57,8 +60,28 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const publishedCount=degreeSlots.filter(s=>Boolean(s.published)).length;
   const draftCount=degreeSlots.filter(s=>Boolean(s.draft)).length;
   const missingCount=degreeSlots.filter(s=>s.publicAvailable===false).length;
+  const checkAllDegreeMedia=async()=>{
+    if(checkingMedia||!degreeSlots.length)return;
+    setCheckingMedia(true);setError('');setMessage('');
+    const results:Record<string,VideoHttpResult>={};
+    // Small batches prevent monopolizing the server while still testing every program.
+    try{
+      for(let i=0;i<degreeSlots.length;i+=4){
+        const batch=degreeSlots.slice(i,i+4);
+        const readings=await Promise.all(batch.map(async slot=>({
+          slot:slot.slot,
+          result:await probeDegreeVideo(slot.publicSrc)
+        })));
+        for(const entry of readings)results[entry.slot]=entry.result;
+        setHttpChecks({...results});
+      }
+      const reachable=Object.values(results).filter(v=>v.status==='reachable').length;
+      setMessage('HTTP checks complete: '+reachable+'/'+degreeSlots.length+
+        ' MP4 endpoints reachable. Download the CSV and verify video playback manually before acceptance.');
+    }finally{setCheckingMedia(false);}
+  };
   const exportAudit=()=>{
-    const csv=createDegreeVideoAuditCsv(degreeSlots);
+    const csv=createDegreeVideoAuditCsv(degreeSlots,httpChecks);
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
@@ -221,6 +244,10 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           Uploads remain private drafts until you choose Publish.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button type="button" onClick={()=>void checkAllDegreeMedia()} disabled={checkingMedia||!degreeSlots.length}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#4a1249] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">
+            {checkingMedia?'Checking degree videos…':'Check all 19 public video URLs'}
+          </button>
           <button type="button" onClick={exportAudit} disabled={!degreeSlots.length}
             className="inline-flex items-center gap-2 rounded-lg border border-[#4A1249] bg-white px-4 py-2.5 text-sm font-bold text-[#4A1249] disabled:opacity-50">
             <Download className="h-4 w-4" aria-hidden="true"/>
@@ -279,6 +306,9 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
             <span className="block font-semibold text-[#35103b]">{item.label}</span>
             {libraryView==='degree'&&<span className="mt-1 block text-xs text-slate-500">{collegeNames[collegeOf(item.slot)]||collegeOf(item.slot)}</span>}
             <span className="mt-1 block text-xs text-slate-600">{item.published?'Published replacement':item.slot.startsWith('hero-extra-')?'Not yet published':item.defaultAvailable===false?'Original video unavailable':'Original explainer'}{item.draft?' · Private draft ready':''}</span>
+            {libraryView==='degree'&&<span className="mt-1 block text-xs font-semibold text-[#4a1249]">
+              HTTP: {httpChecks[item.slot]?.status||'Not tested'}
+            </span>}
           </button>)}
         </div>
       </div>

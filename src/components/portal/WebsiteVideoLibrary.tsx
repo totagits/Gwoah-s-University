@@ -4,7 +4,7 @@ import {createDegreeVideoAuditCsv} from '../../utils/degreeVideoAudit';
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
-  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;defaultAvailable?:boolean;publicAvailable?:boolean;
+  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;defaultAvailable?:boolean;publicAvailable?:boolean;mediaSource?:'published'|'bundled'|'missing'|'invalid';
 };
 type RoleProps={currentUser:{role:string}};
 const parseApiResponse=async(response:Response)=>{

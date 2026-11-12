@@ -35,6 +35,7 @@ import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import {StudentCoursePlanning} from './components/portal/StudentCoursePlanning';
+import {StudentFinancialStatement} from './components/portal/StudentFinancialStatement';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
 import {RegistrarStudentLinking} from './components/portal/RegistrarStudentLinking';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
@@ -526,6 +527,7 @@ export default function App() {
               <>
                 <SecureStudentWorkspace currentUser={currentUser} />
                 <StudentCoursePlanning currentUser={currentUser} />
+                <StudentFinancialStatement currentUser={currentUser} />
               </>
             )}
 

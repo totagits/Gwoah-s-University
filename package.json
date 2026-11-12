@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "start": "tsx server.ts",
-    "build": "node scripts/generate-pwa-icons.mjs && node scripts/optimize-hero-mp4.mjs && node scripts/inspect-hero-mp4.mjs && vite build",
+    "build": "node scripts/generate-pwa-icons.mjs && node scripts/inspect-hero-mp4.mjs && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",

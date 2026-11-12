@@ -106,7 +106,11 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     void player.play().catch(error=>{
       if(index!==activeIndexRef.current)return;
       if(error?.name==='NotAllowedError'){
-        setVideoError('Automatic playback is blocked. Press Play to start the video.');
+        // Autoplay policy is browser-controlled. Stop retrying automatically
+        // and let one direct user gesture unlock the current media element.
+        wantsPlaybackRef.current=false;
+        setWantsPlayback(false);
+        setVideoError('Your browser requires a click to start video. Select Play.');
       }else if(error?.name!=='AbortError'){
         setVideoError('Playback could not start. Retry this clip or choose the next one.');
       }
@@ -220,15 +224,29 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   };
   const togglePlayback=()=>{
     const index=activeIndexRef.current;
-    if(wantsPlaybackRef.current){
+    const player=videoRefs.current[index];
+    if(!player)return;
+    // UI intent may be "autoplay requested" while Chrome is actually paused
+    // or waiting. The first visitor click must play—not cancel that request.
+    if(!player.paused && playingRef.current){
       wantsPlaybackRef.current=false;
       setWantsPlayback(false);
-      videoRefs.current[index]?.pause();
+      player.pause();
     }else{
       setVideoError('');
       wantsPlaybackRef.current=true;
       setWantsPlayback(true);
-      tryPlay(index);
+      player.muted=isMuted;
+      // A direct call in this click handler retains user-gesture activation.
+      void player.play().catch(error=>{
+        if(error?.name==='NotAllowedError'){
+          wantsPlaybackRef.current=false;
+          setWantsPlayback(false);
+          setVideoError('Your browser blocked playback. Check site autoplay permissions and press Play again.');
+        }else if(error?.name!=='AbortError'){
+          setVideoError('Video did not start. Please retry.');
+        }
+      });
     }
   };
   const toggleMute=()=>setIsMuted(value=>!value);
@@ -258,7 +276,15 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           {videos.map((clip,index)=>(
             <video
               key={clip.id}
-              ref={element=>{videoRefs.current[index]=element;}}
+              ref={element=>{
+                videoRefs.current[index]=element;
+                if(element){
+                  // The muted attribute/defaultMuted must be present on the
+                  // media element for consistent Chrome muted-autoplay policy.
+                  element.defaultMuted=true;
+                  element.muted=index!==activeIndexRef.current||isMuted;
+                }
+              }}
               src={clip.src}
               preload={index===activeVideoIndex||isActuallyPlaying||isPreparingNext?'auto':'metadata'}
               autoPlay={index===activeVideoIndex&&wantsPlayback}

@@ -76,6 +76,8 @@ ERP features already visible in the repository are **not automatically accepted*
 
 **WEB-GATE-02 bundled media check (2026-11-12):** 4/19 configured video files found on GitHub staging; 15 default paths absent. Published CMS uploads may supply the remaining programs and must be inspected on the live staging server before any program is called broken. Evidence and per-program details: [WEB-GATE-19-DEGREE-INVENTORY.md](WEB-GATE-19-DEGREE-INVENTORY.md). 19/19 browser playback, editorial approvals and administrator video workflows **not yet accepted**.
 
+**WEB-GATE-02 media availability improvement:** [PR #105](https://github.com/totagits/Harvest-Intercontinental-American-University/pull/105) introduces an actual-source video status endpoint, 404 responses rather than broken fallback MP4 redirects, and a clear unavailable-video state on public degree pages. **PR open; CI full test job not yet completed. Do not mark implemented, merged, deployed, or accepted.** Source audit remains 4/19 bundled default videos found and 15/19 default paths absent; CMS published media must still be inspected.
+
 ## ERP-STUDENT-01 — Student academic-to-financial lifecycle (parallel, staged)
 
 **Tracking issue:** [#96](https://github.com/totagits/Harvest-Intercontinental-American-University/issues/96), linked to WEB public website gate [#93](https://github.com/totagits/Harvest-Intercontinental-American-University/issues/93).
@@ -92,6 +94,8 @@ ERP features already visible in the repository are **not automatically accepted*
 | PWA-ERP-STUDENT-01 | Same approved workflows in Student PWA and staff Registrar/Finance queues; mobile and private offline-data tests | Course planning, Registrar commit and Finance handoff components mounted in authorized Student/Staff workspaces; **mobile acceptance pending** | Pending |
 
 **Release caution:** ERP-STUDENT-01A planning approval **does not** enroll the student. ERP-STUDENT-01B requires a separate confirmed Registrar commit to enroll and hand off to Finance, but **neither action generates an invoice, applies a scholarship/waiver, changes a due date or reconciles a payment**. Registrar's manual enrollment exception and other legacy registration/add-drop paths require further cross-route review before the full lifecycle can be described as enforceable. Formal financial and academic policies, including deadlines and waiver authority, require institutional confirmation.
+
+**ERP-STUDENT-01D posting policy specification:** [Award Posting Controls](ERP-STUDENT-01D-AWARD-POSTING-CONTROLS.md), merged via [PR #106](https://github.com/totagits/Harvest-Intercontinental-American-University/pull/106). Design-only: approved school policy/funding, separation of duties, duplicate prevention, reversible ledger records and financial acceptance are prerequisites. No actual award, waiver, scholarship or tuition credit posting is currently authorized by this design.
 
 **Primary priority remains WEB-GATE-01/02:** Verified 19-degree page/content and video acceptance remains the website-critical task. ERP-STUDENT-01 is a strictly linked, parallel development workstream, not a replacement for website sign-off.
 

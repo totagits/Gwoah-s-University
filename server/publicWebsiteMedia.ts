@@ -77,6 +77,15 @@ const publishedPath=(store:Operations,directory:string,slot:string)=>{
   const file=mediaPath(directory,published);
   return fs.existsSync(file)?file:null;
 };
+export const getPublicVideoAvailability=(store:Operations,directory:string,slot:string)=>{
+  const item=resolveSlot(store,slot);
+  if(!item)return {available:false,source:'unknown' as const,file:null};
+  const published=publishedPath(store,directory,slot);
+  const bundled=bundledPath(item.defaultSrc);
+  return {available:Boolean(published||bundled),
+    source:published?'published' as const:bundled?'bundled' as const:'missing' as const,
+    file:published||bundled};
+};
 const sendMedia=(req:Request,res:Response,file:string,publiclyPublished=false)=>{
   try{
     const stat=fs.statSync(file);
@@ -130,11 +139,9 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
   app.get('/api/public/video-status/:slot',(req,res)=>{
     const item=resolveSlot(store,req.params.slot);
     if(!item)return res.status(404).json({available:false});
-    const published=publishedPath(store,directory,item.slot);
-    const bundled=bundledPath(item.defaultSrc);
+    const status=getPublicVideoAvailability(store,directory,item.slot);
     res.set('Cache-Control','no-store');
-    return res.json({available:Boolean(published||bundled),
-      source:published?'published':bundled?'bundled':'missing'});
+    return res.json({available:status.available,source:status.source});
   });
   // Do not redirect to a nonexistent fallback asset; absent videos should
   // render as clearly unavailable, never as a misleading campus poster.
@@ -142,7 +149,7 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     app[method]('/api/public/video/:slot',(req,res)=>{
       const item=resolveSlot(store,req.params.slot);
       if(!item)return res.status(404).end();
-      const file=publishedPath(store,directory,item.slot)||bundledPath(item.defaultSrc);
+      const file=getPublicVideoAvailability(store,directory,item.slot).file;
       return file?sendMedia(req,res,file,true):res.status(404).end();
     });
   }

@@ -1,0 +1,25 @@
+{
+  "name": "Harvest Intercontinental American University",
+  "short_name": "HIAU",
+  "description": "HIAU public university information, admissions, news, and secure online student services.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#FAF8FB",
+  "theme_color": "#4A1249",
+  "orientation": "any",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/hiau-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

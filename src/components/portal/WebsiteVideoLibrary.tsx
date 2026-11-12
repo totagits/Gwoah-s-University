@@ -324,7 +324,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
                 Upload an MP4 as a private draft to preview it here.
               </div>
             : <div className="overflow-hidden rounded-xl bg-[#2a082c]">
-                <video key={active.slot+'-'+previewVersion} controls preload="metadata" playsInline className="aspect-video w-full object-contain"
+                <video key={active.slot+'-'+previewVersion} controls autoPlay muted preload="auto" playsInline className="aspect-video w-full object-contain"
                   aria-label={'Preview for '+active.label} src={active.draft?active.previewSrc+'?v='+previewVersion:active.publicSrc+'?v='+previewVersion}/>
               </div>}
           {!active.slot.startsWith('hero-')&&<a href={'/#degree='+encodeURIComponent(active.slot)} target="_blank" rel="noopener noreferrer"

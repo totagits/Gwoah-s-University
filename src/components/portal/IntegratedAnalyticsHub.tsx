@@ -54,7 +54,7 @@ export const IntegratedAnalyticsHub: React.FC = () => {
           <p className="mt-1 text-sm text-slate-700">Statistics from authenticated, persisted university records only. No demo values.</p>
         </div>
         <button type="button" onClick={() => void refresh()} disabled={loading}
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#4a1249] bg-[#4a1249] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#35103b] disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#4a1249] bg-[#4a1249] px-4 py-2.5 text-sm font-semibold !text-white hover:bg-[#35103b] hover:!text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">
           <RefreshCcw size={17} aria-hidden="true"/> Refresh data
         </button>
       </div>

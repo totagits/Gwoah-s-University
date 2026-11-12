@@ -55,6 +55,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
 
   // Admin User Management state
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [accountStates, setAccountStates] = useState<Record<string, { activated: boolean; disabled: boolean }>>({});
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const [newUserData, setNewUserData] = useState({
     name: '',
@@ -81,10 +82,15 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
   // Load initial sections, courses, users, and messages
   useEffect(() => {
     const init = async () => {
-      const [courseResult, directoryResult, messageResult] = await Promise.allSettled([
+      const [courseResult, directoryResult, messageResult, accountsResult] = await Promise.allSettled([
         api.getCoursesAndSections(),
         api.getUsers(),
         api.getMessages(currentUser.id),
+        isAdmin ? fetch('/api/identity/accounts', { credentials: 'same-origin', cache: 'no-store' })
+          .then(async response => {
+            if (!response.ok) throw Error('Unable to verify account activation states.');
+            return response.json() as Promise<Array<{id:string;activated:number|boolean;disabled:number|boolean}>>;
+          }) : Promise.resolve([]),
       ]);
       if (courseResult.status === 'fulfilled') {
         const courseRes = courseResult.value;
@@ -99,6 +105,13 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
       }
       if (messageResult.status === 'fulfilled') {
         setMessages(messageResult.value.messages ?? []);
+      }
+      if (accountsResult.status === 'fulfilled') {
+        const states: Record<string, { activated: boolean; disabled: boolean }> = {};
+        for (const account of accountsResult.value) {
+          states[account.id] = { activated: Boolean(account.activated), disabled: Boolean(account.disabled) };
+        }
+        setAccountStates(states);
       }
     };
     init();
@@ -194,6 +207,11 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
       setNotification('Invitation created; account not active until recipient sets a password.');
       const recipients = await api.getUsers();
       if (recipients.users) setAllUsers(recipients.users);
+      const statusResponse = await fetch('/api/identity/accounts', {credentials:'same-origin',cache:'no-store'});
+      if (statusResponse.ok) {
+        const accounts = await statusResponse.json() as Array<{id:string;activated:number|boolean;disabled:number|boolean}>;
+        setAccountStates(Object.fromEntries(accounts.map(account => [account.id, {activated:Boolean(account.activated),disabled:Boolean(account.disabled)}])));
+      }
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Could not create invitation.');
     } finally {
@@ -542,8 +560,8 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                     <td className="px-4 py-3">{u.department || 'General'}</td>
                     <td className="px-4 py-3 font-mono text-slate-400">{u.staffId || u.studentId || 'N/A'}</td>
                     <td className="px-4 py-3 text-right">
-                      <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded">
-                        Active
+                      <span className={`inline-flex rounded border px-2 py-1 text-[11px] font-semibold ${accountStates[u.id]?.disabled ? 'border-red-300 bg-red-50 text-red-900' : accountStates[u.id]?.activated ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-950'}`}>
+                        {accountStates[u.id]?.disabled ? 'Disabled' : accountStates[u.id]?.activated ? 'Activated' : accountStates[u.id] ? 'Pending activation' : 'Status unverified'}
                       </span>
                     </td>
                   </tr>

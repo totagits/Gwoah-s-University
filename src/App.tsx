@@ -220,7 +220,15 @@ export default function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    // Account activation is a one-time invite flow, not an authenticated
+    // ERP navigation request. It must take priority even if another account
+    // already has a session in this browser or installed PWA.
+    const activationRequested = params.has('activate');
     let active = true;
+    if (activationRequested) {
+      setViewMode('public');
+      setIsLoginModalOpen(true);
+    }
     fetch('/api/auth/me', { credentials: 'same-origin' }).then(async response => {
       if (!response.ok) throw new Error('No active session');
       const session = await response.json();
@@ -228,10 +236,13 @@ export default function App() {
       setSessionCsrf(session.csrf);
       setCurrentUser(session.user);
       setActivePortalTab(defaultPortalModule(session.user.role) ?? 'tasks');
-      if ((params.has('portal')||appKind!==null)&&canUseInstalledApp(session.user.role)) setViewMode('portal');
+      if (activationRequested) {
+        setViewMode('public');
+        setIsLoginModalOpen(true);
+      } else if ((params.has('portal')||appKind!==null)&&canUseInstalledApp(session.user.role)) setViewMode('portal');
       else if(appKind!==null)setViewMode('public');
     }).catch(() => {
-      if (active && (params.has('portal') || params.has('activate') || appKind!==null)) setIsLoginModalOpen(true);
+      if (active && (params.has('portal') || activationRequested || appKind!==null)) setIsLoginModalOpen(true);
     });
     const expire = () => { setSessionCsrf(''); setCurrentUser(null); setViewMode('public'); setIsLoginModalOpen(true); };
     window.addEventListener('gu:session-expired', expire);

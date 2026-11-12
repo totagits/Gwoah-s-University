@@ -11,6 +11,8 @@ on:
       - 'src/components/portal/WebsiteVideoLibrary.tsx'
       - 'src/utils/degreeVideoAudit.ts'
       - 'src/utils/degreeVideoAudit.test.ts'
+      - 'src/utils/degreeVideoHttpProbe.ts'
+      - 'src/utils/degreeVideoHttpProbe.test.ts'
       - '.github/workflows/web-gate-media.yml'
   workflow_dispatch:
 
@@ -33,4 +35,4 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Degree-media focused regression
-        run: npx tsx --test server/web-gate-video-availability.test.ts src/utils/degreeVideoAudit.test.ts
+        run: npx tsx --test server/web-gate-video-availability.test.ts src/utils/degreeVideoAudit.test.ts src/utils/degreeVideoHttpProbe.test.ts

@@ -31,6 +31,10 @@ export const PartnerAdministration:React.FC<{currentUser:UserProfile}>=({current
   const [end,setEnd]=useState('');
   const [activities,setActivities]=useState<string[]>([]);
   const [reason,setReason]=useState('');
+  const [memberName,setMemberName]=useState('');
+  const [memberEmail,setMemberEmail]=useState('');
+  const [members,setMembers]=useState<Array<{id:string;email:string;name:string;revoked_at:string|null}>>([]);
+  const [activationLink,setActivationLink]=useState('');
   const [busy,setBusy]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
@@ -39,6 +43,9 @@ export const PartnerAdministration:React.FC<{currentUser:UserProfile}>=({current
   const detail=useCallback(async(id:string)=> {
     const data=await read(await fetch('/api/institutional-partners/'+encodeURIComponent(id),{cache:'no-store'}));
     setSelected(data.partner);
+    const people=await read(await fetch('/api/partner-collaboration/admin/partners/'+encodeURIComponent(id)+'/members',{cache:'no-store'}));
+    setMembers(people.members);
+    setActivationLink('');
   },[]);
   const load=useCallback(async()=>{
     setLoading(true);setError('');
@@ -62,6 +69,39 @@ export const PartnerAdministration:React.FC<{currentUser:UserProfile}>=({current
       setNotice(success);
       setCreating(false);
     }catch(e){setError(e instanceof Error?e.message:'Unable to complete the request.');}
+    finally{setBusy(false);}
+  };
+  const invitePartner=async(e:React.FormEvent)=>{
+    e.preventDefault();
+    if(!selected)return;
+    setBusy(true);setError('');setNotice('');setActivationLink('');
+    try{
+      const member=await read(await fetch('/api/partner-collaboration/admin/partners/'+selected.id+'/members',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:memberName,email:memberEmail}),
+      }));
+      const invitation=await read(await fetch('/api/identity/invite',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:memberName,email:memberEmail,role:'partner_representative'}),
+      }));
+      setActivationLink(invitation.activationUrl);
+      setNotice('Representative authorized. Share this activation link securely with the intended recipient.');
+      setMemberName('');setMemberEmail('');
+      const list=await read(await fetch('/api/partner-collaboration/admin/partners/'+selected.id+'/members'));
+      setMembers(list.members);
+    }catch(e){
+      setError(e instanceof Error?e.message:'Could not authorize the representative.');
+    }finally{setBusy(false);}
+  };
+  const revokeMember=async(id:string)=>{
+    if(!selected||!window.confirm('Revoke this representative’s access?'))return;
+    setBusy(true);setError('');setActivationLink('');
+    try{
+      await read(await fetch('/api/partner-collaboration/admin/members/'+id+'/revoke',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:'{}',
+      }));
+      setMembers((await read(await fetch('/api/partner-collaboration/admin/partners/'+selected.id+'/members'))).members);
+      setNotice('Partner membership revoked. All further partner requests are denied.');
+    }catch(e){setError(e instanceof Error?e.message:'Revocation failed.');}
     finally{setBusy(false);}
   };
   if(!isAdmin)return <section className="rounded-xl border bg-white p-6" role="alert">Access to institutional partnership administration is restricted.</section>;
@@ -131,6 +171,25 @@ export const PartnerAdministration:React.FC<{currentUser:UserProfile}>=({current
             <label><Label>Reason for suspension</Label><textarea required maxLength={1000} rows={2} className={field} value={reason} onChange={e=>setReason(e.target.value)}/></label>
             <button type="submit" className={secondary} disabled={busy||!reason.trim()}>Suspend and revoke agreements</button>
           </form>}
+          {selected.status==='active'&&<section className="mt-5 space-y-3 border-t pt-4" aria-label="Authorized institution representatives">
+            <h4 className="font-semibold text-[#35103B]">Partner representative accounts</h4>
+            <p className="text-xs text-slate-600">A verified, active agreement is required. Representatives have no access to Registrar, Finance, or staff administrative modules.</p>
+            <form onSubmit={invitePartner} className="grid gap-3 sm:grid-cols-2">
+              <label><Label>Representative full name</Label><input className={field} required maxLength={100} value={memberName} onChange={e=>setMemberName(e.target.value)}/></label>
+              <label><Label>Institutional email address</Label><input className={field} type="email" required maxLength={254} value={memberEmail} onChange={e=>setMemberEmail(e.target.value)}/></label>
+              <div className="sm:col-span-2"><button className={primary} disabled={busy}>Authorize and generate activation link</button></div>
+            </form>
+            {activationLink&&<div className="rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950">
+              <p className="font-semibold">One-time activation link (expires in 48 hours)</p>
+              <p className="mt-1 break-all font-mono text-xs">{activationLink}</p>
+              <button type="button" className={secondary} onClick={()=>void navigator.clipboard.writeText(activationLink)}>Copy activation link</button>
+              <p className="mt-1 text-xs">Only share with the authorized recipient through a secure channel; do not publish this link.</p>
+            </div>}
+            {members.length>0&&<ul className="space-y-2">{members.map(m=><li key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#E3D8E6] p-2 text-sm">
+              <span className="break-all"><strong>{m.name}</strong> · {m.email} {m.revoked_at?'(revoked)':''}</span>
+              {!m.revoked_at&&<button type="button" disabled={busy} className={secondary} onClick={()=>void revokeMember(m.id)}>Revoke</button>}
+            </li>)}</ul>}
+          </section>}
           <div className="mt-5 border-t pt-4"><h4 className="font-semibold text-[#35103B]">Agreement history</h4>
             {!selected.agreements?.length?<p className="mt-2 text-sm text-slate-600">No signed agreement recorded.</p>:
             <ul className="mt-2 space-y-2">{selected.agreements.map(a=><li key={a.id} className="break-words rounded-lg border border-[#E3D8E6] p-3 text-sm">

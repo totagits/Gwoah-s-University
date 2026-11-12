@@ -1,4 +1,7 @@
 FROM node:24-bookworm-slim AS build
+# Transcode bundled homepage MP4s during build (not at visitor playback time).
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci

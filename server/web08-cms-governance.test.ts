@@ -22,7 +22,7 @@ test('WEB-08: authenticated editorial workflow, scheduled publishing and SQLite 
  });
  app.use(express.json());
  installWebsiteCms(app,store);
- installPublicNewsEvents(app,store);
+ installPublicNewsEvents(app,store,directory);
  const server:Server=await new Promise(resolve=>{const listener=app.listen(0,'127.0.0.1',()=>resolve(listener));});
  const address=server.address();
  if(!address||typeof address==='string')throw new Error('Could not start test server');

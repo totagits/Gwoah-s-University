@@ -182,6 +182,12 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     return res.json({videos:[...builtIns,...added].map((v,index)=>({
       id:v.slot, title:v.label, subtitle:'',
       src:'/api/public/video/'+v.slot,
+      // Use the authentic generated poster only for the matching bundled
+      // video. An administrator's replacement must not show an old poster.
+      poster:getPublicVideoAvailability(store,directory,v.slot).source==='bundled'
+        ? (v.slot==='hero-campus'?'/assets/aistudio/hero-campus-poster.jpg'
+          :v.slot==='hero-classroom'?'/assets/aistudio/hero-classroom-poster.jpg':undefined)
+        :undefined,
       badge:'HIAU Video '+(index+1),
       label:String(index+1).padStart(2,'0')+' '+(v.slot==='hero-campus'?'Campus':v.slot==='hero-classroom'?'Classroom':v.label),
     }))});
@@ -199,7 +205,11 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     app[method]('/api/public/video/:slot',(req,res)=>{
       const item=resolveSlot(store,req.params.slot);
       if(!item)return res.status(404).end();
+      const lookupStart=performance.now();
       const file=getPublicVideoAvailability(store,directory,item.slot).file;
+      // Helps distinguish application file resolution from proxy/network
+      // latency in Chrome DevTools without exposing filesystem paths.
+      res.set('Server-Timing',`media-lookup;dur=${(performance.now()-lookupStart).toFixed(1)}`);
       return file?sendMedia(req,res,file,true):res.status(404).end();
     });
   }

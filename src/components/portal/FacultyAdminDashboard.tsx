@@ -389,7 +389,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => handleSaveGrade(item.registrationId, editingScore?.score ?? 0)}
-                                  className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded text-xs"
+                                  className="hiau-action-primary px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded text-xs"
                                 >
                                   Save
                                 </button>
@@ -441,7 +441,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </div>
             <button
               onClick={() => setComposeModalOpen(true)}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Compose Message</span>
@@ -495,7 +495,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </div>
             <button
               onClick={() => setNewUserModalOpen(true)}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>Create User</span>
@@ -557,7 +557,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </div>
             <button
               onClick={() => setNewCourseModalOpen(true)}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Course</span>
@@ -645,7 +645,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={sendingMsg}
-                  className="px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl disabled:opacity-50"
+                  className="hiau-action-primary px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl disabled:opacity-50"
                 >
                   {sendingMsg ? 'Sending...' : 'Send Message'}
                 </button>
@@ -739,7 +739,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl"
+                  className="hiau-action-primary px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl"
                 >
                   Save Account
                 </button>
@@ -830,7 +830,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl"
+                  className="hiau-action-primary px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl"
                 >
                   Save Course
                 </button>

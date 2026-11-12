@@ -32,7 +32,7 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
 
   useEffect(()=>{
     const video=videoRef.current;
-    if(!video)return;
+    if(!video||availability!=='available')return;
     let active=true;
     video.muted=true;
     setSoundOn(false);
@@ -55,7 +55,7 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
       video.removeEventListener('loadeddata',start);
       video.pause();
     };
-  },[route,source]);
+  },[route,source,availability]);
 
   const startWithSound=()=>{
     const video=videoRef.current;
@@ -89,7 +89,6 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
   return <div className="space-y-3">
     <div className="overflow-hidden rounded-xl bg-[#2a082c]">
       <video ref={videoRef} key={route} controls autoPlay muted playsInline preload="auto"
-        
         className="aspect-video w-full object-contain" aria-label={`Educational video about ${title}`}
         onError={()=>setMediaError(true)} onPlaying={()=>setAutoplayBlocked(false)}
         onVolumeChange={event=>setSoundOn(!event.currentTarget.muted&&event.currentTarget.volume>0)}>

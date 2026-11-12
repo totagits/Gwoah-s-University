@@ -43,28 +43,41 @@ export const PublicNewsEvents:React.FC=()=>{
      </button>)}
    </div>
    {!visible.length?<p className="mt-8 rounded-xl border border-dashed border-purple-200 p-8 text-sm text-slate-600">No approved university stories are currently published in this category.</p>:
-   <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+   <div className="mt-6 grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3">
     {visible.map(item=>{
      const first=(item.media||[]).find(m=>m.kind==='image')||(item.media||[])[0];
-     return <article key={item.id} className="overflow-hidden rounded-xl border border-purple-200 bg-[#FAF8FB]">
-      {first&&<MediaView media={first}/>}
-      <div className="p-5">
-       <p className="text-xs font-bold uppercase tracking-widest text-[#956a32]">{item.kind}</p>
-       <h3 className="mt-2 text-lg font-bold text-[#4A1249]">{item.title}</h3>
-       {item.eventDate&&<p className="mt-2 text-xs font-semibold text-slate-700">Date: {item.eventDate}</p>}
-       {item.location&&<p className="mt-1 text-xs text-slate-600">Location: {item.location}</p>}
-       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">{item.summary}</p>
-       {!!item.media?.length&&<button type="button" onClick={()=>setExpanded(expanded===item.id?null:item.id)}
-          aria-expanded={expanded===item.id} className="mt-4 rounded border border-[#4A1249] px-3 py-2 text-xs font-bold text-[#4A1249]">
-          {expanded===item.id?'Hide media gallery':'View photos & videos'}
-       </button>}
-       {expanded===item.id&&<div className="mt-4 space-y-4" aria-label={'Media gallery for '+item.title}>
-         {item.media?.map(media=><figure key={media.id}>
-           <MediaView media={media} large/>
-           <figcaption className="mt-1 text-xs text-slate-600">{media.caption}</figcaption>
-         </figure>)}
+     const featured=visible.length===1||expanded===item.id;
+     return <article key={item.id}
+       className={`min-w-0 overflow-hidden rounded-xl border border-purple-200 bg-[#FAF8FB] ${featured?'md:col-span-2 lg:col-span-3':''}`}>
+      <div className={featured&&first?'grid items-start md:grid-cols-2':''}>
+       {first&&<div className="min-w-0 overflow-hidden">
+         {first.kind==='image'?<img src={first.url} alt={first.alt} loading="lazy"
+           className="aspect-video w-full object-cover"/>:
+           <MediaView media={first}/>}
        </div>}
+       <div className={featured?'min-w-0 p-5 sm:p-7':'p-5'}>
+        <p className="text-xs font-bold uppercase tracking-widest text-[#956a32]">{item.kind}</p>
+        <h3 className={`mt-2 font-bold text-[#4A1249] ${featured?'text-2xl':'text-lg'}`}>{item.title}</h3>
+        {item.eventDate&&<p className="mt-2 text-xs font-semibold text-slate-700">Date: {item.eventDate}</p>}
+        {item.location&&<p className="mt-1 text-xs text-slate-600">Location: {item.location}</p>}
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{item.summary}</p>
+        {!!item.media?.length&&<button type="button" onClick={()=>setExpanded(expanded===item.id?null:item.id)}
+           aria-expanded={expanded===item.id} aria-controls={'news-gallery-'+item.id}
+           className="mt-4 rounded border border-[#4A1249] bg-white px-3 py-2 text-xs font-bold text-[#4A1249] focus-visible:outline-2">
+           {expanded===item.id?'Hide media gallery':'View photos & videos'}
+        </button>}
+       </div>
       </div>
+      {expanded===item.id&&<div id={'news-gallery-'+item.id}
+         className="border-t border-purple-200 p-4 sm:p-6" aria-label={'Media gallery for '+item.title}>
+        <h4 className="mb-4 text-lg font-bold text-[#4A1249]">Photos & videos</h4>
+        <div className="grid items-start gap-5 md:grid-cols-2">
+          {item.media?.map(media=><figure key={media.id} className="min-w-0 rounded-lg bg-white p-3 shadow-sm">
+            <MediaView media={media} large/>
+            <figcaption className="mt-2 text-xs leading-5 text-slate-600">{media.caption}</figcaption>
+          </figure>)}
+        </div>
+      </div>}
      </article>;
     })}
    </div>}

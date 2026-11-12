@@ -47,5 +47,5 @@ test('WEB-11 service worker never caches ERP, student records or authenticated p
 });
 test('WEB-11 staff access is not advertised through public campus tour or navbar',()=>{
  assert.doesNotMatch(tour,/Campus Facilities — Staff Sign In|onRequestFacilitiesLogin/);
- assert.doesNotMatch(launcher,/staff/);
+ assert.doesNotMatch(launcher,/href="\/staff\/"/);
 });

@@ -22,6 +22,7 @@ interface HeroVideoSlide {
   title: string;
   subtitle: string;
   src: string;
+  poster?: string;
   badge: string;
   label: string;
 }
@@ -32,6 +33,7 @@ const HERO_VIDEOS: HeroVideoSlide[] = [
     title: 'HIAU Main Academic Campus',
     subtitle: 'Exterior complex, 2nd-floor lecture halls & palm quadrangle',
     src: '/api/public/video/hero-campus',
+    poster: '/assets/aistudio/hero-campus-poster.jpg',
     badge: 'Video 1 • Campus First',
     label: '01 Campus Tour',
   },
@@ -40,6 +42,7 @@ const HERO_VIDEOS: HeroVideoSlide[] = [
     title: 'Interactive Laptop Lab & Smart Classroom',
     subtitle: 'Individual wooden carrels, dedicated laptops & interactive projection',
     src: '/api/public/video/hero-classroom',
+    poster: '/assets/aistudio/hero-classroom-poster.jpg',
     badge: 'Video 2 • Classroom Second',
     label: '02 Smart Lab',
   },
@@ -58,6 +61,9 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const [videoError,setVideoError]=useState('');
   const [retryCount,setRetryCount]=useState(0);
   const [isPreparingNext,setIsPreparingNext]=useState(false);
+  // Do not mount a src for background clips until the first visible clip
+  // actually plays; preload=metadata alone still generates HTTP requests.
+  const [preloadStarted,setPreloadStarted]=useState(false);
   const videoRefs=useRef<Array<HTMLVideoElement|null>>([]);
   const pendingVideoIndex=useRef<number|null>(null);
   const preloadArmed=useRef<Set<string>>(new Set());
@@ -300,8 +306,9 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                   element.muted=index!==activeIndexRef.current||isMuted;
                 }
               }}
-              src={clip.src}
-              preload={index===activeVideoIndex||isActuallyPlaying||isPreparingNext?'auto':'metadata'}
+              src={index===activeVideoIndex||preloadStarted||isPreparingNext?clip.src:undefined}
+              poster={clip.poster}
+              preload={index===activeVideoIndex||preloadStarted||isPreparingNext?'auto':'none'}
               autoPlay={index===activeVideoIndex&&wantsPlayback}
               muted={index!==activeVideoIndex||isMuted}
               playsInline
@@ -315,6 +322,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 if(index!==activeIndexRef.current){videoRefs.current[index]?.pause();return;}
                 playingRef.current=true;
                 setIsActuallyPlaying(true);
+                setPreloadStarted(true);
                 setVideoError('');
               }}
               onPause={()=>{captureMedia('pause',index);if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}

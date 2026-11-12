@@ -39,6 +39,10 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             <span className="rounded-full border border-[#e6dce7] bg-white px-2.5 py-1 font-semibold text-[#4a1249]">Staging</span>
             <span className="hidden sm:inline">Signed in as {currentUser.name}</span>
             {installedAppKind&&<PwaInstallControl kind={installedAppKind} compact/>}
+            {!installedAppKind&&<a href={currentUser.role==='student'?'/student/':'/staff/'}
+              className="rounded border border-[#4A1249] px-3 py-1.5 text-xs font-semibold text-[#4A1249]">
+              {currentUser.role==='student'?'Install Student App':'Install Staff ERP'}
+            </a>}
             {currentUser.role==='super_admin'&&window.location.hostname==='hiau-staging.totag.network'&&<StagingStudentInvite/>}
             <button type="button" onClick={onToggleTheme} aria-label="Toggle display theme"
               className="inline-flex items-center gap-1.5 rounded-md p-2 hover:bg-[#f1eaf2]">

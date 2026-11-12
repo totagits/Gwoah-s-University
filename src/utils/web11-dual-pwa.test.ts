@@ -25,6 +25,8 @@ test('WEB-11 student and staff have separate install identities and launch scope
   assert.ok(m.icons.some((icon:any)=>icon.sizes==='512x512'&&icon.type==='image/png'));
  }
  assert.match(read('../../package.json'),/generate-pwa-icons\.mjs/);
+ assert.match(read('../../scripts/generate-pwa-icons.mjs'),/\[180,192,512\]/);
+ assert.match(html,/appleIcon\.href = '\/hiau-' \+ app \+ '-180\.png'/);
 });
 test('WEB-11 installed applications keep credentials and role checks mandatory',()=>{
  assert.match(app,/appKind==='student'\?role==='student'/);

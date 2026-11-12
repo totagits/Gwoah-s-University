@@ -83,7 +83,7 @@ export const PartnerDistributionConsole:React.FC<{currentUser:UserProfile}>=({cu
       <section aria-label="Distribution authorization and access grants" className="space-y-5 rounded-xl border border-[#E4DCE9] bg-white p-5">
         {!details?<p className="text-sm text-slate-700">Select an approved resource to configure authorized distribution.</p>:<>
           <div><h3 className="text-xl font-bold text-[#35103B]">{details.resource.title}</h3>
-            <p className="mt-1 text-sm text-slate-600">{details.resource.institutionName||details.resource.institution_name}</p>
+            <p className="mt-1 text-sm text-slate-600">{details.resource.institution_name}</p>
             <p className="mt-2 text-sm font-semibold">{active?'Distribution authorized':'Not currently distributed'}</p></div>
           {!active?<form className="space-y-3 border-t pt-4" onSubmit={e=>{e.preventDefault();void action('/api/partner-distribution/admin/resources/'+selected+'/authorize',{rightsEvidence:evidence,rightsExpiresOn:expiry},'Distribution rights reviewed and authorized.');}}>
             <h4 className="font-bold text-[#35103B]">Copyright and licensing verification</h4>

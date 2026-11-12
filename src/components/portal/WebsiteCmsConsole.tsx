@@ -24,7 +24,7 @@ const slots:Record<Section,Array<{id:string;label:string}>>={
  ],navigation:[
   {id:'label-hero',label:'Home label'},{id:'label-about',label:'About label'},
   {id:'label-tour',label:'Campus Tour label'},{id:'label-colleges',label:'Academics label'},
-  {id:'label-admissions',label:'Admissions label'},{id:'label-calendar',label:'Current Events label'},
+  {id:'label-admissions',label:'Admissions label'},{id:'label-news',label:'News label'},{id:'label-calendar',label:'Current Events label'},
   {id:'label-dei',label:'Student Experience label'}
  ]
 };

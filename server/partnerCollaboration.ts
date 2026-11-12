@@ -30,7 +30,8 @@ const member=(store:Operations,res:Response)=> {
     FROM institutional_partner_members m
     JOIN institutional_partners p ON p.id=m.partner_id
     WHERE m.email=? AND m.revoked_at IS NULL`,actor.email.toLowerCase());
-  if(!row||row.partner_status!=='active')throw new WorkflowError('Partner access suspended or unapproved.',403);
+  if(!row||row.partner_status!=='active'||!partnerInviteAllowed(store,actor.email))
+    throw new WorkflowError('Partner access suspended, expired or unapproved.',403);
   return row;
 };
 const activeAgreement=(store:Operations,partnerId:string,activity:string)=>{

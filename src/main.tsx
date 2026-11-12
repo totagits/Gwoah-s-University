@@ -8,6 +8,6 @@ import './styles/campus.css';
 createRoot(document.getElementById('root')!).render(<LocalizationProvider><App /></LocalizationProvider>);
 
 if('serviceWorker' in navigator&&window.isSecureContext){
- window.addEventListener('load',()=>{void navigator.serviceWorker.register('/sw.js',{scope:'/'})
+ window.addEventListener('load',()=>{void navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'})
   .catch(error=>console.warn('HIAU PWA registration unavailable',error));});
 }

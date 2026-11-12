@@ -84,9 +84,9 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
           api.getUsers(),
           api.getMessages(currentUser.id),
         ]);
-        if (courseRes.sections && courseRes.sections.length > 0) {
+        if (courseRes.sections) {
           setSections(courseRes.sections);
-          setSelectedSectionId(courseRes.sections[0].id);
+          setSelectedSectionId("");
         }
         if (courseRes.courses) setCourses(courseRes.courses);
         if (userRes.users) setAllUsers(userRes.users);
@@ -100,7 +100,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
 
   // Load roster when selectedSectionId changes
   useEffect(() => {
-    if (!selectedSectionId) return;
+    if (!selectedSectionId) { setRoster([]); return; }
     const fetchRoster = async () => {
       setLoadingRoster(true);
       try {
@@ -285,10 +285,12 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-400 font-semibold">Select Class Section:</span>
               <select
+                aria-label="Choose a class section before viewing its roster"
                 value={selectedSectionId}
                 onChange={(e) => setSelectedSectionId(e.target.value)}
                 className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white font-bold focus:outline-none focus:border-amber-500"
               >
+                <option value="">Choose a class section</option>
                 {sections.map((sec) => (
                   <option key={sec.id} value={sec.id}>
                     {sec.courseCode} ({sec.sectionCode}) - {sec.courseTitle}
@@ -298,7 +300,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </div>
 
             <div className="text-xs text-slate-400">
-              Instructor: <strong className="text-amber-400">{currentUser.name}</strong> • Term: Semester I 2026/2027
+              Signed in as: <strong className="text-[#35103b]">{currentUser.name}</strong> • Class instructor and term require an assigned section
             </div>
           </div>
 
@@ -320,7 +322,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                 </p>
               </div>
               <span className="text-xs font-mono font-bold text-amber-400 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
-                {roster.length} Enrolled Scholars
+                {selectedSectionId ? roster.length + " roster entries" : "No section selected"}
               </span>
             </div>
 

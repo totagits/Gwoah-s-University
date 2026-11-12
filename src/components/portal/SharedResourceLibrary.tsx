@@ -548,7 +548,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
                         </button>
                         <button
                           onClick={() => handleDownload(pinned)}
-                          className="p-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg cursor-pointer transition-colors"
+                          className="hiau-action-primary p-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg cursor-pointer transition-colors"
                           title="Download document for offline reading"
                           aria-label={`Download ${pinned.title}`}
                         >
@@ -594,7 +594,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
                 setPinnedOnly(false);
                 setLowBandwidthOnly(false);
               }}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl cursor-pointer transition-colors"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl cursor-pointer transition-colors"
             >
               Reset All Filters
             </button>
@@ -724,7 +724,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
 
                       <button
                         onClick={() => handleDownload(res)}
-                        className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-amber-500/20 cursor-pointer transition-all"
+                        className="hiau-action-primary px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-amber-500/20 cursor-pointer transition-all"
                         aria-label={`Download ${res.title}`}
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -894,7 +894,7 @@ export const SharedResourceLibrary: React.FC<SharedResourceLibraryProps> = ({
 
                 <button
                   onClick={() => handleDownload(activeResource)}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-amber-500/20 cursor-pointer transition-all"
+                  className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-amber-500/20 cursor-pointer transition-all"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Document (.md)</span>

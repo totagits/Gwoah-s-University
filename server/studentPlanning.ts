@@ -110,7 +110,7 @@ export function installStudentPlanning(app:Express,store:Operations){
       });
       if('error' in result)return res.status(typeof result.status==='number'?result.status:400).json({error:result.error});
       return res.status(201).json(result);
-    }catch{return res.status(500).json({error:'Could not save course plan.'});}
+    }catch(error){console.error('Course plan draft persistence failure',error);return res.status(500).json({error:'Could not save course plan.'});}
   });
   app.post('/api/student/course-plans/:id/submit',express.json({limit:'4kb'}),(_req,res)=>{
     const student=studentFor(res);

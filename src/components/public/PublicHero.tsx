@@ -113,7 +113,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     }else{
       pendingVideoIndex.current=next;
       setIsPreparingNext(true);
-      if(incoming){incoming.preload='auto';incoming.load();}
+      // Setting preload starts the request without discarding data already buffered.
+      if(incoming)incoming.preload='auto';
     }
   };
 
@@ -213,7 +214,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                   setVideoError('This video is unavailable. Retry or play the next clip.');
                 }
               }}
-              onEnded={()=>{if(index===activeVideoIndex)switchVideo(index+1);}}
+              onEnded={()=>{if(index===activeVideoIndex){setIsActuallyPlaying(false);switchVideo(index+1);}}}
               className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${index===activeVideoIndex?'z-10 opacity-100':'z-0 opacity-0'}`}
             />
           ))}

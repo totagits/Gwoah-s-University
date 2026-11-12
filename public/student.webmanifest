@@ -1,0 +1,19 @@
+{
+  "name": "HIAU Student App",
+  "short_name": "HIAU Student",
+  "description": "Secure student services, classes, tuition information and academic records at Harvest Intercontinental American University.",
+  "id": "/student/",
+  "start_url": "/student/?portal=1",
+  "scope": "/student/",
+  "display": "standalone",
+  "background_color": "#FAF8FB",
+  "theme_color": "#4A1249",
+  "icons": [
+    {
+      "src": "/hiau-student-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

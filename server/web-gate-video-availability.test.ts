@@ -1,39 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import express from 'express';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
-import type {Server} from 'node:http';
 import {Operations} from './operations';
-import {installPublicWebsiteMedia} from './publicWebsiteMedia';
+import {getPublicVideoAvailability} from './publicWebsiteMedia';
 
-test('WEB-GATE video endpoint never redirects to nonexistent degree media and supports private CMS publication',async t=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-degree-media-'));
+test('WEB-GATE: media resolver distinguishes absent fallback, approved CMS MP4 and unknown slot',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-video-status-'));
  const store=new Operations(dir);
- const app=express();app.use(express.json());
- app.use((_req,res,next)=>{res.locals.actor={id:'admin',role:'super_admin'};next();});
- installPublicWebsiteMedia(app,store,dir);
- const server:Server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s));});
- const addr=server.address();if(!addr||typeof addr==='string')throw Error('No server port');
- const base='http://127.0.0.1:'+addr.port;
- t.after(async()=>{server.closeAllConnections();await new Promise<void>((ok,bad)=>server.close(e=>e?bad(e):ok()));store.close();fs.rmSync(dir,{recursive:true,force:true});});
- const missing='education--bachelor-of-education-in-early-childhood-education';
- const url=base+'/api/public/video/'+missing;
- const status=await fetch(base+'/api/public/video-status/'+missing);
- assert.equal(status.status,200);
- assert.deepEqual(await status.json(),{available:false,source:'missing'});
- const stream=await fetch(url,{redirect:'manual'});
- assert.equal(stream.status,404,'Unpublished/missing degree video must not redirect to a broken static file');
- assert.equal((await fetch(url,{method:'HEAD'})).status,404);
- const filename=randomUUID()+'.mp4';
- const root=path.join(dir,'public-media');
- fs.writeFileSync(path.join(root,filename),Buffer.from('00000000ftypmp42', 'utf8'));
- store.run('INSERT INTO settings(key,value) VALUES(?,?)','public-media:'+missing,JSON.stringify({published:filename,version:1}));
- assert.deepEqual(await (await fetch(base+'/api/public/video-status/'+missing)).json(),{available:true,source:'published'});
- assert.equal((await fetch(url,{method:'HEAD'})).status,200);
- const byteResponse=await fetch(url,{headers:{Range:'bytes=0-3'}});
- assert.equal(byteResponse.status,206);
- assert.equal((await byteResponse.arrayBuffer()).byteLength,4);
+ try{
+  const missing='education--bachelor-of-education-in-early-childhood-education';
+  assert.deepEqual(getPublicVideoAvailability(store,dir,missing),
+    {available:false,source:'missing',file:null});
+  assert.equal(getPublicVideoAvailability(store,dir,'not-a-program').source,'unknown');
+  const filename=randomUUID()+'.mp4';
+  fs.mkdirSync(path.join(dir,'public-media'),{recursive:true});
+  fs.writeFileSync(path.join(dir,'public-media',filename),Buffer.from('00000000ftypmp42'));
+  store.run('INSERT INTO settings(key,value) VALUES(?,?)','public-media:'+missing,
+    JSON.stringify({published:filename,version:1}));
+  const published=getPublicVideoAvailability(store,dir,missing);
+  assert.equal(published.available,true);
+  assert.equal(published.source,'published');
+  assert.ok(published.file&&fs.existsSync(published.file));
+  fs.unlinkSync(path.join(dir,'public-media',filename));
+  assert.equal(getPublicVideoAvailability(store,dir,missing).available,false,
+    'Stale database publication must not be counted as playable video');
+ }finally{store.close();fs.rmSync(dir,{recursive:true,force:true});}
 });

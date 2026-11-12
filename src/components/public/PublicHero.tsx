@@ -58,6 +58,9 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const [videoError,setVideoError]=useState('');
   const [retryCount,setRetryCount]=useState(0);
   const [isPreparingNext,setIsPreparingNext]=useState(false);
+  // Do not mount a src for background clips until the first visible clip
+  // actually plays; preload=metadata alone still generates HTTP requests.
+  const [preloadStarted,setPreloadStarted]=useState(false);
   const videoRefs=useRef<Array<HTMLVideoElement|null>>([]);
   const pendingVideoIndex=useRef<number|null>(null);
   const preloadArmed=useRef<Set<string>>(new Set());
@@ -300,8 +303,8 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                   element.muted=index!==activeIndexRef.current||isMuted;
                 }
               }}
-              src={clip.src}
-              preload={index===activeVideoIndex||isActuallyPlaying||isPreparingNext?'auto':'metadata'}
+              src={index===activeVideoIndex||preloadStarted||isPreparingNext?clip.src:undefined}
+              preload={index===activeVideoIndex||preloadStarted||isPreparingNext?'auto':'none'}
               autoPlay={index===activeVideoIndex&&wantsPlayback}
               muted={index!==activeVideoIndex||isMuted}
               playsInline
@@ -315,6 +318,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 if(index!==activeIndexRef.current){videoRefs.current[index]?.pause();return;}
                 playingRef.current=true;
                 setIsActuallyPlaying(true);
+                setPreloadStarted(true);
                 setVideoError('');
               }}
               onPause={()=>{captureMedia('pause',index);if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}

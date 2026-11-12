@@ -16,10 +16,23 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
   const [soundOn,setSoundOn]=useState(false);
   const [autoplayBlocked,setAutoplayBlocked]=useState(false);
   const [mediaError,setMediaError]=useState(false);
+  const [availability,setAvailability]=useState<'checking'|'available'|'missing'>('checking');
+  useEffect(()=>{
+    const controller=new AbortController();
+    setAvailability('checking');
+    void fetch('/api/public/video-status/'+encodeURIComponent(route),{signal:controller.signal,cache:'no-store'})
+      .then(async r=>{
+        if(!r.ok)throw Error('Availability not confirmed');
+        const status:{available:boolean}=await r.json();
+        if(!controller.signal.aborted)setAvailability(status.available?'available':'missing');
+      })
+      .catch(()=>{if(!controller.signal.aborted)setAvailability('missing');});
+    return ()=>controller.abort();
+  },[route]);
 
   useEffect(()=>{
     const video=videoRef.current;
-    if(!video)return;
+    if(!video||availability!=='available')return;
     let active=true;
     video.muted=true;
     setSoundOn(false);
@@ -42,7 +55,7 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
       video.removeEventListener('loadeddata',start);
       video.pause();
     };
-  },[route,source]);
+  },[route,source,availability]);
 
   const startWithSound=()=>{
     const video=videoRef.current;
@@ -66,10 +79,16 @@ export const PublicDegreeVideo:React.FC<DegreeVideoProps>=({route,source,title})
     void video.play().then(()=>setAutoplayBlocked(false)).catch(()=>setAutoplayBlocked(true));
   };
 
+  if(availability==='checking')return <div role="status" className="rounded-xl border border-purple-200 bg-[#faf8fb] p-6 text-sm text-[#4A1249]">
+    Checking the availability of this program's video…
+  </div>;
+  if(availability==='missing')return <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+    <p className="font-semibold text-amber-950">This degree's explanatory video is not currently available.</p>
+    <p className="mt-2 text-sm text-amber-950">The university can publish an approved video for this program through the Website Video Library. Academic program information remains available below.</p>
+  </div>;
   return <div className="space-y-3">
     <div className="overflow-hidden rounded-xl bg-[#2a082c]">
       <video ref={videoRef} key={route} controls autoPlay muted playsInline preload="auto"
-        poster="/assets/aistudio/image_29eb5504.png"
         className="aspect-video w-full object-contain" aria-label={`Educational video about ${title}`}
         onError={()=>setMediaError(true)} onPlaying={()=>setAutoplayBlocked(false)}
         onVolumeChange={event=>setSoundOn(!event.currentTarget.muted&&event.currentTarget.volume>0)}>

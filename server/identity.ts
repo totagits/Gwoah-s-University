@@ -374,6 +374,7 @@ export function installIdentity(
     if (
       endpoint === '/api/health' ||
       (req.method === 'GET' && endpoint === '/api/public/hero-videos') ||
+      (req.method === 'GET' && /^\/api\/public\/video-status\/[a-z0-9_-]+$/.test(endpoint)) ||
       (req.method === 'GET' && endpoint === '/api/public/staff') ||
       (req.method === 'GET' && endpoint === '/api/public/campus-content') ||
       (req.method === 'GET' && endpoint === '/api/public/site-content') ||

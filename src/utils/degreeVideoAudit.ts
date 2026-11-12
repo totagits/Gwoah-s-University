@@ -5,7 +5,7 @@
  */
 export type DegreeVideoAuditSlot={
  slot:string;label:string;defaultSrc:string;publicSrc:string;
- defaultAvailable?:boolean;published?:string;draft?:string;version:number;
+ defaultAvailable?:boolean;publicAvailable?:boolean;published?:string;draft?:string;version:number;
 };
 const escapeCsv=(value:string|number|boolean)=>{
  const raw=String(value);
@@ -17,7 +17,7 @@ const escapeCsv=(value:string|number|boolean)=>{
 export function createDegreeVideoAuditCsv(videos:DegreeVideoAuditSlot[]){
  const rows=[
   ['Program','College key','Media slot','Default video on server','Replacement published',
-   'Private draft','Public media URL','Bundled media source',
+   'Private draft','Public video source available','Public media URL','Bundled media source',
    'Public playback checked','CMS upload/replace/delete checked','Caption/thumbnail checked',
    'Mobile playback checked','Official program information verified','Reviewer','Review date','Notes'],
   ...videos.filter(v=>!v.slot.startsWith('hero-')).sort((a,b)=>a.label.localeCompare(b.label))
@@ -25,6 +25,7 @@ export function createDegreeVideoAuditCsv(videos:DegreeVideoAuditSlot[]){
    v.label,v.slot.split('--')[0],v.slot,
    v.defaultAvailable===true?'Yes':v.defaultAvailable===false?'No':'Unverified',
    v.published?'Yes':'No',v.draft?'Yes':'No',
+   v.publicAvailable===true?'Yes':v.publicAvailable===false?'No':'Unverified',
    v.publicSrc,v.defaultSrc||'None',
    'Not tested','Not tested','Not tested','Not tested','Not verified','','',''
   ])

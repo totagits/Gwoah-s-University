@@ -4,7 +4,7 @@ import {createDegreeVideoAuditCsv} from '../../utils/degreeVideoAudit';
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
-  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;defaultAvailable?:boolean;
+  version:number;draft?:string;published?:string;updatedAt?:string;order?:number;defaultAvailable?:boolean;publicAvailable?:boolean;
 };
 type RoleProps={currentUser:{role:string}};
 const parseApiResponse=async(response:Response)=>{
@@ -56,7 +56,7 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
     s.label.toLowerCase().includes(degreeSearch.toLowerCase())||s.slot.toLowerCase().includes(degreeSearch.toLowerCase()));
   const publishedCount=degreeSlots.filter(s=>Boolean(s.published)).length;
   const draftCount=degreeSlots.filter(s=>Boolean(s.draft)).length;
-  const missingCount=degreeSlots.filter(s=>!s.published&&s.defaultAvailable===false).length;
+  const missingCount=degreeSlots.filter(s=>s.publicAvailable===false).length;
   const exportAudit=()=>{
     const csv=createDegreeVideoAuditCsv(degreeSlots);
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});

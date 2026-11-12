@@ -233,6 +233,53 @@ export function installWorkspaces(app: Express, store: Operations) {
         .json({ error: 'Could not load workspace records.' });
     }
   });
+  // Registrar-controlled linking of an EXISTING admitted academic record to
+  // an activated student identity. Do not create a record or invent admission.
+  app.get('/api/workspaces/student-links', (_req,res)=>{
+    const actor=actorOf(res);
+    if(!actor||!workspacePermissions(actor.role).registrar)
+      return res.status(403).json({error:'Registrar authorization required.'});
+    const students=store.all(`SELECT s.id,s.student_number,s.full_name,s.email,s.user_id,
+      a.status AS application_status FROM students s
+      JOIN applications a ON a.id=s.application_id
+      WHERE s.user_id IS NULL ORDER BY s.full_name LIMIT 100`);
+    const accounts=store.users().filter(u=>u.role==='student').map(u=>({
+      id:u.id,name:u.name,email:u.email
+    }));
+    return res.json({students,accounts});
+  });
+  app.post('/api/workspaces/student-links', (req,res)=>{
+    const actor=actorOf(res);
+    if(!actor||!workspacePermissions(actor.role).registrar)
+      return res.status(403).json({error:'Registrar authorization required.'});
+    const studentId=req.body?.studentId,userId=req.body?.userId;
+    if(typeof studentId!=='string'||typeof userId!=='string'||
+       !/^[a-f0-9-]{36}$/.test(studentId)||!/^[a-f0-9-]{36}$/.test(userId))
+      return res.status(400).json({error:'Select an existing student record and student account.'});
+    try{
+      const result=store.transaction(()=>{
+        const record=store.one(`SELECT s.*,a.status AS admission_status
+          FROM students s JOIN applications a ON a.id=s.application_id WHERE s.id=?`,studentId);
+        const account=store.one('SELECT id,email,role FROM users WHERE id=?',userId);
+        if(!record||!account)return {error:'Student record or account was not found.',status:404};
+        if(record.admission_status!=='admitted'||record.user_id!==null||account.role!=='student')
+          return {error:'Only an admitted, unlinked student record can be linked to a student-role account.',status:409};
+        if(record.email.trim().toLowerCase()!==account.email.trim().toLowerCase())
+          return {error:'Email addresses do not match. Refer this identity discrepancy to the Registrar.',status:409};
+        if(store.one('SELECT id FROM students WHERE user_id=?',userId))
+          return {error:'This student login is already linked to an academic record.',status:409};
+        const update=store.run('UPDATE students SET user_id=? WHERE id=? AND user_id IS NULL',userId,studentId);
+        if(update.changes!==1)return {error:'Student record changed during linking. Refresh and retry.',status:409};
+        store.audit(actor,'STUDENT_IDENTITY_LINK',studentId,
+          {linked:false},{linked:true,userId,studentNumber:record.student_number});
+        return {studentNumber:record.student_number,linked:true};
+      });
+      if('error' in result)return res.status(result.status ?? 400).json({error:result.error});
+      return res.json(result);
+    }catch{
+      return res.status(500).json({error:'Could not complete the link. No record was changed.'});
+    }
+  });
   app.post('/api/workspaces/action', (req, res) => {
     try {
       const result = store.execute(

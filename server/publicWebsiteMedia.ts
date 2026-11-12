@@ -65,25 +65,49 @@ const save=(store:Operations,slot:string,state:State)=>{
   store.run('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',KEY+slot,JSON.stringify(state));
 };
 const mediaPath=(directory:string,name:string)=>path.join(directory,'public-media',name);
-const bundledPath=(src:string)=>{
+const playableMp4=(file:string)=>{
+  try{
+    const stat=fs.statSync(file);
+    if(!stat.isFile()||stat.size<12)return false;
+    const fd=fs.openSync(file,'r');
+    try{
+      const header=Buffer.alloc(12);
+      return fs.readSync(fd,header,0,12,0)===12 &&
+        header.toString('ascii',4,8)==='ftyp';
+    }finally{fs.closeSync(fd);}
+  }catch{return false;}
+};
+
+const bundledCandidate=(src:string)=>{
   if(!src||!src.startsWith('/assets/'))return null;
   const rel=src.slice(1);
   const candidates=[path.join(process.cwd(),'dist',rel),path.join(process.cwd(),'public',rel)];
   return candidates.find(file=>fs.existsSync(file))||null;
 };
-const publishedPath=(store:Operations,directory:string,slot:string)=>{
+const bundledPath=(src:string)=>{
+  const file=bundledCandidate(src);
+  return file&&playableMp4(file)?file:null;
+};
+const publishedCandidate=(store:Operations,directory:string,slot:string)=>{
   const published=parse(store,slot).published;
   if(!published||!/^[a-f0-9-]{36}\.mp4$/.test(published))return null;
   const file=mediaPath(directory,published);
   return fs.existsSync(file)?file:null;
+};
+const publishedPath=(store:Operations,directory:string,slot:string)=>{
+  const file=publishedCandidate(store,directory,slot);
+  return file&&playableMp4(file)?file:null;
 };
 export const getPublicVideoAvailability=(store:Operations,directory:string,slot:string)=>{
   const item=resolveSlot(store,slot);
   if(!item)return {available:false,source:'unknown' as const,file:null};
   const published=publishedPath(store,directory,slot);
   const bundled=bundledPath(item.defaultSrc);
+  const corrupted=Boolean((publishedCandidate(store,directory,slot)&&!published)||
+    (bundledCandidate(item.defaultSrc)&&!bundled));
   return {available:Boolean(published||bundled),
-    source:published?'published' as const:bundled?'bundled' as const:'missing' as const,
+    source:published?'published' as const:bundled?'bundled' as const:
+      corrupted?'invalid' as const:'missing' as const,
     file:published||bundled};
 };
 const sendMedia=(req:Request,res:Response,file:string,publiclyPublished=false)=>{
@@ -203,7 +227,8 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     return res.json({videos:allSlots(store).map(v=>({
       ...v,...parse(store,v.slot),
       defaultAvailable:Boolean(bundledPath(v.defaultSrc)),
-      publicAvailable:Boolean(publishedPath(store,directory,v.slot)||bundledPath(v.defaultSrc)),
+      publicAvailable:Boolean(getPublicVideoAvailability(store,directory,v.slot).available),
+      mediaSource:getPublicVideoAvailability(store,directory,v.slot).source,
       previewSrc:'/api/admin/website-video/'+v.slot+'/preview',
       publicSrc:'/api/public/video/'+v.slot,
     }))});

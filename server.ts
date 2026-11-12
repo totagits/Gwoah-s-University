@@ -5,6 +5,7 @@ import { Operations } from './server/operations';
 import { installIdentity } from './server/identity';
 import { installPlatform } from './server/platform';
 import { installWorkspaces } from './server/workspaces';
+import {installStudentPlanning} from './server/studentPlanning';
 import { installCurriculumStudio } from './server/curriculum';
 import {installPublicWebsiteMedia} from './server/publicWebsiteMedia';
 import { installPublicAdmissions } from './server/publicAdmissions';
@@ -37,6 +38,7 @@ app.get('/api/health', (_req, res) =>
 );
 installPublicAdmissions(app, operations);
 installWorkspaces(app, operations);
+installStudentPlanning(app,operations);
 installCurriculumStudio(app, operations);
 installPublicWebsiteMedia(app, operations, directory);
 installPublicStaffProfiles(app, operations, directory);

@@ -11,7 +11,11 @@ test('WEB-GATE: media resolver distinguishes absent fallback, approved CMS MP4 a
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'hiau-video-status-'));
  const store=new Operations(dir);
  try{
-  const missing='education--bachelor-of-education-in-early-childhood-education';
+  // A brand-new CMS slot has NO bundled fallback regardless of which video
+  // files the production build copied into dist/.
+  const missing='hero-extra-'+randomUUID();
+  store.run('INSERT INTO settings(key,value) VALUES(?,?)','public-media:hero-extras',
+    JSON.stringify([{slot:missing,label:'Test empty video slot',defaultSrc:'',order:0}]));
   assert.deepEqual(getPublicVideoAvailability(store,dir,missing),
     {available:false,source:'missing',file:null});
   assert.equal(getPublicVideoAvailability(store,dir,'not-a-program').source,'unknown');

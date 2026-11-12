@@ -3,6 +3,8 @@
  * Database publication flags alone do not prove that a real browser can play
  * a video or that HIAU has approved the underlying degree information.
  */
+import type {VideoHttpResult} from './degreeVideoHttpProbe';
+
 export type DegreeVideoAuditSlot={
  slot:string;label:string;defaultSrc:string;publicSrc:string;
  defaultAvailable?:boolean;publicAvailable?:boolean;mediaSource?:string;published?:string;draft?:string;version:number;
@@ -14,10 +16,10 @@ const escapeCsv=(value:string|number|boolean)=>{
  const safe=/^[\s\t\r\n]*[=+@-]/.test(raw)?"'"+raw:raw;
  return '"'+safe.replace(/"/g,'""')+'"';
 };
-export function createDegreeVideoAuditCsv(videos:DegreeVideoAuditSlot[]){
+export function createDegreeVideoAuditCsv(videos:DegreeVideoAuditSlot[],probeResults:Record<string,VideoHttpResult>={}){
  const rows=[
   ['Program','College key','Media slot','Default video on server','Replacement published',
-   'Private draft','Public video source available','Media integrity/source','Public media URL','Bundled media source',
+   'Private draft','Public video source available','Media integrity/source','HTTP reachability result','HTTP status','HTTP check timestamp','HTTP check detail','Public media URL','Bundled media source',
    'Public playback checked','CMS upload/replace/delete checked','Caption/thumbnail checked',
    'Mobile playback checked','Official program information verified','Reviewer','Review date','Notes'],
   ...videos.filter(v=>!v.slot.startsWith('hero-')).sort((a,b)=>a.label.localeCompare(b.label))
@@ -27,6 +29,8 @@ export function createDegreeVideoAuditCsv(videos:DegreeVideoAuditSlot[]){
    v.published?'Yes':'No',v.draft?'Yes':'No',
    v.publicAvailable===true?'Yes':v.publicAvailable===false?'No':'Unverified',
    v.mediaSource||'Unverified',
+   probeResults[v.slot]?.status||'Not tested',probeResults[v.slot]?.httpStatus??'',
+   probeResults[v.slot]?.checkedAt||'',probeResults[v.slot]?.detail||'',
    v.publicSrc,v.defaultSrc||'None',
    'Not tested','Not tested','Not tested','Not tested','Not verified','','',''
   ])

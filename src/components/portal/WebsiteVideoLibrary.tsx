@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useState} from 'react';
-import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle,Trash2} from 'lucide-react';
+import {Upload,CheckCircle2,RotateCcw,PlayCircle,AlertTriangle,Trash2,Download} from 'lucide-react';
+import {createDegreeVideoAuditCsv} from '../../utils/degreeVideoAudit';
 
 type VideoSlot={
   slot:string;label:string;defaultSrc:string;previewSrc:string;publicSrc:string;
@@ -56,6 +57,17 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
   const publishedCount=degreeSlots.filter(s=>Boolean(s.published)).length;
   const draftCount=degreeSlots.filter(s=>Boolean(s.draft)).length;
   const missingCount=degreeSlots.filter(s=>!s.published&&s.defaultAvailable===false).length;
+  const exportAudit=()=>{
+    const csv=createDegreeVideoAuditCsv(degreeSlots);
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='HIAU-19-Degree-Video-Acceptance-'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    setMessage('Acceptance inventory exported. Publication flags do not substitute for live video, accessibility, and institutional verification.');
+  };
   // Keep the editor scoped to a visible degree after the college/search changes.
   // Never allow a stale hidden selection to receive an upload or publication.
   const active=visibleSlots.find(s=>s.slot===selected)??visibleSlots[0];
@@ -208,6 +220,14 @@ export const WebsiteVideoLibrary:React.FC<RoleProps>=({currentUser})=>{
           Manage the explanatory video for each public academic degree separately.
           Uploads remain private drafts until you choose Publish.
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button type="button" onClick={exportAudit} disabled={!degreeSlots.length}
+            className="inline-flex items-center gap-2 rounded-lg border border-[#4A1249] bg-white px-4 py-2.5 text-sm font-bold text-[#4A1249] disabled:opacity-50">
+            <Download className="h-4 w-4" aria-hidden="true"/>
+            Export degree video audit CSV
+          </button>
+          <p className="text-xs text-slate-600">All ${degreeSlots.length} programs · private verification worksheet · no student data</p>
+        </div>
         <dl className="mt-4 grid gap-3 sm:grid-cols-4">
           {[
             ['Degree pages',degreeSlots.length],

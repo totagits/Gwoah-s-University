@@ -68,6 +68,25 @@
 
 ERP features already visible in the repository are **not automatically accepted**. Reuse and test before adding new code.
 
+## ERP-STUDENT-01 — Student academic-to-financial lifecycle (parallel, staged)
+
+**Tracking issue:** [#96](https://github.com/totagits/Harvest-Intercontinental-American-University/issues/96), linked to WEB public website gate [#93](https://github.com/totagits/Harvest-Intercontinental-American-University/issues/93).
+
+| Slice | Scope | Code status | Live acceptance |
+|---|---|---|---|
+| ERP-STUDENT-01A | Student selects available term sections → saves private plan → submits to Registrar → Registrar approves/returns/rejects; permission checks and immutable audit | **Implemented, CI passed, merged to staging** in [PR #97](https://github.com/totagits/Harvest-Intercontinental-American-University/pull/97) | **Pending** Coolify and student/registrar device acceptance |
+| ERP-STUDENT-01B | Approved plan becomes actual course registration under deadline, credits, prerequisite and capacity controls; close existing direct-registration bypass | Not yet implemented | Pending |
+| ERP-STUDENT-01C | Finance statement and invoice from verified registration and adopted fee schedule; no fabricated prices | Not yet implemented | Pending |
+| ERP-STUDENT-01D | Scholarship, aid, tuition waiver request and committee/Finance approvals with documented eligibility and posting controls | Not yet implemented | Pending |
+| ERP-STUDENT-01E | Deferment/installment terms and approved due-date changes without debt forgiveness | Not yet implemented | Pending |
+| ERP-STUDENT-01F | Bank/mobile-money provider reconciliation, payment allocation and audited receipts | Existing isolated payment facilities, full integrated validation **pending** | Pending |
+| ERP-STUDENT-01G | Add/drop request/approval and policy-based billing adjustments, duplicate credit prevention | Existing direct add/drop facilities; integrated approval **not yet implemented** | Pending |
+| PWA-ERP-STUDENT-01 | Same approved workflows in Student PWA and staff Registrar/Finance queues; mobile and private offline-data tests | Initial plan UI mounted into authenticated Student and Admissions screens | Pending |
+
+**Release caution:** ERP-STUDENT-01A only models planning and review. Approval currently **does not** enroll the student, create a bill, apply a scholarship, grant a waiver or reconcile payment. The pre-existing direct registration endpoints must be reconciled before an enforceable workflow is considered complete. Formal financial and academic policies, including deadlines and waiver authority, require institutional confirmation.
+
+**Primary priority remains WEB-GATE-01/02:** Verified 19-degree page/content and video acceptance remains the website-critical task. ERP-STUDENT-01 is a strictly linked, parallel development workstream, not a replacement for website sign-off.
+
 ## Parallel PWA principle
 
 For **each** accepted WEB/ERP function:

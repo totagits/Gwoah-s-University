@@ -87,6 +87,13 @@ const operationalTables = [
   'curriculum_programs',
   'curriculum_courses',
   'curriculum_publications',
+  // Partner collaboration backup order follows foreign-key dependencies.
+  'institutional_partners',
+  'institutional_partner_agreements',
+  'institutional_partner_members',
+  'institutional_partner_resources',
+  'institutional_partner_distributions',
+  'institutional_partner_distribution_grants',
 ] as const;
 
 export class Operations {
@@ -1174,7 +1181,10 @@ export class Operations {
     if (
       data?.schemaVersion !== 1 ||
       !data.tables ||
-      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications','student_assistance_requests','student_course_plans','student_course_plan_commits'].includes(name)).every((name) => Array.isArray(data.tables[name]))
+      !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications','student_assistance_requests','student_course_plans','student_course_plan_commits',
+        'institutional_partners','institutional_partner_agreements','institutional_partner_members',
+        'institutional_partner_resources','institutional_partner_distributions',
+        'institutional_partner_distribution_grants'].includes(name)).every((name) => Array.isArray(data.tables[name]))
     )
       throw new WorkflowError(
         'Snapshot is not a relational operations snapshot.',

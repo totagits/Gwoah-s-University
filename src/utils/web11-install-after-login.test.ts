@@ -11,6 +11,8 @@ test('WEB-11: logged-in student/staff dashboards retain installation controls',(
  assert.match(header,/installedAppKind\?\: 'student'\|'staff'\|null/);
  assert.match(header,/installedAppKind&&<PwaInstallControl kind=\{installedAppKind\}/);
  assert.match(app,/installedAppKind=\{appKind\}/);
+ assert.match(header,/href=\{currentUser\.role==='student'\?'\/student\/'\:'\/staff\/'\}/);
+ assert.match(header,/Install Staff ERP/);
  assert.match(control,/beforeinstallprompt/);
  assert.match(control,/pendingInstall:InstallEvent\|null/);
  assert.match(control,/Install Staff App/);

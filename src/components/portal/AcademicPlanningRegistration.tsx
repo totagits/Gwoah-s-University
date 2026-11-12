@@ -161,7 +161,7 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
             onClick={() => onOpenPrintModal('registration_plan')}
             disabled={!student || activeRegistrations.length === 0}
             title={!student ? 'Select an authorized student record before printing' : activeRegistrations.length === 0 ? 'No recorded registration to print' : 'Print recorded registration'}
-            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-2 shadow transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]"
+            className="hiau-action-primary px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-2 shadow transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]"
           >
             <Printer className="w-4 h-4" />
             <span>Print Official Registration Slip</span>
@@ -354,7 +354,7 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
                     <button
                       disabled={isFull}
                       onClick={() => setSelectedSectionToAdd(sec)}
-                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1 shadow cursor-pointer disabled:opacity-40"
+                      className="hiau-action-primary px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1 shadow cursor-pointer disabled:opacity-40"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>{isFull ? 'Section Full' : 'Add Course'}</span>
@@ -421,7 +421,7 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
                 type="button"
                 disabled={addLoading}
                 onClick={handleConfirmAddCourse}
-                className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow cursor-pointer disabled:opacity-50"
+                className="hiau-action-primary px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow cursor-pointer disabled:opacity-50"
               >
                 {addLoading ? 'Registering...' : 'Confirm Registration'}
               </button>

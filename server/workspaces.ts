@@ -274,7 +274,7 @@ export function installWorkspaces(app: Express, store: Operations) {
           {linked:false},{linked:true,userId,studentNumber:record.student_number});
         return {studentNumber:record.student_number,linked:true};
       });
-      if('error' in result)return res.status(result.status).json({error:result.error});
+      if('error' in result)return res.status(result.status ?? 400).json({error:result.error});
       return res.json(result);
     }catch{
       return res.status(500).json({error:'Could not complete the link. No record was changed.'});

@@ -108,7 +108,7 @@ export function installStudentPlanning(app:Express,store:Operations){
         store.audit(actor,'COURSE_PLAN_DRAFT',planId,null,{studentId:student.id,termId,sectionCount:ids.length});
         return {id:planId,status:'draft'};
       });
-      if('error' in result)return res.status(result.status).json({error:result.error});
+      if('error' in result)return res.status(typeof result.status==='number'?result.status:400).json({error:result.error});
       return res.status(201).json(result);
     }catch{return res.status(500).json({error:'Could not save course plan.'});}
   });
@@ -128,7 +128,7 @@ export function installStudentPlanning(app:Express,store:Operations){
         store.audit(actorOf(res)!,'COURSE_PLAN_SUBMITTED',planId,{status:plan.status},{status:'submitted'});
         return {id:planId,status:'submitted'};
       });
-      if('error' in result)return res.status(result.status).json({error:result.error});
+      if('error' in result)return res.status(typeof result.status==='number'?result.status:400).json({error:result.error});
       return res.json(result);
     }catch{return res.status(500).json({error:'Could not submit course plan.'});}
   });
@@ -155,7 +155,7 @@ export function installStudentPlanning(app:Express,store:Operations){
           {status:decision,sectionCount:JSON.parse(plan.section_ids).length});
         return {id:plan.id,status:decision};
       });
-      if('error' in result)return res.status(result.status).json({error:result.error});
+      if('error' in result)return res.status(typeof result.status==='number'?result.status:400).json({error:result.error});
       return res.json(result);
     }catch{return res.status(500).json({error:'Could not review course plan.'});}
   });

@@ -126,7 +126,7 @@ export const VirtualClassroomCollab: React.FC<VirtualClassroomCollabProps> = ({
         'Starlink Satellite Telemetry: Real-time sensor aggregation over high-latency WAN links',
         'Laboratory Practical: Building balanced BST search pipelines with low-memory footprint',
       ],
-      highlight: 'Live Lecture Broadcasting from Campus Laptop Laboratory Pod A',
+      highlight: 'Sample lesson presentation — no live broadcast',
       codeSnippet: `class AgroSensorNode {
     double moisturePercent;
     long timestampUTC;
@@ -301,34 +301,35 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
 
   return (
     <div className="space-y-6">
+      <p role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-950">DEMO ONLY — The participant names, messages, slides, connection indicators and lesson material shown below are illustrative. No classroom session or real-time communication is active.</p>
       {/* Top Banner: Virtual Collaboration & Live E-Learning Classroom */}
       <div className="bg-gradient-to-r from-[#4A1249] to-[#2A082C] text-white rounded-2xl p-6 border-2 border-[#C39A53]/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C39A53] mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping inline-block" />
-            <span>Live Interactive Virtual Classroom</span>
+            <span>Demonstration interface · Not a live class</span>
             <span>•</span>
             <span>CSC 301 (Section A)</span>
           </div>
-          <h2 className="text-2xl font-collegiate font-black uppercase tracking-tight text-white">
+          <h2 className="text-2xl font-collegiate font-black uppercase tracking-tight !text-white">
             Online Courses & Visual Collaboration Studio
           </h2>
           <p className="text-xs text-purple-200 mt-1 max-w-2xl">
-            Empowering Liberian scholars with high-definition digital slides, real-time shared whiteboard collaboration, interactive Q&A, and low-bandwidth caching over Campus Starlink.
+            Sample slides and local whiteboard tools only. Live attendance, audio/video, classroom chat delivery and synchronization are not connected to an approved course session.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-mono font-bold">
             <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Starlink 320 Mbps • 38ms</span>
+            <span>No live connection telemetry</span>
           </span>
 
           <button
             onClick={() => setLowBandwidthMode(!lowBandwidthMode)}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
               lowBandwidthMode
-                ? 'bg-[#C39A53] text-[#2A082C] border-[#C39A53]'
+                ? 'bg-[#C39A53] !text-[#2A082C] border-[#C39A53]'
                 : 'bg-white/10 text-purple-200 border-white/20 hover:bg-white/20'
             }`}
             title="Toggle data-saving mode for remote Liberian telecom networks"
@@ -349,8 +350,8 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
                 onClick={() => setActiveView('presentation')}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 ${
                   activeView === 'presentation'
-                    ? 'bg-[#4A1249] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-purple-50'
+                    ? 'bg-[#4A1249] !text-white shadow-xs'
+                    : 'bg-slate-100 text-[#35103b] hover:bg-purple-50'
                 }`}
               >
                 <FileText className="w-4 h-4 text-[#C39A53]" />
@@ -426,7 +427,7 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
 
                   <div className="flex items-center gap-1.5 text-xs text-[#C39A53] font-bold">
                     <Laptop className="w-4 h-4 text-[#C39A53]" />
-                    <span>Live Instructor Stream</span>
+                    <span>Sample lesson · not a live stream</span>
                   </div>
                 </div>
 
@@ -603,8 +604,8 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
 
               {/* Whiteboard footer note */}
               <div className="p-2.5 bg-white border-t border-slate-200 text-slate-500 text-[11px] flex items-center justify-between">
-                <span>Collaborative canvas synced to all connected scholars in real time</span>
-                <span className="font-mono text-[10px] text-[#4A1249]">HIAU Live Canvas v2.4</span>
+                <span>Local-only whiteboard preview; changes are not shared with students</span>
+                <span className="font-mono text-[10px] text-[#4A1249]">Local demonstration</span>
               </div>
             </div>
           )}
@@ -618,11 +619,11 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#4A1249]" />
                 <h4 className="font-collegiate font-bold text-xs uppercase tracking-wider text-slate-900">
-                  Class Participants ({participants.length})
+                  Illustrative Participants ({participants.length})
                 </h4>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                All Connected
+                Sample list · Not connected
               </span>
             </div>
 
@@ -669,7 +670,7 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
                   Seminar Q&A Discussion
                 </h4>
               </div>
-              <span className="text-[10px] text-slate-400">Live Feed</span>
+              <span className="text-[10px] text-slate-400">Sample thread · not sent</span>
             </div>
 
             {/* Messages Scroll Area */}

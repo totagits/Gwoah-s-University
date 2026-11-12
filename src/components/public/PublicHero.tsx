@@ -186,7 +186,10 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     if(!active)return;
     active.muted=isMuted;
     if(wantsPlayback){
-      if(active.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA)tryPlay(activeVideoIndex);
+      // play() is permitted while the media is still loading; its promise
+      // resolves when playback can actually begin. Waiting for readyState
+      // here could leave the first clip paused indefinitely on some browsers.
+      tryPlay(activeVideoIndex);
     }else active.pause();
   },[activeVideoIndex,isMuted,wantsPlayback,retryCount,videos]);
 
@@ -258,6 +261,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               ref={element=>{videoRefs.current[index]=element;}}
               src={clip.src}
               preload={index===activeVideoIndex||isActuallyPlaying||isPreparingNext?'auto':'metadata'}
+              autoPlay={index===activeVideoIndex&&wantsPlayback}
               muted={index!==activeVideoIndex||isMuted}
               playsInline
               disablePictureInPicture

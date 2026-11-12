@@ -63,6 +63,22 @@ For every program, record:
 - Any illustrative image is clearly identified and replaceable from CMS.
 - Capture staging deployment commit, screenshot, reviewer, result, and unresolved finding.
 
+## Bundled video file audit (2026-11-12)
+
+Checked the configured `defaultSrc` for each of the 19 slots in `server/publicWebsiteMedia.ts` against the actual file path on GitHub `staging`. The first four program slots use explicit historical filenames; all other slots use normalized college/program path keys.
+
+**Found at configured bundled paths (4/19):**
+- Accounting — `public/assets/degree-clips/image_20261108_223153.mp4`
+- Entrepreneurship — `public/assets/degree-clips/image_20261108_232357_1.mp4`
+- Liberal Arts & Humanities — `public/assets/degree-clips/image_20261108_233524.mp4`
+- Strategic Communications & Media — `public/assets/degree-clips/image_20261109_002629_2.mp4`
+
+**Not found at their configured bundled paths (15/19):** Social Sciences & General Studies; Early Childhood Education; Elementary Education (Language Arts & Social Studies); Elementary Education (Math & Science); Secondary Education (Mathematics); Secondary Education (English); Information Technology; Science and Technology; Nursing; Laboratory Science; Environmental Science; Health Administration; Christian Education; Christian Counseling; Missions & Global Evangelism.
+
+**Critical caveat:** Public video playback first uses any published upload in the server's private public-media storage. GitHub bundled-path inspection cannot see those uploads. Thus 15 absent bundled files **does not establish** 15 absent or broken live public videos. Audit CMS media records and perform an authenticated staging/public browser playback check for all 19 separately. No approved media should be silently replaced or invented.
+
+**Next website priority:** In administrator Website Video Library export 19-degree audit CSV, record per-program `published`/`draft`/`defaultAvailable` state and test public URL, actual video, correct thumbnail, admin replace/unpublish/restore and mobile accessibility. Cross-check content approval before marking Accepted.
+
 ## Evidence status
 
 **Source inventory check: Passed (19/19 matching labels).**  

@@ -88,12 +88,23 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     return ()=>controller.abort();
   },[]);
 
-  const playSelected=()=>{
-    if(!wantsPlayback)return;
-    const player=videoRefs.current[activeVideoIndex];
+  // One player owns playback; the inactive element is only allowed to buffer.
+  // Refs are the authoritative state for async media events (which may arrive
+  // after a React render or after the visitor has selected a different clip).
+  const activeIndexRef=useRef(activeVideoIndex);
+  const wantsPlaybackRef=useRef(wantsPlayback);
+  const playingRef=useRef(false);
+  const switchingRef=useRef(false);
+  activeIndexRef.current=activeVideoIndex;
+  wantsPlaybackRef.current=wantsPlayback;
+
+  const tryPlay=(index:number)=>{
+    if(index!==activeIndexRef.current||!wantsPlaybackRef.current)return;
+    const player=videoRefs.current[index];
     if(!player||!player.paused)return;
     player.muted=isMuted;
     void player.play().catch(error=>{
+      if(index!==activeIndexRef.current)return;
       if(error?.name==='NotAllowedError'){
         setVideoError('Automatic playback is blocked. Press Play to start the video.');
       }else if(error?.name!=='AbortError'){
@@ -102,57 +113,84 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     });
   };
 
-  // On browsers that ignore a dynamic preload attribute change, explicitly
-  // start the inactive clip's request once after the current clip plays.
+  const commitSwitch=(next:number)=>{
+    if(next===activeIndexRef.current||switchingRef.current)return;
+    const incoming=videoRefs.current[next];
+    if(!incoming||incoming.readyState<HTMLMediaElement.HAVE_CURRENT_DATA||incoming.videoWidth===0)return;
+    switchingRef.current=true;
+    // Pause the outgoing element before revealing the next decoded frame.
+    const outgoing=videoRefs.current[activeIndexRef.current];
+    if(outgoing&&!outgoing.paused)outgoing.pause();
+    incoming.pause();
+    if(incoming.currentTime>0.05)incoming.currentTime=0;
+    activeIndexRef.current=next;
+    playingRef.current=false;
+    pendingVideoIndex.current=null;
+    setIsActuallyPlaying(false);
+    setIsPreparingNext(false);
+    setVideoError('');
+    setActiveVideoIndex(next);
+    requestAnimationFrame(()=>{switchingRef.current=false;});
+  };
+
+  const switchVideo=(index:number)=>{
+    if(videos.length<2)return;
+    const next=(index+videos.length)%videos.length;
+    if(next===activeIndexRef.current)return;
+    const incoming=videoRefs.current[next];
+    if(incoming&&incoming.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA&&incoming.videoWidth>0){
+      commitSwitch(next);
+    }else{
+      pendingVideoIndex.current=next;
+      setIsPreparingNext(true);
+      setVideoError('');
+      if(incoming){
+        incoming.pause();
+        incoming.preload='auto';
+        // Only load if no request has been started; never discard buffered bytes.
+        if(incoming.networkState===HTMLMediaElement.NETWORK_EMPTY)incoming.load();
+      }
+    }
+  };
+
+  // Preload the next clip only after the active one is playing. This avoids
+  // making both optimized MP4 downloads compete on a slow first visit.
   useEffect(()=>{
     if(!isActuallyPlaying||videos.length<2)return;
     const next=(activeVideoIndex+1)%videos.length;
     const clip=videos[next];
-    const player=videoRefs.current[next];
-    if(!player||!clip||preloadArmed.current.has(clip.id))return;
+    const inactive=videoRefs.current[next];
+    if(!inactive||!clip||preloadArmed.current.has(clip.id))return;
     preloadArmed.current.add(clip.id);
-    if(player.readyState<HTMLMediaElement.HAVE_FUTURE_DATA){
-      player.preload='auto';
-      player.load();
+    inactive.pause();
+    inactive.muted=true;
+    inactive.preload='auto';
+    // Rewind the completed hidden clip while the other is playing, not
+    // at the moment of transition, so the next cycle has a decoded start frame.
+    if(inactive.ended||inactive.currentTime>0.05){
+      try{inactive.currentTime=0;}catch{/* metadata may not be ready */ }
     }
+    if(inactive.networkState===HTMLMediaElement.NETWORK_EMPTY)inactive.load();
   },[activeVideoIndex,isActuallyPlaying,videos]);
 
-  // Never unmount the outgoing player while the next video buffers. The last
-  // decoded frame remains onscreen until the incoming player is ready.
-  const switchVideo=(index:number)=>{
-    if(videos.length<2)return;
-    const next=(index+videos.length)%videos.length;
-    if(next===activeVideoIndex)return;
-    setVideoError('');
-    setWantsPlayback(true);
-    const incoming=videoRefs.current[next];
-    if(incoming && incoming.readyState>=HTMLMediaElement.HAVE_FUTURE_DATA){
-      pendingVideoIndex.current=null;
-      setIsPreparingNext(false);
-      videoRefs.current[activeVideoIndex]?.pause();
-      setIsActuallyPlaying(false);
-      incoming.currentTime=0;
-      setActiveVideoIndex(next);
-    }else{
-      pendingVideoIndex.current=next;
-      setIsPreparingNext(true);
-      // Setting preload starts the request without discarding data already buffered.
-      if(incoming)incoming.preload='auto';
-    }
-  };
-
   useEffect(()=>{
-    const player=videoRefs.current[activeVideoIndex];
-    if(!player)return;
-    player.muted=isMuted;
+    for(let i=0;i<videoRefs.current.length;i++){
+      const video=videoRefs.current[i];
+      if(!video)continue;
+      if(i!==activeVideoIndex){
+        video.muted=true;
+        if(!video.paused)video.pause();
+      }
+    }
+    const active=videoRefs.current[activeVideoIndex];
+    if(!active)return;
+    active.muted=isMuted;
     if(wantsPlayback){
-      // Let native muted autoplay attempt startup immediately; readiness
-      // events separately retry once enough data reaches the decoder.
-      playSelected();
-    }else player.pause();
+      if(active.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA)tryPlay(activeVideoIndex);
+    }else active.pause();
   },[activeVideoIndex,isMuted,wantsPlayback,retryCount,videos]);
 
-  // If a clip fails to start, inform the visitor without masking the last frame.
+  // Stalled loading should never become a permanently blank carousel.
   useEffect(()=>{
     if(isActuallyPlaying||videoError||!wantsPlayback)return;
     const timeout=window.setTimeout(()=>{
@@ -167,41 +205,41 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const retryVideo=()=>{
     setVideoError('');
     setWantsPlayback(true);
+    wantsPlaybackRef.current=true;
     setRetryCount(value=>value+1);
-    const target=pendingVideoIndex.current??activeVideoIndex;
+    const target=pendingVideoIndex.current??activeIndexRef.current;
     const player=videoRefs.current[target];
     if(player){
       player.preload='auto';
-      player.load();
+      if(player.networkState===HTMLMediaElement.NETWORK_EMPTY||player.error)player.load();
+      if(target===activeIndexRef.current)tryPlay(target);
     }
   };
   const togglePlayback=()=>{
-    if(isActuallyPlaying && wantsPlayback){
+    const index=activeIndexRef.current;
+    if(wantsPlaybackRef.current){
+      wantsPlaybackRef.current=false;
       setWantsPlayback(false);
-      videoRefs.current[activeVideoIndex]?.pause();
+      videoRefs.current[index]?.pause();
     }else{
       setVideoError('');
+      wantsPlaybackRef.current=true;
       setWantsPlayback(true);
-      const player=videoRefs.current[activeVideoIndex];
-      if(player)void player.play().catch(()=>{
-        setVideoError('Unable to start playback. Please retry.');
-      });
+      tryPlay(index);
     }
   };
   const toggleMute=()=>setIsMuted(value=>!value);
-  const handleNextVideo=()=>switchVideo(activeVideoIndex+1);
-  const handlePrevVideo=()=>switchVideo(activeVideoIndex-1);
+  const handleNextVideo=()=>switchVideo(activeIndexRef.current+1);
+  const handlePrevVideo=()=>switchVideo(activeIndexRef.current-1);
 
   const onClipCanPlay=(index:number)=>{
-    if(pendingVideoIndex.current===index){
-      pendingVideoIndex.current=null;
-      setIsPreparingNext(false);
-      setIsActuallyPlaying(false);
-      videoRefs.current[activeVideoIndex]?.pause();
-      const player=videoRefs.current[index];
-      if(player)player.currentTime=0;
-      setActiveVideoIndex(index);
-    }else if(index===activeVideoIndex && wantsPlayback)playSelected();
+    if(index===pendingVideoIndex.current){
+      commitSwitch(index);
+    }else if(index===activeIndexRef.current&&wantsPlaybackRef.current){
+      tryPlay(index);
+    }else{
+      videoRefs.current[index]?.pause();
+    }
   };
 
   return (
@@ -220,7 +258,6 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               ref={element=>{videoRefs.current[index]=element;}}
               src={clip.src}
               preload={index===activeVideoIndex||isActuallyPlaying||isPreparingNext?'auto':'metadata'}
-              autoPlay={index===activeVideoIndex}
               muted={index!==activeVideoIndex||isMuted}
               playsInline
               disablePictureInPicture
@@ -228,20 +265,20 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               onCanPlay={()=>onClipCanPlay(index)}
               onLoadedData={()=>onClipCanPlay(index)}
               onPlaying={()=>{
-                if(index===activeVideoIndex){
-                  setIsActuallyPlaying(true);
-                  setVideoError('');
-                }
+                if(index!==activeIndexRef.current){videoRefs.current[index]?.pause();return;}
+                playingRef.current=true;
+                setIsActuallyPlaying(true);
+                setVideoError('');
               }}
-              onPause={()=>{if(index===activeVideoIndex)setIsActuallyPlaying(false);}}
-              onWaiting={()=>{if(index===activeVideoIndex)setIsActuallyPlaying(false);}}
-              onStalled={()=>{if(index===activeVideoIndex)setIsActuallyPlaying(false);}}
+              onPause={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
+              onWaiting={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
+              onStalled={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
               onError={()=>{
-                if(index===activeVideoIndex){
+                if(index===activeIndexRef.current){
                   setVideoError('This video is unavailable. Retry or play the next clip.');
                 }
               }}
-              onEnded={()=>{if(index===activeVideoIndex){setIsActuallyPlaying(false);switchVideo(index+1);}}}
+              onEnded={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);switchVideo(index+1);}}}
               className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${index===activeVideoIndex?'z-10 opacity-100':'z-0 opacity-0'}`}
             />
           ))}

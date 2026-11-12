@@ -10,6 +10,7 @@ export const roles = [
   'super_admin',
   'website_editor',
   'website_reviewer',
+  'partner_representative',
   'registrar',
   'dean',
   'lecturer',
@@ -93,6 +94,7 @@ export function installIdentity(
     save: () => void;
     origin?: string;
     secure?: boolean;
+    partnerInviteAllowed?: (email:string)=>boolean;
   },
 ) {
   fs.mkdirSync(options.directory, { recursive: true });
@@ -411,6 +413,13 @@ export function installIdentity(
     if (!actor) return res.status(401).json({ error: 'Sign in to continue.' });
     // Website-only roles have a deny-by-default API boundary: no ERP, HR,
     // finance, admissions or administrative operations beyond scoped CMS routes.
+    // Partner representatives may only use the dedicated collaboration API,
+    // plus their own session/password operations. All ERP/finance/academic
+    // record endpoints are forbidden even if a client bypasses navigation.
+    if(actor.role==='partner_representative' &&
+       !endpoint.startsWith('/api/partner-collaboration/') &&
+       !['/api/auth/logout','/api/auth/change-password'].includes(endpoint))
+      return res.status(403).json({error:'Partner accounts cannot access internal university ERP APIs.'});
     if (['website_editor','website_reviewer'].includes(actor.role) &&
         !/^\/api\/admin\/(?:site-content|news-events)(?:\/|$)/.test(endpoint) &&
         !['/api/auth/logout','/api/auth/change-password'].includes(endpoint))
@@ -601,6 +610,8 @@ export function installIdentity(
       .trim()
       .toLowerCase();
     const role = req.body.role;
+    if(role==='partner_representative' && !options.partnerInviteAllowed?.(email))
+      return res.status(403).json({error:'Approve an active institutional partner representative before inviting them.'});
     if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       !roles.includes(role) ||
@@ -663,6 +674,8 @@ export function installIdentity(
       typeof req.body.disabled !== 'boolean'
     )
       return res.status(400).json({ error: 'Invalid account update.' });
+    if(req.body.role==='partner_representative' && !options.partnerInviteAllowed?.(account.email))
+      return res.status(403).json({error:'A partner representative requires a verified institution assignment.'});
     sql
       .prepare('UPDATE accounts SET role=?,disabled=? WHERE id=?')
       .run(req.body.role, req.body.disabled ? 1 : 0, account.id);

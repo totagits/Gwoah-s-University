@@ -126,6 +126,17 @@ test('approved partner materials remain dark until explicitly licensed and grant
     role='super_admin';userId='admin-test';email='admin@hiau.example';
     assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/withdraw',{reason:'Test copyright takedown'})).status,200);
     assert.ok(store.one("SELECT COUNT(*) AS n FROM audit WHERE action='PARTNER_DISTRIBUTION_WITHDRAWN'").n>0);
+    // Complete operations snapshots must preserve the new partner tables.
+    const backup=store.exportSnapshot();
+    for(const table of ['institutional_partners','institutional_partner_agreements',
+      'institutional_partner_members','institutional_partner_resources',
+      'institutional_partner_distributions','institutional_partner_distribution_grants']){
+      assert.ok(Array.isArray(backup.tables[table]),'Missing backup table: '+table);
+      assert.ok(backup.tables[table].length>0,'Missing records in backup table: '+table);
+    }
+    store.importSnapshot(backup);
+    assert.equal(store.one('SELECT status FROM institutional_partner_resources WHERE id=?',id).status,'approved');
+    assert.ok(store.one('SELECT withdrawn_at FROM institutional_partner_distributions WHERE resource_id=?',id).withdrawn_at);
   }finally{
     await new Promise<void>(resolve=>server.close(()=>resolve()));
     store.close();

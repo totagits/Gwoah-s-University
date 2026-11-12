@@ -110,6 +110,32 @@ export const getPublicVideoAvailability=(store:Operations,directory:string,slot:
       corrupted?'invalid' as const:'missing' as const,
     file:published||bundled};
 };
+// Small, read-only public media health metadata; never expose filesystem paths.
+const videoStartupState=(file:string|null)=>{
+  if(!file)return {bytes:null,faststart:null};
+  let fd:number|undefined;
+  try {
+    const size=fs.statSync(file).size;
+    fd=fs.openSync(file,'r');
+    let pos=0,moov=-1,mdat=-1;
+    for(let i=0;i<1000 && pos+8<=size;i++){
+      const head=Buffer.alloc(16);
+      fs.readSync(fd,head,0,Math.min(16,size-pos),pos);
+      const type=head.toString('latin1',4,8);
+      let len=head.readUInt32BE(0),offset=8;
+      if(len===1){len=Number(head.readBigUInt64BE(8));offset=16;}
+      else if(len===0)len=size-pos;
+      if(!Number.isSafeInteger(len)||len<offset||pos+len>size)break;
+      if(type==='moov')moov=pos;
+      if(type==='mdat')mdat=pos;
+      if(moov>=0&&mdat>=0)break;
+      pos+=len;
+    }
+    return {bytes:size,faststart:moov>=0&&mdat>=0?moov<mdat:null};
+  } catch {return {bytes:null,faststart:null};}
+  finally {if(fd!==undefined)fs.closeSync(fd);}
+};
+
 const sendMedia=(req:Request,res:Response,file:string,publiclyPublished=false)=>{
   try{
     const stat=fs.statSync(file);
@@ -165,7 +191,7 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     if(!item)return res.status(404).json({available:false});
     const status=getPublicVideoAvailability(store,directory,item.slot);
     res.set('Cache-Control','no-store');
-    return res.json({available:status.available,source:status.source});
+    return res.json({available:status.available,source:status.source,...videoStartupState(status.file)});
   });
   // Do not redirect to a nonexistent fallback asset; absent videos should
   // render as clearly unavailable, never as a misleading campus poster.

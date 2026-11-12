@@ -1,0 +1,22 @@
+name: Hero MP4 Docker build validation
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'scripts/optimize-hero-mp4.mjs'
+      - 'server/publicWebsiteMedia.ts'
+      - 'public/assets/aistudio/**'
+      - '.github/workflows/hero-media-docker-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  verify-optimized-hero-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build container and transcode both hero MP4 files
+        run: docker build --target build -t hiau-hero-media-check .
+      - name: Inspect optimized MP4 atoms inside the builder
+        run: |
+          docker run --rm --entrypoint node hiau-hero-media-check scripts/inspect-hero-mp4.mjs

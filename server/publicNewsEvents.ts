@@ -122,6 +122,22 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
    save(db,e);db.audit(actorOf(res)!.id,'NEWS_MEDIA_EDIT',e.id,null,{mediaId:original.id});
    return res.json({item:e});
  });
+ app.post('/api/admin/news-events/:id/media-order',express.json({limit:'4kb'}),(req,res)=>{
+   if(!author(res))return res.sendStatus(403);
+   const e=idOk(req.params.id)?read(db,req.params.id):undefined;
+   const ids=req.body?.ids;
+   if(!e||!Array.isArray(ids)||ids.length!==(e.media||[]).length||
+      !ids.every((id:unknown)=>typeof id==='string'&&(e.media||[]).some(m=>m.id===id))||
+      new Set(ids).size!==ids.length)return res.status(400).json({error:'Supply the complete unique gallery order.'});
+   if(e.status==='published'){
+     e.live={kind:e.kind,audience:e.audience||'general',title:e.title,summary:e.summary,
+       eventDate:e.eventDate,location:e.location,verified:e.verified,media:e.live?.media??e.media};
+   }
+   e.media=ids.map((id:string)=>e.media!.find(m=>m.id===id)!);
+   e.status='draft';e.verified=false;e.scheduledAt=undefined;e.updatedAt=new Date().toISOString();
+   save(db,e);db.audit(actorOf(res)!.id,'NEWS_MEDIA_REORDER',e.id,null,{ids});
+   return res.json({item:e});
+ });
  app.delete('/api/admin/news-events/:id/media/:mediaId',express.json({limit:'4kb'}),(req,res)=>{
    if(!author(res))return res.sendStatus(403);
    const e=idOk(req.params.id)?read(db,req.params.id):undefined;

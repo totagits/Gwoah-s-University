@@ -42,23 +42,23 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             <span className="hidden sm:inline">Signed in as {currentUser.name}</span>
             <span className="hidden sm:inline-flex">{installedAppKind&&<PwaInstallControl kind={installedAppKind} compact/>}</span>
             {!installedAppKind&&<a href={currentUser.role==='student'?'/student/':'/staff/'}
-              className="hidden rounded border border-[#4A1249] px-3 py-1.5 text-xs font-semibold text-[#4A1249] sm:inline-flex">
+              className="hidden rounded border border-[#4A1249] bg-white px-3 py-2 text-xs font-semibold text-[#4A1249] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249] sm:inline-flex">
               {currentUser.role==='student'?'Install Student App':'Install Staff ERP'}
             </a>}
             {currentUser.role==='super_admin'&&window.location.hostname==='hiau-staging.totag.network'&&<span className="hidden sm:inline-flex"><StagingStudentInvite/></span>}
             <button type="button" onClick={onToggleTheme} aria-label="Toggle display theme"
-              className="hidden items-center gap-1.5 rounded-md p-2 hover:bg-[#f1eaf2] sm:inline-flex">
+              className="hidden items-center gap-1.5 rounded-md p-2 text-[#35103b] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] sm:inline-flex">
               {currentTheme === 'dark' ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}
               <span className="hidden md:inline">{currentTheme === 'dark' ? 'Light' : 'Dark'} mode</span>
             </button>
             <button type="button" onClick={onOpenThemeSettings} aria-label="Display and accessibility settings"
-              className="hidden rounded-md p-2 hover:bg-[#f1eaf2] sm:inline-flex"><Settings className="h-4 w-4"/></button>
+              className="hidden rounded-md p-2 text-[#35103b] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] sm:inline-flex"><Settings className="h-4 w-4"/></button>
             <button type="button" onClick={()=>setMobileSearchOpen(v=>!v)} aria-label="Search university" aria-expanded={mobileSearchOpen}
-              className="rounded-md p-2 hover:bg-[#f1eaf2] sm:hidden"><Search className="h-5 w-5"/></button>
+              className="rounded-md p-2 text-[#35103b] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] sm:hidden"><Search className="h-5 w-5"/></button>
             <button type="button" onClick={()=>setMobileSettingsOpen(v=>!v)} aria-label="Mobile display and language options" aria-expanded={mobileSettingsOpen}
-              className="rounded-md p-2 hover:bg-[#f1eaf2] sm:hidden"><SlidersHorizontal className="h-5 w-5"/></button>
+              className="rounded-md p-2 text-[#35103b] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] sm:hidden"><SlidersHorizontal className="h-5 w-5"/></button>
             <button type="button" onClick={onLogout} aria-label="Sign out"
-              className="inline-flex items-center gap-1.5 rounded-md p-2 text-[#4a1249] hover:bg-[#f1eaf2]">
+              className="inline-flex items-center gap-1.5 rounded-md p-2 text-[#4a1249] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">
               <LogOut className="h-4 w-4"/> <span className="sr-only sm:not-sr-only">Sign out</span>
             </button>
           </div>
@@ -72,7 +72,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
               <GraduationCap className="h-6 w-6" aria-hidden="true"/>
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#967d52] sm:text-[11px] sm:tracking-[0.14em]">HIAU · University Operations</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#765622] sm:text-[11px] sm:tracking-[0.14em]">HIAU · University Operations</p>
               <p className="truncate text-sm font-semibold text-[#35103b] sm:text-lg">Harvest Intercontinental American University</p>
             </div>
           </div>
@@ -88,8 +88,8 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
         {mobileSearchOpen&&<div className="border-t border-purple-100 py-3 sm:hidden"><GlobalSearch navigate={(id:string)=>{onSelectTab(id);setMobileSearchOpen(false);}}/></div>}
         {mobileSettingsOpen&&<div className="flex flex-wrap items-center gap-3 border-t border-purple-100 py-3 sm:hidden">
           <LanguagePicker/>
-          <button type="button" onClick={onToggleTheme} className="rounded border border-purple-200 px-3 py-2 text-sm">Toggle theme</button>
-          <button type="button" onClick={onOpenThemeSettings} className="rounded border border-purple-200 px-3 py-2 text-sm">Accessibility settings</button>
+          <button type="button" onClick={onToggleTheme} className="rounded border border-[#4a1249] bg-white px-3 py-2 text-sm font-semibold text-[#4a1249] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">Toggle theme</button>
+          <button type="button" onClick={onOpenThemeSettings} className="rounded border border-[#4a1249] bg-white px-3 py-2 text-sm font-semibold text-[#4a1249] hover:bg-[#f1eaf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249]">Accessibility settings</button>
           {installedAppKind&&<PwaInstallControl kind={installedAppKind}/>}
         </div>}
       </div>

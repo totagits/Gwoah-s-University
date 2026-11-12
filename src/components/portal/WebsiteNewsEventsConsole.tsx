@@ -1,7 +1,7 @@
 import React,{useEffect,useState} from 'react';
 type Kind='news'|'event'|'announcement';
 type Audience='general'|'faculty'|'students'|'press';
-type Media={id:string;kind:'image'|'video';caption:string;alt:string;mime:string;bytes:number;createdAt:string};
+type Media={id:string;kind:'image'|'video'|'youtube';caption:string;alt:string;mime:string;bytes:number;createdAt:string;youtubeId?:string};
 type Item={id:string;kind:Kind;audience?:Audience;title:string;summary:string;eventDate:string;location:string;verified:boolean;
   status:'draft'|'published';updatedAt:string;scheduledAt?:string;media?:Media[];live?:{media?:Media[]}};
 type Form={kind:Kind;audience:Audience;title:string;summary:string;eventDate:string;location:string;verified:boolean};
@@ -14,7 +14,7 @@ const mediaTypes=['image/png','image/jpeg','image/webp','video/mp4'];
 export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({currentUser})=>{
  const [items,setItems]=useState<Item[]>([]),[activeId,setActiveId]=useState(''),[draft,setDraft]=useState<Form>(blank);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
- const [publishTime,setPublishTime]=useState(''),[caption,setCaption]=useState(''),[alt,setAlt]=useState('');
+ const [publishTime,setPublishTime]=useState(''),[caption,setCaption]=useState(''),[alt,setAlt]=useState(''),[youtubeUrl,setYoutubeUrl]=useState('');
  const isAuthor=['super_admin','website_editor'].includes(currentUser.role);
  const isReviewer=['super_admin','website_reviewer'].includes(currentUser.role);
  const refresh=async()=>{const result=await parse(await fetch('/api/admin/news-events',{credentials:'same-origin',cache:'no-store'}));setItems(result.items||[]);};
@@ -57,6 +57,17 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
      await refresh();setDraft(fill(data.item));setCaption('');setAlt('');
      setMessage('Media uploaded privately. A reviewer must approve the revised story before it is public.');
    }catch(e){setError(e instanceof Error?e.message:'Upload failed');}finally{setBusy(false);}
+ };
+ const addYoutube=async()=>{
+   if(!active||!isAuthor||busy||!youtubeUrl.trim()||!caption.trim()||!alt.trim())return;
+   setBusy(true);setError('');setMessage('');
+   try{
+     const data=await request('/api/admin/news-events/'+active.id+'/youtube','POST',{
+       url:youtubeUrl,caption:caption.trim(),alt:alt.trim()
+     });
+     await refresh();setDraft(fill(data.item));setYoutubeUrl('');setCaption('');setAlt('');
+     setMessage('YouTube video linked privately. Reviewer approval is required before publication.');
+   }catch(e){setError(e instanceof Error?e.message:'Could not attach YouTube video');}finally{setBusy(false);}
  };
  const updateMedia=async(media:Media)=>{
    if(!active||!isAuthor||busy)return;
@@ -119,6 +130,14 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
       {isAuthor&&<div className="grid gap-3">
        <label className="text-sm font-semibold">Caption<input maxLength={240} value={caption} onChange={e=>setCaption(e.target.value)} placeholder="Describe the documented activity" className="mt-1 w-full rounded border p-2"/></label>
        <label className="text-sm font-semibold">Accessible alternative text<input maxLength={240} value={alt} onChange={e=>setAlt(e.target.value)} placeholder="What does the image show?" className="mt-1 w-full rounded border p-2"/></label>
+       <label className="text-sm font-semibold">Or link HIAU YouTube video
+         <input type="url" value={youtubeUrl} onChange={e=>setYoutubeUrl(e.target.value)}
+           placeholder="https://www.youtube.com/watch?v=nmlg7uHvJy4" className="mt-1 w-full rounded border p-2"/>
+       </label>
+       <button type="button" disabled={busy||!youtubeUrl||!caption||!alt} onClick={()=>void addYoutube()}
+         className="rounded border border-[#4A1249] px-4 py-2 text-sm font-semibold disabled:opacity-50">
+         Attach YouTube video to draft
+       </button>
        <label className="text-sm font-semibold">Upload image or video
          <input type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,image/png,image/jpeg,image/webp,video/mp4" disabled={busy}
            onChange={e=>{const file=e.currentTarget.files?.[0];if(file)void upload(file);e.currentTarget.value='';}}
@@ -127,6 +146,9 @@ export const WebsiteNewsEventsConsole:React.FC<{currentUser:{role:string}}>=({cu
       </div>}
       <div className="grid gap-3 sm:grid-cols-2">{(active.media||[]).map((media,index)=><div key={media.id} className="rounded-lg border p-3">
        {media.kind==='image'?<img loading="lazy" src={mediaPreview(active.id,media.id)} alt={media.alt} className="aspect-video w-full rounded object-cover"/>:
+        media.kind==='youtube'?<iframe src={'https://www.youtube-nocookie.com/embed/'+media.youtubeId}
+          title={media.alt} loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin" className="aspect-video w-full rounded"/>:
         <video src={mediaPreview(active.id,media.id)} controls preload="metadata" className="aspect-video w-full rounded bg-slate-900"/>}
        <p className="mt-2 text-sm font-medium">{media.caption}</p>
        <p className="text-xs text-slate-600">{media.kind} · {Math.round(media.bytes/1024)} KB {index===0&&media.kind==='image'?'· Featured':''}</p>

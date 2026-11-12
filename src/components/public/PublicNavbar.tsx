@@ -22,6 +22,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { UserProfile } from '../../types';
+import {PublicInstallApp} from './PublicInstallApp';
 
 interface PublicNavbarProps {
   onOpenPortal: (tab?: string) => void;
@@ -90,7 +91,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     about: [],
     tour: [
       {
-        label: 'Campus & Classroom Continuous Video Tour',
+        label: 'Campus and Classroom Video Tour',
         desc: 'Explore campus and classroom facilities',
         icon: <Compass className="w-4 h-4 text-[#C39A53]" />,
         action: () => onNavigateSection('tour'),
@@ -333,8 +334,9 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             </div>
           </div>
 
-          {/* Right: Search & Direct ERP Gateway Button */}
+          {/* Public search and optional PWA installation */}
           <div className="flex items-center gap-3 sm:gap-4">
+            <PublicInstallApp />
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               className="p-2 text-slate-700 hover:text-[#4A1249] hover:bg-purple-50 transition-colors cursor-pointer flex items-center gap-1.5 rounded-sm"

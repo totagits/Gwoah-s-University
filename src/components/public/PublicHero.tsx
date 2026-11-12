@@ -252,7 +252,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           )}
           {!isActuallyPlaying && !videoError && !isPreparingNext && wantsPlayback && (
             <span role="status" className="pointer-events-none absolute left-4 top-14 z-20 rounded bg-[#2A082C]/75 px-3 py-1 text-xs font-semibold text-[#F0CE8D]">
-              Preparing campus video for playback
+              Preparing video for playback
             </span>
           )}
           {videoError&&<div role="alert" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">

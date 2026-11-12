@@ -6,7 +6,7 @@ type Section={id:string;term_id:string;code:string;course_code:string;course_tit
 type Plan={id:string;student_id:string;term_id:string;sectionIds:string[];student_note:string;reviewer_note:string;
  status:'draft'|'submitted'|'returned'|'approved'|'rejected';full_name?:string;student_number?:string;term_title?:string};
 const parse=async(r:Response)=>{const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;};
-const send=(url:string,body:object)=>parse(fetch(url,{method:'POST',credentials:'same-origin',
+const send=async(url:string,body:object)=>parse(await fetch(url,{method:'POST',credentials:'same-origin',
  headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
 export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({currentUser})=>{
  const [terms,setTerms]=useState<Term[]>([]),[sections,setSections]=useState<Section[]>([]);

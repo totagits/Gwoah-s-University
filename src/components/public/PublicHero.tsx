@@ -60,6 +60,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const [isPreparingNext,setIsPreparingNext]=useState(false);
   const videoRefs=useRef<Array<HTMLVideoElement|null>>([]);
   const pendingVideoIndex=useRef<number|null>(null);
+  const preloadArmed=useRef<Set<string>>(new Set());
   const currentVideo=videos[activeVideoIndex]||videos[0];
 
   useEffect(()=>{
@@ -74,6 +75,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           /^[a-z0-9_-]+$/.test(v.src.slice('/api/public/video/'.length)));
         if(safe.length>=2){
           pendingVideoIndex.current=null;
+          preloadArmed.current.clear();
           setVideos(safe);
           setActiveVideoIndex(0);
         }
@@ -94,6 +96,21 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
       }
     });
   };
+
+  // On browsers that ignore a dynamic preload attribute change, explicitly
+  // start the inactive clip's request once after the current clip plays.
+  useEffect(()=>{
+    if(!isActuallyPlaying||videos.length<2)return;
+    const next=(activeVideoIndex+1)%videos.length;
+    const clip=videos[next];
+    const player=videoRefs.current[next];
+    if(!player||!clip||preloadArmed.current.has(clip.id))return;
+    preloadArmed.current.add(clip.id);
+    if(player.readyState<HTMLMediaElement.HAVE_FUTURE_DATA){
+      player.preload='auto';
+      player.load();
+    }
+  },[activeVideoIndex,isActuallyPlaying,videos]);
 
   // Never unmount the outgoing player while the next video buffers. The last
   // decoded frame remains onscreen until the incoming player is ready.

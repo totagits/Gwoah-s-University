@@ -97,10 +97,22 @@ async function start() {
     });
     app.use(vite.middlewares);
   } else {
+    // Installed Staff/Student PWA navigations must fetch the current app shell,
+    // not a cached institutional ERP route from an earlier deployment.
+    app.use((req, res, next) => {
+      if (req.method === 'GET' &&
+          (req.path === '/sw.js' || req.path.endsWith('.webmanifest') ||
+           req.path === '/staff' || req.path.startsWith('/staff/') ||
+           req.path === '/student' || req.path.startsWith('/student/'))) {
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
+      }
+      next();
+    });
     app.use(express.static(path.join(root, 'dist')));
-    app.get('*', (_req, res) =>
-      res.sendFile(path.join(root, 'dist', 'index.html')),
-    );
+    app.get('*', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
+      res.sendFile(path.join(root, 'dist', 'index.html'));
+    });
   }
   const port = Number(process.env.PORT) || 3000;
   app.listen(port, '0.0.0.0', () =>

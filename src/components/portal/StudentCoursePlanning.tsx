@@ -4,7 +4,7 @@ import type {UserProfile} from '../../types';
 type Term={id:string;title:string;status:string;max_credits:number};
 type Section={id:string;term_id:string;code:string;course_code:string;course_title:string;credits:number;capacity:number};
 type Plan={id:string;student_id:string;term_id:string;sectionIds:string[];student_note:string;reviewer_note:string;
- status:'draft'|'submitted'|'returned'|'approved'|'rejected';full_name?:string;student_number?:string;term_title?:string};
+ status:'draft'|'submitted'|'returned'|'approved'|'rejected';full_name?:string;student_number?:string;term_title?:string;committed_at?:string|null};
 const parse=async(r:Response)=>{const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;};
 const send=async(url:string,body:object)=>parse(await fetch(url,{method:'POST',credentials:'same-origin',
  headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
@@ -85,7 +85,7 @@ export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({current
       {saved&&editable&&<button type="button" disabled={busy} onClick={()=>void change('submit',saved.id)}
        className="rounded border border-[#4A1249] px-4 py-2 text-sm font-bold text-[#4A1249]">Submit saved plan to Registrar</button>}
      </div>
-     {saved&&<p className="text-xs text-slate-600">Current plan status: <strong className="capitalize">{saved.status}</strong>
+     {saved&&<p className="text-xs text-slate-600">Current plan status: <strong className="capitalize">{saved.committed_at?'Officially registered':saved.status}</strong>
        {saved.reviewer_note&&<> · Registrar: {saved.reviewer_note}</>}</p>}
     </>}
    </div>)}

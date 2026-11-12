@@ -299,3 +299,42 @@ html.theme-light .hiau-erp-site button.hiau-action-primary {
   cursor: not-allowed !important;
   box-shadow: none !important;
 }
+
+
+/* Staff and Student installed PWAs share the same brand rules.
+   Their standalone windows may be narrower than a full desktop browser. */
+.hiau-erp-site,
+.hiau-erp-site #erp-main-content,
+.hiau-erp-site .hiau-virtual-classroom {
+  min-width: 0;
+  max-width: 100%;
+}
+.hiau-erp-site .hiau-virtual-classroom :is(button.hiau-action-primary, button.hiau-action-secondary) {
+  -webkit-text-fill-color: currentColor;
+}
+.hiau-erp-site .hiau-virtual-classroom button.hiau-action-primary {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.hiau-erp-site .hiau-virtual-classroom button.hiau-action-primary:disabled {
+  color: #544b59 !important;
+  -webkit-text-fill-color: #544b59 !important;
+}
+.hiau-erp-site .hiau-virtual-classroom pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+@media (max-width: 1535px) {
+  .hiau-erp-site .hiau-virtual-classroom > div {
+    min-width: 0;
+  }
+}
+@media (max-width: 640px) {
+  .hiau-erp-site #erp-main-content {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+  .hiau-erp-site .hiau-virtual-classroom button {
+    min-height: 40px;
+  }
+}

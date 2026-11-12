@@ -71,6 +71,7 @@ const operationalTables = [
   'applications',
   'students',
   'registrations',
+  'student_course_plans',
   'grade_schemes',
   'grades',
   'invoices',
@@ -105,6 +106,24 @@ export class Operations {
       CREATE TABLE IF NOT EXISTS students(id TEXT PRIMARY KEY,user_id TEXT UNIQUE REFERENCES users(id),application_id TEXT UNIQUE NOT NULL REFERENCES applications(id),student_number TEXT UNIQUE NOT NULL,full_name TEXT NOT NULL,email TEXT UNIQUE NOT NULL COLLATE NOCASE,program_id TEXT NOT NULL REFERENCES programs(id),admitted_term_id TEXT NOT NULL REFERENCES terms(id),status TEXT NOT NULL CHECK(status IN('active','on_leave','graduated')),financial_hold INTEGER NOT NULL DEFAULT 0 CHECK(financial_hold IN(0,1)),created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS registrations(id TEXT PRIMARY KEY,student_id TEXT NOT NULL REFERENCES students(id),section_id TEXT NOT NULL REFERENCES sections(id),status TEXT NOT NULL CHECK(status IN('enrolled','dropped')),created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
       CREATE UNIQUE INDEX IF NOT EXISTS active_registration ON registrations(student_id,section_id) WHERE status='enrolled';
+      CREATE TABLE IF NOT EXISTS student_course_plans(
+        id TEXT PRIMARY KEY,
+        student_id TEXT NOT NULL REFERENCES students(id),
+        term_id TEXT NOT NULL REFERENCES terms(id),
+        section_ids TEXT NOT NULL DEFAULT '[]',
+        status TEXT NOT NULL CHECK(status IN('draft','submitted','returned','approved','rejected')),
+        student_note TEXT NOT NULL DEFAULT '',
+        reviewer_note TEXT NOT NULL DEFAULT '',
+        reviewed_by TEXT REFERENCES users(id),
+        submitted_at TEXT,
+        reviewed_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        UNIQUE(student_id,term_id)
+      );
+      CREATE INDEX IF NOT EXISTS student_plan_review_queue
+        ON student_course_plans(status,submitted_at);
+
       CREATE TABLE IF NOT EXISTS grade_schemes(id TEXT PRIMARY KEY,title TEXT NOT NULL,definition TEXT NOT NULL,approved_by TEXT NOT NULL REFERENCES users(id),approved_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grades(id TEXT PRIMARY KEY,registration_id TEXT UNIQUE NOT NULL REFERENCES registrations(id),score REAL NOT NULL CHECK(score>=0 AND score<=100),status TEXT NOT NULL CHECK(status IN('draft','submitted','published')),letter TEXT,points REAL,passed INTEGER CHECK(passed IN(0,1)),scheme_id TEXT REFERENCES grade_schemes(id),entered_by TEXT NOT NULL REFERENCES users(id),published_by TEXT REFERENCES users(id),updated_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS invoices(id TEXT PRIMARY KEY,student_id TEXT NOT NULL REFERENCES students(id),term_id TEXT NOT NULL REFERENCES terms(id),number TEXT UNIQUE NOT NULL,amount_cents INTEGER NOT NULL CHECK(amount_cents>=0),due_date TEXT NOT NULL,posted_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);

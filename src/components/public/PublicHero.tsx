@@ -8,7 +8,6 @@ import {
   VolumeX,
   ChevronLeft,
   ChevronRight,
-  LoaderCircle,
   Video,
 } from 'lucide-react';
 
@@ -53,14 +52,15 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
 }) => {
   const [videos,setVideos]=useState<HeroVideoSlide[]>(HERO_VIDEOS);
   const [activeVideoIndex,setActiveVideoIndex]=useState(0);
-  // Desired playback is separate from the media element's actual status.
   const [wantsPlayback,setWantsPlayback]=useState(true);
   const [isActuallyPlaying,setIsActuallyPlaying]=useState(false);
   const [isMuted,setIsMuted]=useState(true);
   const [videoError,setVideoError]=useState('');
-  const [isVideoLoading,setIsVideoLoading]=useState(true);
-  const videoRef=useRef<HTMLVideoElement|null>(null);
   const [retryCount,setRetryCount]=useState(0);
+  const [isPreparingNext,setIsPreparingNext]=useState(false);
+  const videoRefs=useRef<Array<HTMLVideoElement|null>>([]);
+  const pendingVideoIndex=useRef<number|null>(null);
+  const preloadArmed=useRef<Set<string>>(new Set());
   const currentVideo=videos[activeVideoIndex]||videos[0];
 
   useEffect(()=>{
@@ -73,86 +73,129 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           typeof v.id==='string'&&typeof v.title==='string'&&
           typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&
           /^[a-z0-9_-]+$/.test(v.src.slice('/api/public/video/'.length)));
-        if(safe.length>=2)setVideos(safe);
-      }).catch(()=>{/* Retain the original two clips when playlist fetch fails. */});
+        if(safe.length>=2){
+          pendingVideoIndex.current=null;
+          preloadArmed.current.clear();
+          setVideos(safe);
+          setActiveVideoIndex(0);
+        }
+      }).catch(()=>{/* Original two video endpoints remain the fallback. */});
     return ()=>controller.abort();
   },[]);
 
-  const attemptPlayback=()=>{
-    const element=videoRef.current;
-    if(!element||!wantsPlayback||!element.paused)return;
-    element.muted=isMuted;
-    void element.play().catch(error=>{
-      // Do not turn playback intention off on early AbortError/NotAllowedError.
-      // The visitor can still use the visible Play button.
-      if(error?.name==='NotAllowedError') {
-        setIsVideoLoading(false);
-        setVideoError('Autoplay was blocked by the browser. Press Play to start.');
+  const playSelected=()=>{
+    if(!wantsPlayback)return;
+    const player=videoRefs.current[activeVideoIndex];
+    if(!player||!player.paused)return;
+    player.muted=isMuted;
+    void player.play().catch(error=>{
+      if(error?.name==='NotAllowedError'){
+        setVideoError('Automatic playback is blocked. Press Play to start the video.');
+      }else if(error?.name!=='AbortError'){
+        setVideoError('Playback could not start. Retry this clip or choose the next one.');
       }
     });
   };
 
+  // On browsers that ignore a dynamic preload attribute change, explicitly
+  // start the inactive clip's request once after the current clip plays.
   useEffect(()=>{
-    const element=videoRef.current;
-    if(!element)return;
-    element.muted=isMuted;
-    if(wantsPlayback)attemptPlayback();
-    else element.pause();
-  },[currentVideo.id,isMuted,wantsPlayback,retryCount]);
+    if(!isActuallyPlaying||videos.length<2)return;
+    const next=(activeVideoIndex+1)%videos.length;
+    const clip=videos[next];
+    const player=videoRefs.current[next];
+    if(!player||!clip||preloadArmed.current.has(clip.id))return;
+    preloadArmed.current.add(clip.id);
+    if(player.readyState<HTMLMediaElement.HAVE_FUTURE_DATA){
+      player.preload='auto';
+      player.load();
+    }
+  },[activeVideoIndex,isActuallyPlaying,videos]);
 
-  // Do not leave visitors on an indefinite spinner when a video cannot start.
-  // Retain the current clip and offer a user-controlled retry or next video.
-  useEffect(()=>{
-    if (!wantsPlayback || !isVideoLoading || isActuallyPlaying || videoError) return;
-    const timeout=window.setTimeout(()=>{
-      setIsVideoLoading(false);
-      setVideoError('Video is taking too long to start. Retry or switch to the next clip.');
-    },12000);
-    return ()=>window.clearTimeout(timeout);
-  },[currentVideo.id,retryCount,wantsPlayback,isVideoLoading,isActuallyPlaying,videoError]);
-
-  const retryVideo=()=>{
-    const element=videoRef.current;
+  // Never unmount the outgoing player while the next video buffers. The last
+  // decoded frame remains onscreen until the incoming player is ready.
+  const switchVideo=(index:number)=>{
+    if(videos.length<2)return;
+    const next=(index+videos.length)%videos.length;
+    if(next===activeVideoIndex)return;
     setVideoError('');
-    setIsVideoLoading(true);
     setWantsPlayback(true);
-    if(element) {
-      element.load();
-      setRetryCount(value=>value+1);
+    const incoming=videoRefs.current[next];
+    if(incoming && incoming.readyState>=HTMLMediaElement.HAVE_FUTURE_DATA){
+      pendingVideoIndex.current=null;
+      setIsPreparingNext(false);
+      videoRefs.current[activeVideoIndex]?.pause();
+      setIsActuallyPlaying(false);
+      incoming.currentTime=0;
+      setActiveVideoIndex(next);
+    }else{
+      pendingVideoIndex.current=next;
+      setIsPreparingNext(true);
+      // Setting preload starts the request without discarding data already buffered.
+      if(incoming)incoming.preload='auto';
     }
   };
 
-  const switchVideo=(index:number)=>{
-    if(!videos.length)return;
-    const next=(index+videos.length)%videos.length;
-    if(next===activeVideoIndex)return;
-    setIsActuallyPlaying(false);
-    setIsVideoLoading(true);
+  useEffect(()=>{
+    const player=videoRefs.current[activeVideoIndex];
+    if(!player)return;
+    player.muted=isMuted;
+    if(wantsPlayback){
+      if(player.readyState>=HTMLMediaElement.HAVE_FUTURE_DATA)playSelected();
+    }else player.pause();
+  },[activeVideoIndex,isMuted,wantsPlayback,retryCount,videos]);
+
+  // If a clip fails to start, inform the visitor without masking the last frame.
+  useEffect(()=>{
+    if(isActuallyPlaying||videoError||!wantsPlayback)return;
+    const timeout=window.setTimeout(()=>{
+      if(pendingVideoIndex.current!==null){
+        setIsPreparingNext(false);
+        setVideoError('The next video is taking longer than expected. Retry or select another clip.');
+      }else setVideoError('This video is taking longer than expected. You may retry.');
+    },12000);
+    return ()=>window.clearTimeout(timeout);
+  },[activeVideoIndex,retryCount,isActuallyPlaying,videoError,wantsPlayback,isPreparingNext]);
+
+  const retryVideo=()=>{
     setVideoError('');
     setWantsPlayback(true);
-    setRetryCount(0);
-    setActiveVideoIndex(next);
+    setRetryCount(value=>value+1);
+    const target=pendingVideoIndex.current??activeVideoIndex;
+    const player=videoRefs.current[target];
+    if(player){
+      player.preload='auto';
+      player.load();
+    }
   };
   const togglePlayback=()=>{
-    if(wantsPlayback&&isActuallyPlaying){
+    if(isActuallyPlaying && wantsPlayback){
       setWantsPlayback(false);
-      videoRef.current?.pause();
+      videoRefs.current[activeVideoIndex]?.pause();
     }else{
+      setVideoError('');
       setWantsPlayback(true);
-      setIsVideoLoading(true);
-      const element=videoRef.current;
-      if(element){
-        element.muted=isMuted;
-        void element.play().catch(()=>{
-          setIsVideoLoading(false);
-          setVideoError('Unable to start playback. Try reloading the page.');
-        });
-      }
+      const player=videoRefs.current[activeVideoIndex];
+      if(player)void player.play().catch(()=>{
+        setVideoError('Unable to start playback. Please retry.');
+      });
     }
   };
   const toggleMute=()=>setIsMuted(value=>!value);
   const handleNextVideo=()=>switchVideo(activeVideoIndex+1);
   const handlePrevVideo=()=>switchVideo(activeVideoIndex-1);
+
+  const onClipCanPlay=(index:number)=>{
+    if(pendingVideoIndex.current===index){
+      pendingVideoIndex.current=null;
+      setIsPreparingNext(false);
+      setIsActuallyPlaying(false);
+      videoRefs.current[activeVideoIndex]?.pause();
+      const player=videoRefs.current[index];
+      if(player)player.currentTime=0;
+      setActiveVideoIndex(index);
+    }else if(index===activeVideoIndex && wantsPlayback)playSelected();
+  };
 
   return (
     <div className="relative w-full bg-white text-[#4A1249] overflow-hidden border-b border-purple-100">
@@ -162,33 +205,42 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
         <div
           className="lg:absolute lg:inset-y-0 lg:left-0 lg:w-[52%] xl:w-[51%] w-full h-84 sm:h-96 lg:h-full relative overflow-hidden z-10 bg-[#2A082C]"
         >
-          {/* Only an actual video is mounted for each carousel item. No image poster or photo slide. */}
-          <video
-            key={currentVideo.id}
-            ref={videoRef}
-            src={currentVideo.src}
-            preload="metadata"
-            autoPlay
-            muted={isMuted}
-            playsInline
-            disablePictureInPicture
-            onCanPlay={attemptPlayback}
-            onPlay={()=>{setIsActuallyPlaying(true);setVideoError('');}}
-            onPlaying={()=>{setIsActuallyPlaying(true);setIsVideoLoading(false);setVideoError('');}}
-            onWaiting={()=>{setIsVideoLoading(true);setIsActuallyPlaying(false);}}
-            onStalled={()=>{setIsVideoLoading(true);setIsActuallyPlaying(false);}}
-            onPause={()=>setIsActuallyPlaying(false)}
-            onError={()=>{setIsVideoLoading(false);setVideoError('The video could not load. Select another video or try refreshing.');}}
-            onEnded={()=>switchVideo(activeVideoIndex+1)}
-            className="absolute inset-0 z-10 h-full w-full object-cover"
-          />
-          {isVideoLoading && !videoError && wantsPlayback && !isActuallyPlaying && (
-            <div role="status" aria-label="Loading homepage video" className="pointer-events-none absolute inset-0 z-[11] flex items-center justify-center bg-[#2A082C] text-[#F0CE8D]">
-              <div className="flex flex-col items-center gap-3 rounded-xl bg-[#2A082C]/85 px-6 py-5">
-                <LoaderCircle aria-hidden="true" className="h-8 w-8 animate-spin" />
-                <span className="text-xs font-semibold uppercase tracking-wide">Loading video…</span>
-              </div>
-            </div>
+          {/* Keep both video elements mounted: while one plays, the other
+              buffers silently. Never replace the active frame with a spinner. */}
+          {videos.map((clip,index)=>(
+            <video
+              key={clip.id}
+              ref={element=>{videoRefs.current[index]=element;}}
+              src={clip.src}
+              preload={index===activeVideoIndex||isActuallyPlaying||isPreparingNext?'auto':'metadata'}
+              autoPlay={index===activeVideoIndex}
+              muted={index!==activeVideoIndex||isMuted}
+              playsInline
+              disablePictureInPicture
+              aria-hidden={index!==activeVideoIndex}
+              onCanPlay={()=>onClipCanPlay(index)}
+              onPlaying={()=>{
+                if(index===activeVideoIndex){
+                  setIsActuallyPlaying(true);
+                  setVideoError('');
+                }
+              }}
+              onPause={()=>{if(index===activeVideoIndex)setIsActuallyPlaying(false);}}
+              onWaiting={()=>{if(index===activeVideoIndex)setIsActuallyPlaying(false);}}
+              onStalled={()=>{if(index===activeVideoIndex)setIsActuallyPlaying(false);}}
+              onError={()=>{
+                if(index===activeVideoIndex){
+                  setVideoError('This video is unavailable. Retry or play the next clip.');
+                }
+              }}
+              onEnded={()=>{if(index===activeVideoIndex){setIsActuallyPlaying(false);switchVideo(index+1);}}}
+              className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${index===activeVideoIndex?'z-10 opacity-100':'z-0 opacity-0'}`}
+            />
+          ))}
+          {isPreparingNext && (
+            <span role="status" className="pointer-events-none absolute left-4 top-14 z-20 rounded bg-[#2A082C]/75 px-3 py-1 text-xs font-semibold text-[#F0CE8D]">
+              Preparing next video in background
+            </span>
           )}
           {videoError&&<div role="alert" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">
             <p>{videoError}</p>

@@ -128,6 +128,16 @@ export const AcademicPlanningRegistration: React.FC<AcademicPlanningRegistration
     );
   }
 
+  if (!student) {
+    return (
+      <section role="status" className="rounded-2xl border border-[#ded1e3] bg-white p-6 text-[#35103b] shadow-sm">
+        <h2 className="text-xl font-bold">No student registration record selected</h2>
+        <p className="mt-2 text-sm text-slate-700">This workspace cannot show an official credit load, advisor status, course schedule or registration slip until an authorized student record is linked. The zero-value cards are hidden because they would be misleading without a student.</p>
+        <p className="mt-2 text-sm text-slate-700">{currentUser.role === 'student' ? 'Contact the Registrar if your student account has not yet been linked to an admitted record.' : 'Use the Registrar student-linking workflow to associate a student account with an admitted record. An authorized student-selection workflow is still required for staff academic planning.'}</p>
+      </section>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Banner with Print Plan CTA */}

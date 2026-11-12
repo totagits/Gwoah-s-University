@@ -222,23 +222,23 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-md">
+      <div className="flex min-w-0 flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-4 bg-white border border-[#ded1e3] p-4 sm:p-5 rounded-2xl shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#35103b] tracking-tight">
               Faculty & Administration Management
             </h2>
-            <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold px-2 py-0.5 rounded-full">
+            <span className="bg-[#f4edf4] text-[#4a1249] border border-[#ded1e3] text-xs font-semibold px-3 py-1 rounded-full">
               {isAdmin ? 'Administrative Level Access' : 'Faculty Instructor Level'}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-700 mt-1">
             Gradebook submission, student communication, task allocation, user account governance, and course catalog scheduling.
           </p>
         </div>
 
         {/* Sub tabs */}
-        <div className="flex flex-wrap items-center gap-2 bg-white p-2 rounded-xl border border-[#d9cadf] text-sm">
+        <div className="grid w-full min-w-0 grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-2 rounded-xl border border-[#d9cadf] text-sm 2xl:w-auto 2xl:max-w-[650px]">
           <button
             onClick={() => setActiveSubTab('grades')}
             className={`min-h-10 px-3 py-2 rounded-lg font-semibold transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
@@ -293,14 +293,14 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
       {/* 1. FACULTY GRADE UPDATES & ROSTER */}
       {activeSubTab === 'grades' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-400 font-semibold">Select Class Section:</span>
+          <div className="flex min-w-0 flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-4 bg-white border border-[#ded1e3] p-4 rounded-xl">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <span className="text-xs text-slate-700 font-semibold">Select Class Section:</span>
               <select
                 aria-label="Choose a class section before viewing its roster"
                 value={selectedSectionId}
                 onChange={(e) => setSelectedSectionId(e.target.value)}
-                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white font-bold focus:outline-none focus:border-amber-500"
+                className="min-w-0 w-full sm:w-auto sm:max-w-[380px] px-3 py-2 bg-white border border-[#d9cadf] rounded-lg text-sm text-[#35103b] font-semibold focus:outline-none focus:border-[#4a1249]"
               >
                 <option value="">Choose a class section</option>
                 {sections.map((sec) => (
@@ -311,7 +311,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
               </select>
             </div>
 
-            <div className="text-xs text-slate-400">
+            <div className="min-w-0 text-xs text-slate-700">
               Signed in as: <strong className="text-[#35103b]">{currentUser.name}</strong> • Class instructor and term require an assigned section
             </div>
           </div>
@@ -324,16 +324,16 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
           )}
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div>
-                <h3 className="text-base font-bold text-white">
+            <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-[#ded1e3]">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold text-[#35103b]">
                   Class Gradebook & Continuous Assessment Roster
                 </h3>
                 <p className="text-xs text-slate-400">
                   Enter final examination or midterm scores. Scores are automatically translated to NCHE letter grades and quality points.
                 </p>
               </div>
-              <span className="text-xs font-mono font-bold text-amber-400 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+              <span className="max-w-full break-words text-xs font-semibold text-[#4a1249] bg-[#f4edf4] px-3 py-2 rounded-lg border border-[#ded1e3]">
                 {selectedSectionId ? roster.length + " roster entries" : "No section selected"}
               </span>
             </div>
@@ -344,7 +344,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
               </div>
             ) : roster.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-500 italic">
-                No students currently enrolled in this section.
+                {selectedSectionId ? "No students currently enrolled in this section." : "Select a class section to view its roster."}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -441,9 +441,9 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
       {/* 2. FACULTY-STUDENT COMMUNICATION */}
       {activeSubTab === 'messages' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#ded1e3]">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base font-bold text-[#35103b] flex items-center gap-2">
                 <Mail className="w-5 h-5 text-amber-400" />
                 <span>Academic Communication & Messages</span>
               </h3>
@@ -453,7 +453,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             </div>
             <button
               onClick={() => {setFormError(''); setComposeModalOpen(true);}}
-              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
+              className="hiau-action-primary min-h-11 shrink-0 whitespace-nowrap px-4 py-2 font-bold text-sm rounded-xl inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Compose Message</span>

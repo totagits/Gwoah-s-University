@@ -1,0 +1,19 @@
+{
+  "name": "HIAU Staff ERP",
+  "short_name": "HIAU Staff",
+  "description": "Secure university operations and authorized ERP workspaces for HIAU faculty and staff.",
+  "id": "/staff/",
+  "start_url": "/staff/?portal=1",
+  "scope": "/staff/",
+  "display": "standalone",
+  "background_color": "#FAF8FB",
+  "theme_color": "#4A1249",
+  "icons": [
+    {
+      "src": "/hiau-staff-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

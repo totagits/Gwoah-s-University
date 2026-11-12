@@ -62,6 +62,11 @@ export function PortalLoginModal({
               const data = await response.json();
               if (!response.ok) throw Error(data.error);
               if (activation) {
+                // Activation is complete. Remove its marker so refresh or a
+                // copied address cannot reopen a stale password-setup flow.
+                const cleanUrl = new URL(window.location.href);
+                cleanUrl.searchParams.delete('activate');
+                window.history.replaceState(null, '', cleanUrl.pathname + cleanUrl.search);
                 setActivation(false);
                 setPassword('');
                 setConfirm('');

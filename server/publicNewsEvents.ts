@@ -7,7 +7,7 @@ import type {Operations} from './operations';
 
 type Kind='news'|'event'|'announcement';
 type Audience='general'|'faculty'|'students'|'press';
-export type NewsMedia={id:string;kind:'image'|'video';caption:string;alt:string;mime:string;bytes:number;createdAt:string};
+export type NewsMedia={id:string;kind:'image'|'video'|'youtube';caption:string;alt:string;mime:string;bytes:number;createdAt:string;youtubeId?:string};
 type Entry={id:string;kind:Kind;audience?:Audience;title:string;summary:string;eventDate:string;location:string;media?:NewsMedia[];
  status:'draft'|'published';verified:boolean;createdAt:string;updatedAt:string;publishedAt:string|null;
  live?:{kind:Kind;audience?:Audience;title:string;summary:string;eventDate:string;location:string;verified:boolean;media?:NewsMedia[]};scheduledAt?:string};
@@ -41,7 +41,7 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
  const mediaFile=(id:string)=>path.join(mediaDir,id+'.bin');
  const mediaUrls=(e:Entry,media:NewsMedia[])=>media.map((m,index)=>({
    ...m, featured:index===0,
-   url:'/api/public/news-events/'+e.id+'/media/'+m.id
+   url:m.kind==='youtube'?'https://www.youtube-nocookie.com/embed/'+m.youtubeId:'/api/public/news-events/'+e.id+'/media/'+m.id
  }));
  const contentLive=(e:Entry)=>{
    if(e.status==='published'&&e.verified)return e.live??e;
@@ -55,7 +55,7 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
    const id=req.params.mediaId;
    if(!e||!mediaIdOk(id))return res.sendStatus(404);
    const media=[...(e.media||[]),...(e.live?.media||[])].find(m=>m.id===id);
-   if(!media)return res.sendStatus(404);
+   if(!media||media.kind==='youtube')return res.sendStatus(404);
    const file=mediaFile(id);if(!fs.existsSync(file))return res.sendStatus(404);
    res.set('Cache-Control','private, no-store');res.set('X-Content-Type-Options','nosniff');
    return res.type(media.mime).sendFile(file);
@@ -65,10 +65,38 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
    const live=e?contentLive(e):null;
    const id=req.params.mediaId;
    const media=mediaIdOk(id)?live?.media?.find(m=>m.id===id):undefined;
-   if(!media)return res.sendStatus(404);
+   if(!media||media.kind==='youtube')return res.sendStatus(404);
    const file=mediaFile(id);if(!fs.existsSync(file))return res.sendStatus(404);
    res.set('Cache-Control','public, max-age=60');res.set('X-Content-Type-Options','nosniff');
    return res.type(media.mime).sendFile(file);
+ });
+ app.post('/api/admin/news-events/:id/youtube',express.json({limit:'8kb'}),(req,res)=>{
+   if(!author(res))return res.sendStatus(403);
+   const e=idOk(req.params.id)?read(db,req.params.id):undefined;
+   if(!e)return res.sendStatus(404);
+   if((e.media||[]).length>=12)return res.status(409).json({error:'Maximum 12 media assets per article.'});
+   const input=txt(req.body?.url,300),caption=txt(req.body?.caption,240),alt=txt(req.body?.alt,240);
+   let videoId='';
+   try{
+     const u=new URL(input);
+     if(u.protocol!=='https:')throw Error('Invalid protocol');
+     if(u.hostname==='youtu.be')videoId=u.pathname.slice(1);
+     else if(['www.youtube.com','youtube.com','www.youtube-nocookie.com','youtube-nocookie.com','m.youtube.com'].includes(u.hostname)){
+       videoId=u.pathname.startsWith('/embed/')?u.pathname.split('/')[2]:u.pathname==='/watch'?u.searchParams.get('v')||'':'';
+     }
+   }catch{}
+   if(!/^[A-Za-z0-9_-]{11}$/.test(videoId)||!caption||!alt)
+     return res.status(400).json({error:'Supply a valid HTTPS YouTube URL, caption and accessible description.'});
+   const media:NewsMedia={id:'media-'+crypto.randomUUID(),kind:'youtube',youtubeId:videoId,
+     caption,alt,mime:'text/youtube',bytes:0,createdAt:new Date().toISOString()};
+   if(e.status==='published'){
+     e.live={kind:e.kind,audience:e.audience||'general',title:e.title,summary:e.summary,
+       eventDate:e.eventDate,location:e.location,verified:e.verified,media:e.live?.media??e.media};
+   }
+   e.media=[...(e.media||[]),media];e.status='draft';e.verified=false;e.scheduledAt=undefined;
+   e.updatedAt=new Date().toISOString();save(db,e);
+   db.audit(actorOf(res)!.id,'NEWS_YOUTUBE_ADD',e.id,null,{videoId});
+   return res.status(201).json({item:e,media});
  });
  app.post('/api/admin/news-events/:id/media',express.json({limit:'36mb'}),(req,res)=>{
    if(!author(res))return res.sendStatus(403);

@@ -165,6 +165,11 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     inactive.pause();
     inactive.muted=true;
     inactive.preload='auto';
+    // Rewind the completed hidden clip while the other is playing, not
+    // at the moment of transition, so the next cycle has a decoded start frame.
+    if(inactive.ended||inactive.currentTime>0.05){
+      try{inactive.currentTime=0;}catch{/* metadata may not be ready */ }
+    }
     if(inactive.networkState===HTMLMediaElement.NETWORK_EMPTY)inactive.load();
   },[activeVideoIndex,isActuallyPlaying,videos]);
 

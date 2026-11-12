@@ -33,6 +33,7 @@ export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({current
  const totalCredits=options.filter(x=>chosen.includes(x.id)).reduce((n,x)=>n+x.credits,0);
  const change=async(kind:'save'|'submit'|'review'|'register',id?:string,decision?:string)=>{
   if(busy)return;
+  if(kind==='register'&&!window.confirm('Commit all courses in this approved plan as official registration? This cannot be undone here and will be audited. Finance billing remains separate.'))return;
   setBusy(true);setError('');setMessage('');
   try{
    if(kind==='save'){
@@ -45,7 +46,6 @@ export const StudentCoursePlanning:React.FC<{currentUser:UserProfile}>=({current
     await send('/api/student/course-plans/'+id+'/review',{decision,note:reviewNotes[id]||''});
     setMessage('Registrar decision saved and audited. Approval does not automatically enroll or bill the student.');
    }else if(kind==='register'&&id){
-    if(!window.confirm('Commit all courses in this approved plan as official registration? This cannot be undone here and will be audited. Finance billing remains separate.'))return;
     await send('/api/student/course-plans/'+id+'/register',{confirmation:'CONFIRM_OFFICIAL_REGISTRATION'});
     setMessage('Official registration completed. The enrolled sections are now in the Finance billing review queue; no invoice was posted automatically.');
    }

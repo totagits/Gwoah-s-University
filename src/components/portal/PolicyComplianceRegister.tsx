@@ -7,7 +7,6 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
-  RotateCcw,
   Search,
 } from 'lucide-react';
 import { NchePolicyItem, AuditLogEntry, UserProfile } from '../../types';
@@ -24,7 +23,6 @@ export const PolicyComplianceRegister: React.FC<PolicyComplianceRegisterProps> =
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'traceability' | 'audit'>('traceability');
-  const [resetting, setResetting] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -46,20 +44,6 @@ export const PolicyComplianceRegister: React.FC<PolicyComplianceRegisterProps> =
     fetchData();
   }, []);
 
-  const handleResetDemoData = async () => {
-    if (!confirm('Re-initialize all ERP demonstration records to pristine seed state?')) return;
-    setResetting(true);
-    try {
-      await api.resetDemoData();
-      alert('Demo data has been reset to default state.');
-      await fetchData();
-    } catch (err) {
-      console.error('Failed to reset demo data:', err);
-    } finally {
-      setResetting(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -70,43 +54,34 @@ export const PolicyComplianceRegister: React.FC<PolicyComplianceRegisterProps> =
               Policy Traceability & Audit Center
             </h2>
             <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2 py-0.5 rounded-full">
-              NCHE Standards Aligned
+              Compliance review pending
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Official Liberian regulatory grounding, statutory DEI controls, EMIS exchange standards, and tamper-evident audit history.
+            Policy references and recorded events for institutional review. Regulatory compliance must be verified by authorized university officers.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+          <div className="flex flex-wrap gap-2 bg-white p-2 rounded-xl border border-[#d9cadf]">
             <button
               onClick={() => setActiveTab('traceability')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                activeTab === 'traceability' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+              className={`min-h-10 px-3 py-2 rounded-lg text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
+                activeTab === 'traceability' ? 'bg-[#4a1249] !text-white font-bold' : 'text-[#4a1249] hover:bg-[#f4edf4]'
               }`}
             >
               Policy Traceability
             </button>
             <button
               onClick={() => setActiveTab('audit')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                activeTab === 'audit' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+              className={`min-h-10 px-3 py-2 rounded-lg text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
+                activeTab === 'audit' ? 'bg-[#4a1249] !text-white font-bold' : 'text-[#4a1249] hover:bg-[#f4edf4]'
               }`}
             >
               Tamper-Evident Audit Log ({auditLogs.length})
             </button>
           </div>
 
-          <button
-            onClick={handleResetDemoData}
-            disabled={resetting}
-            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            title="Reset demonstration data"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Reset Demo</span>
-          </button>
         </div>
       </div>
 
@@ -114,6 +89,7 @@ export const PolicyComplianceRegister: React.FC<PolicyComplianceRegisterProps> =
       {activeTab === 'traceability' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {policies.length === 0 && <p className="text-sm text-slate-700">No verified policy records available.</p>}
             {policies.map((item) => (
               <div
                 key={item.id}
@@ -151,7 +127,7 @@ export const PolicyComplianceRegister: React.FC<PolicyComplianceRegisterProps> =
 
                 <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
                   <span>Responsible: <strong className="text-slate-200">{item.responsibleOffice}</strong></span>
-                  <span className="text-amber-400 font-semibold">Audited 2026/2027</span>
+                  <span className="text-amber-400 font-semibold">Review date not confirmed</span>
                 </div>
               </div>
             ))}
@@ -173,7 +149,7 @@ export const PolicyComplianceRegister: React.FC<PolicyComplianceRegisterProps> =
             </div>
             <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg">
               <ShieldCheck className="w-4 h-4" />
-              <span>SHA-256 Checksum Verified</span>
+              <span>Audit integrity verification not displayed</span>
             </div>
           </div>
 

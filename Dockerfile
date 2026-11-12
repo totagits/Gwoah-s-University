@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+RUN node scripts/optimize-hero-mp4.mjs
 RUN npm run build
 
 FROM node:24-bookworm-slim

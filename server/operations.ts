@@ -73,6 +73,7 @@ const operationalTables = [
   'registrations',
   'student_course_plans',
   'student_course_plan_commits',
+  'student_assistance_requests',
   'grade_schemes',
   'grades',
   'invoices',
@@ -138,6 +139,25 @@ export class Operations {
 
       CREATE TABLE IF NOT EXISTS grade_schemes(id TEXT PRIMARY KEY,title TEXT NOT NULL,definition TEXT NOT NULL,approved_by TEXT NOT NULL REFERENCES users(id),approved_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grades(id TEXT PRIMARY KEY,registration_id TEXT UNIQUE NOT NULL REFERENCES registrations(id),score REAL NOT NULL CHECK(score>=0 AND score<=100),status TEXT NOT NULL CHECK(status IN('draft','submitted','published')),letter TEXT,points REAL,passed INTEGER CHECK(passed IN(0,1)),scheme_id TEXT REFERENCES grade_schemes(id),entered_by TEXT NOT NULL REFERENCES users(id),published_by TEXT REFERENCES users(id),updated_at TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS student_assistance_requests(
+        id TEXT PRIMARY KEY,
+        student_id TEXT NOT NULL REFERENCES students(id),
+        term_id TEXT NOT NULL REFERENCES terms(id),
+        kind TEXT NOT NULL CHECK(kind IN('scholarship','financial_aid','tuition_waiver')),
+        requested_cents INTEGER NOT NULL CHECK(requested_cents>=0),
+        reason TEXT NOT NULL,
+        status TEXT NOT NULL CHECK(status IN('submitted','recommended','returned','rejected','finance_reviewed')),
+        registrar_note TEXT NOT NULL DEFAULT '',
+        finance_note TEXT NOT NULL DEFAULT '',
+        registrar_id TEXT REFERENCES users(id),
+        finance_id TEXT REFERENCES users(id),
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS student_assistance_lookup
+        ON student_assistance_requests(student_id,created_at);
+      CREATE INDEX IF NOT EXISTS student_assistance_review
+        ON student_assistance_requests(status,created_at);
       CREATE TABLE IF NOT EXISTS invoices(id TEXT PRIMARY KEY,student_id TEXT NOT NULL REFERENCES students(id),term_id TEXT NOT NULL REFERENCES terms(id),number TEXT UNIQUE NOT NULL,amount_cents INTEGER NOT NULL CHECK(amount_cents>=0),due_date TEXT NOT NULL,posted_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS invoice_lines(id TEXT PRIMARY KEY,invoice_id TEXT NOT NULL REFERENCES invoices(id),registration_id TEXT UNIQUE NOT NULL REFERENCES registrations(id),description TEXT NOT NULL,amount_cents INTEGER NOT NULL CHECK(amount_cents>=0));
       CREATE TABLE IF NOT EXISTS credit_notes(id TEXT PRIMARY KEY,invoice_id TEXT NOT NULL REFERENCES invoices(id),registration_id TEXT UNIQUE NOT NULL REFERENCES registrations(id),amount_cents INTEGER NOT NULL CHECK(amount_cents>=0),reason TEXT NOT NULL,posted_by TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);

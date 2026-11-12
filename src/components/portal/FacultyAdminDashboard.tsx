@@ -81,21 +81,24 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
   // Load initial sections, courses, users, and messages
   useEffect(() => {
     const init = async () => {
-      try {
-        const [courseRes, userRes, msgRes] = await Promise.all([
-          api.getCoursesAndSections(),
-          api.getUsers(),
-          api.getMessages(currentUser.id),
-        ]);
-        if (courseRes.sections) {
-          setSections(courseRes.sections);
-          setSelectedSectionId("");
-        }
+      const [courseResult, directoryResult, messageResult] = await Promise.allSettled([
+        api.getCoursesAndSections(),
+        api.getUsers(),
+        api.getMessages(currentUser.id),
+      ]);
+      if (courseResult.status === 'fulfilled') {
+        const courseRes = courseResult.value;
+        if (courseRes.sections) { setSections(courseRes.sections); setSelectedSectionId(''); }
         if (courseRes.courses) setCourses(courseRes.courses);
-        if (userRes.users) setAllUsers(userRes.users);
-        if (msgRes.messages) setMessages(msgRes.messages);
-      } catch (err) {
-        setFormError(err instanceof Error ? err.message : 'Could not load messaging directory.');
+      }
+      if (directoryResult.status === 'fulfilled') {
+        setAllUsers(directoryResult.value.users ?? []);
+      } else {
+        setAllUsers([]);
+        setFormError(directoryResult.reason instanceof Error ? directoryResult.reason.message : 'Could not load recipients. Refresh your session.');
+      }
+      if (messageResult.status === 'fulfilled') {
+        setMessages(messageResult.value.messages ?? []);
       }
     };
     init();
@@ -607,6 +610,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
               {formError && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">{formError}</p>}
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">Recipient</label>
+                {!allUsers.some(u => u.id !== currentUser.id) && <p role="status" className="mb-2 text-sm text-amber-900">There are no eligible recipients in the directory. An authorized administrator must invite a second user before messaging can be tested.</p>}
                 <select
                   required
                   aria-label="Recipient"
@@ -614,7 +618,7 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
                   onChange={(e) => setMsgRecipient(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
                 >
-                  <option value="">{allUsers.length ? 'Choose a recipient' : 'No recipients available'}</option>
+                  <option value="">{allUsers.some(u => u.id !== currentUser.id) ? 'Choose a recipient' : 'No recipients available — create or activate another account'}</option>
                   {allUsers.filter((u) => u.id !== currentUser.id).map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.name} ({u.title})

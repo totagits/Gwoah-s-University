@@ -9,7 +9,7 @@ const degreeSlug=(name:string)=>name.toLowerCase().normalize('NFKD').replace(/[\
 const degreeRoutes=degreeExplainers.degrees.map(d=>d.college+'--'+degreeSlug(d.name));
 const degreeFields=['overview','relevance','careers','focus','duration','credential'] as const;
 export const degreeContentSlots=degreeRoutes.flatMap(route=>degreeFields.map(field=>'degree.'+route+'.'+field));
-const navigationLabels=['hero','about','tour','colleges','admissions','calendar','dei'] as const;
+const navigationLabels=['hero','about','tour','colleges','admissions','news','calendar','dei'] as const;
 const footerContactSlots=['campus-address','admin-address','liaison-address','phone-1','phone-2','phone-3','phone-4','email-1','email-2'] as const;
 const sections=['home','about','academics','admissions','events','student-life','footer','navigation'] as const;
 type Section=(typeof sections)[number];

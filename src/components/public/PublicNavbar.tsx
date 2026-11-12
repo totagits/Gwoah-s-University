@@ -173,6 +173,12 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         badge: 'Aid',
       },
     ],
+    news: [
+      { label: 'University Newsroom', desc: 'Verified institutional news and announcements', icon: <FileText className="w-4 h-4 text-[#C39A53]"/>, action: () => { window.dispatchEvent(new CustomEvent('hiau:news-filter',{detail:'all'})); onNavigateSection('hiau-news-events'); } },
+      { label: 'Faculty & Staff News', desc: 'Appointments, research and faculty achievements', icon: <Users className="w-4 h-4 text-[#4A1249]"/>, action: () => { window.dispatchEvent(new CustomEvent('hiau:news-filter',{detail:'faculty'})); onNavigateSection('hiau-news-events'); } },
+      { label: 'Student News & Achievements', desc: 'Student-led work and university community stories', icon: <GraduationCap className="w-4 h-4 text-[#C39A53]"/>, action: () => { window.dispatchEvent(new CustomEvent('hiau:news-filter',{detail:'students'})); onNavigateSection('hiau-news-events'); } },
+      { label: 'Press Releases & Media', desc: 'Approved institutional press statements', icon: <FileText className="w-4 h-4 text-[#4A1249]"/>, action: () => { window.dispatchEvent(new CustomEvent('hiau:news-filter',{detail:'press'})); onNavigateSection('hiau-news-events'); } },
+    ],
     calendar: [
       {
         label: '2026/2027 Senate Academic Calendar',
@@ -257,6 +263,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       { words: ['degree', 'college', 'program', 'course', 'tvet', 'certificate', 'major'], section: 'colleges' },
       { words: ['leader', 'governance', 'trustee', 'president', 'chancellor', 'faculty'], section: 'about' },
       { words: ['tour', 'campus', 'classroom', 'library', 'facility'], section: 'tour' },
+      { words: ['news', 'press', 'newsroom', 'media release'], section: 'hiau-news-events' },
       { words: ['calendar', 'event', 'schedule', 'date'], section: 'calendar' },
       { words: ['student life', 'fellowship', 'student experience', 'club'], section: 'dei' },
       { words: ['home', 'welcome'], section: 'hero' },
@@ -279,6 +286,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     { id: 'tour', label: 'Campus Tour', hasDropdown: true },
     { id: 'colleges', label: 'Academics', hasDropdown: true },
     { id: 'admissions', label: 'Admissions', hasDropdown: true },
+    { id: 'news', label: 'News', hasDropdown: true },
     { id: 'calendar', label: 'Current Events', hasDropdown: true },
     { id: 'dei', label: 'Student Experience', hasDropdown: true },
   ];
@@ -509,7 +517,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   <div className="flex items-center justify-between px-3 py-2">
                     <button
                       onClick={() => {
-                        onNavigateSection(link.id);
+                        onNavigateSection(link.id==='news'?'hiau-news-events':link.id);
                         setMobileMenuOpen(false);
                         setMobileExpandedSection(null);
                       }}

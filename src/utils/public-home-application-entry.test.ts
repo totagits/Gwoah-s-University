@@ -24,8 +24,8 @@ test('WEB-01: degree and leader profile pages can open admissions without adding
 });
 
 test('WEB-01: choosing a mobile public section closes the menu',()=>{
-  assert.match(navbar,/onNavigateSection\(link\.id\);\s*setMobileMenuOpen\(false\);/);
-  assert.match(navbar,/onNavigateSection\(link\.id\);\s*setMobileMenuOpen\(false\);\s*setMobileExpandedSection\(null\);/);
+  assert.match(navbar,/onNavigateSection\(link\.id==='news'\?'hiau-news-events':link\.id\);\s*setMobileMenuOpen\(false\);/);
+  assert.match(navbar,/onNavigateSection\(link\.id==='news'\?'hiau-news-events':link\.id\);\s*setMobileMenuOpen\(false\);\s*setMobileExpandedSection\(null\);/);
 });
 
 test('WEB-01: application submission still uses authenticated-free public intake and never charges online',()=>{

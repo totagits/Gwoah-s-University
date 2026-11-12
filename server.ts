@@ -42,7 +42,7 @@ installPublicWebsiteMedia(app, operations, directory);
 installPublicStaffProfiles(app, operations, directory);
 installCampusContent(app, operations, directory);
 installWebsiteCms(app, operations);
-installPublicNewsEvents(app, operations);
+installPublicNewsEvents(app, operations, directory);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

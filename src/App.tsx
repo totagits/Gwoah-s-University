@@ -90,7 +90,7 @@ export default function App() {
   const appKind=window.location.pathname.startsWith('/student/')?'student'
     :window.location.pathname.startsWith('/staff/')?'staff':null;
   const canUseInstalledApp=(role:string)=>appKind===null||
-    (appKind==='student'?role==='student':role!=='student'&&role!=='alumni');
+    (appKind==='student'?role==='student':role!=='student'&&role!=='alumni'&&role!=='partner_representative');
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);

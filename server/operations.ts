@@ -72,6 +72,7 @@ const operationalTables = [
   'students',
   'registrations',
   'student_course_plans',
+  'student_course_plan_commits',
   'grade_schemes',
   'grades',
   'invoices',
@@ -123,6 +124,17 @@ export class Operations {
       );
       CREATE INDEX IF NOT EXISTS student_plan_review_queue
         ON student_course_plans(status,submitted_at);
+      CREATE TABLE IF NOT EXISTS student_course_plan_commits(
+        id TEXT PRIMARY KEY,
+        plan_id TEXT UNIQUE NOT NULL REFERENCES student_course_plans(id),
+        student_id TEXT NOT NULL REFERENCES students(id),
+        term_id TEXT NOT NULL REFERENCES terms(id),
+        registered_by TEXT NOT NULL REFERENCES users(id),
+        section_count INTEGER NOT NULL CHECK(section_count>0),
+        created_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS student_plan_commits_term
+        ON student_course_plan_commits(term_id,created_at);
 
       CREATE TABLE IF NOT EXISTS grade_schemes(id TEXT PRIMARY KEY,title TEXT NOT NULL,definition TEXT NOT NULL,approved_by TEXT NOT NULL REFERENCES users(id),approved_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grades(id TEXT PRIMARY KEY,registration_id TEXT UNIQUE NOT NULL REFERENCES registrations(id),score REAL NOT NULL CHECK(score>=0 AND score<=100),status TEXT NOT NULL CHECK(status IN('draft','submitted','published')),letter TEXT,points REAL,passed INTEGER CHECK(passed IN(0,1)),scheme_id TEXT REFERENCES grade_schemes(id),entered_by TEXT NOT NULL REFERENCES users(id),published_by TEXT REFERENCES users(id),updated_at TEXT NOT NULL);
@@ -583,7 +595,10 @@ export class Operations {
           before.id,
         );
       } else if (action === 'register') {
-        this.permitted(actor, ['student', 'registrar']);
+        // Student selections must pass the separate approved-plan Registrar
+        // workflow. Keep authorized Registrar manual registration for
+        // institutional exceptions; the audit log records the actor.
+        this.permitted(actor, ['registrar']);
         const student = this.studentFor(actor, data.studentId);
         const section = this.one(
           'SELECT s.*,t.status AS term_status,t.max_credits,c.credits,c.code AS course_code FROM sections s JOIN terms t ON s.term_id=t.id JOIN courses c ON s.course_id=c.id WHERE s.id=?',

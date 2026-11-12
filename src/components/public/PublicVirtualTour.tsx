@@ -1,5 +1,5 @@
 import React,{useState} from 'react';
-import {ArrowRight, Building2, GraduationCap, LockKeyhole, PlayCircle} from 'lucide-react';
+import {ArrowRight, Building2, GraduationCap, PlayCircle} from 'lucide-react';
 
 /**
  * Public Campus Tour is an on-demand page, NOT the homepage hero carousel.
@@ -8,18 +8,17 @@ import {ArrowRight, Building2, GraduationCap, LockKeyhole, PlayCircle} from 'luc
  */
 const TOUR_VIDEOS=[
  {id:'campus',label:'Campus overview',description:'Explore the university campus video.',
-  src:'/api/public/video/hero-campus',poster:'/assets/aistudio/image_29eb5504.png'},
+  src:'/api/public/video/hero-campus'},
  {id:'classroom',label:'Classroom and learning spaces',description:'Watch the university classroom video.',
-  src:'/api/public/video/hero-classroom',poster:'/assets/aistudio/image_51d124f3.png'},
+  src:'/api/public/video/hero-classroom'},
 ] as const;
 
 interface PublicVirtualTourProps {
  onOpenApplicationModal?:()=>void;
- onRequestFacilitiesLogin?:()=>void;
 }
 
 export const PublicVirtualTour:React.FC<PublicVirtualTourProps>=({
- onOpenApplicationModal,onRequestFacilitiesLogin
+ onOpenApplicationModal
 })=>{
  const [selected,setSelected]=useState<(typeof TOUR_VIDEOS)[number]['id']>('campus');
  const video=TOUR_VIDEOS.find(v=>v.id===selected)||TOUR_VIDEOS[0];
@@ -42,7 +41,9 @@ export const PublicVirtualTour:React.FC<PublicVirtualTourProps>=({
    </div>
 
    <div className="mt-6 overflow-hidden rounded-xl border border-purple-200 bg-white shadow-sm">
-    <video key={video.id} controls playsInline preload="metadata" poster={video.poster}
+    <video key={video.id} controls playsInline preload="auto"
+      onLoadedMetadata={event=>{const element=event.currentTarget;if(element.duration>0.35)element.currentTime=0.15;}}
+      onSeeked={event=>event.currentTarget.pause()}
       aria-label={video.label} className="aspect-video w-full bg-black object-contain">
       <source src={video.src} type="video/mp4"/>
       Your browser does not support this video format.
@@ -59,11 +60,7 @@ export const PublicVirtualTour:React.FC<PublicVirtualTourProps>=({
       className="rounded bg-[#C39A53] px-5 py-3 text-sm font-bold text-[#2A082C] hover:bg-[#DDB86C] focus-visible:outline-2">
       Schedule campus visit <ArrowRight className="ml-1 inline h-4 w-4"/>
     </button>}
-    {onRequestFacilitiesLogin&&<button type="button" onClick={onRequestFacilitiesLogin}
-      className="hiau-brand-action inline-flex items-center gap-2 rounded bg-[#4A1249] px-5 py-3 text-sm font-bold text-white focus-visible:outline-2">
-      <LockKeyhole className="h-4 w-4"/> Campus Facilities — Staff Sign In
-    </button>}
-    <p className="text-xs text-slate-600">Facilities management is an internal university system. Authorized staff credentials are required.</p>
+
    </div>
   </div>
  </section>;

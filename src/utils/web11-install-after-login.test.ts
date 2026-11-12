@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=(p:string)=>readFileSync(new URL(p,import.meta.url),'utf8');
+const header=read('../components/portal/PortalHeader.tsx');
+const control=read('../components/portal/PwaInstallControl.tsx');
+const invite=read('../components/portal/StagingStudentInvite.tsx');
+const app=read('../App.tsx');
+const identity=read('../../server/identity.ts');
+test('WEB-11: logged-in student/staff dashboards retain installation controls',()=>{
+ assert.match(header,/installedAppKind\?\: 'student'\|'staff'\|null/);
+ assert.match(header,/installedAppKind&&<PwaInstallControl kind=\{installedAppKind\}/);
+ assert.match(app,/installedAppKind=\{appKind\}/);
+ assert.match(header,/href=\{currentUser\.role==='student'\?'\/student\/'\:'\/staff\/'\}/);
+ assert.match(header,/Install Staff ERP/);
+ assert.match(control,/beforeinstallprompt/);
+ assert.match(control,/pendingInstall:InstallEvent\|null/);
+ assert.match(control,/Install Staff App/);
+ assert.match(control,/Install Student App/);
+ assert.match(control,/Add to Home Screen/);
+ assert.match(control,/Installation is controlled by your browser/);
+});
+test('WEB-11: test student creation uses real admin invite with no default password',()=>{
+ assert.match(header,/currentUser\.role==='super_admin'/);
+ assert.match(header,/hiau-staging\.totag\.network/);
+ assert.match(header,/<StagingStudentInvite\/>/);
+ assert.match(invite,/\/api\/identity\/invite/);
+ assert.match(invite,/role:'student'/);
+ assert.match(invite,/Create student invitation/);
+ assert.match(invite,/Copy activation link/);
+ assert.match(invite,/48 hours/);
+ assert.doesNotMatch(invite,/defaultPassword|password123/);
+ assert.match(identity,/app\.post\('\/api\/identity\/invite'/);
+ assert.match(identity,/actor\.role !== 'super_admin'/);
+});

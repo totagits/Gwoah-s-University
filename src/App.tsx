@@ -35,6 +35,7 @@ import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
+import {RegistrarStudentLinking} from './components/portal/RegistrarStudentLinking';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';
 import { PrintableDocumentModal } from './components/portal/PrintableDocumentModal';
@@ -528,7 +529,10 @@ export default function App() {
             )}
 
             {activePortalTab === 'admissions' && (
-              <AdmissionsReviewModule currentUser={currentUser} />
+              <>
+                <AdmissionsReviewModule currentUser={currentUser} />
+                <RegistrarStudentLinking currentUser={currentUser} />
+              </>
             )}
 
             {activePortalTab === 'finance' && (

@@ -74,10 +74,15 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           typeof v.src==='string'&&v.src.startsWith('/api/public/video/')&&
           /^[a-z0-9_-]+$/.test(v.src.slice('/api/public/video/'.length)));
         if(safe.length>=2){
-          pendingVideoIndex.current=null;
-          preloadArmed.current.clear();
-          setVideos(safe);
-          setActiveVideoIndex(0);
+          setVideos(previous=>{
+            // Do not reset an already-loading media element when the API
+            // repeats the same playlist; unnecessary source reloads stall startup.
+            if(previous.length===safe.length && previous.every((clip,index)=>
+              clip.id===safe[index].id && clip.src===safe[index].src))return previous;
+            pendingVideoIndex.current=null;
+            preloadArmed.current.clear();
+            return safe;
+          });
         }
       }).catch(()=>{/* Original two video endpoints remain the fallback. */});
     return ()=>controller.abort();
@@ -141,7 +146,9 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     if(!player)return;
     player.muted=isMuted;
     if(wantsPlayback){
-      if(player.readyState>=HTMLMediaElement.HAVE_FUTURE_DATA)playSelected();
+      // Let native muted autoplay attempt startup immediately; readiness
+      // events separately retry once enough data reaches the decoder.
+      playSelected();
     }else player.pause();
   },[activeVideoIndex,isMuted,wantsPlayback,retryCount,videos]);
 
@@ -219,6 +226,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               disablePictureInPicture
               aria-hidden={index!==activeVideoIndex}
               onCanPlay={()=>onClipCanPlay(index)}
+              onLoadedData={()=>onClipCanPlay(index)}
               onPlaying={()=>{
                 if(index===activeVideoIndex){
                   setIsActuallyPlaying(true);
@@ -240,6 +248,11 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
           {isPreparingNext && (
             <span role="status" className="pointer-events-none absolute left-4 top-14 z-20 rounded bg-[#2A082C]/75 px-3 py-1 text-xs font-semibold text-[#F0CE8D]">
               Preparing next video in background
+            </span>
+          )}
+          {!isActuallyPlaying && !videoError && !isPreparingNext && wantsPlayback && (
+            <span role="status" className="pointer-events-none absolute left-4 top-14 z-20 rounded bg-[#2A082C]/75 px-3 py-1 text-xs font-semibold text-[#F0CE8D]">
+              Preparing video for playback
             </span>
           )}
           {videoError&&<div role="alert" className="absolute bottom-24 left-4 right-14 z-20 rounded-lg bg-[#2A082C]/95 p-3 text-sm text-white ring-1 ring-[#C39A53]">

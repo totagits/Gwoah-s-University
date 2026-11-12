@@ -6,10 +6,11 @@ import {actorOf} from './identity';
 import type {Operations} from './operations';
 
 type Kind='news'|'event'|'announcement';
+type Audience='general'|'faculty'|'students'|'press';
 export type NewsMedia={id:string;kind:'image'|'video';caption:string;alt:string;mime:string;bytes:number;createdAt:string};
-type Entry={id:string;kind:Kind;title:string;summary:string;eventDate:string;location:string;media?:NewsMedia[];
+type Entry={id:string;kind:Kind;audience?:Audience;title:string;summary:string;eventDate:string;location:string;media?:NewsMedia[];
  status:'draft'|'published';verified:boolean;createdAt:string;updatedAt:string;publishedAt:string|null;
- live?:{kind:Kind;title:string;summary:string;eventDate:string;location:string;verified:boolean;media?:NewsMedia[]};scheduledAt?:string};
+ live?:{kind:Kind;audience?:Audience;title:string;summary:string;eventDate:string;location:string;verified:boolean;media?:NewsMedia[]};scheduledAt?:string};
 const PREFIX='site-news:';
 const idOk=(id:string)=>/^news-[a-f0-9-]{36}$/.test(id);
 const admin=(res:Response)=>actorOf(res)?.role==='super_admin';
@@ -22,7 +23,8 @@ const input=(v:any)=>{
  const eventDate=txt(v?.eventDate,10),location=txt(v?.location,140);
  if(!['news','event','announcement'].includes(kind)||title.length<4||summary.length<20||
   !dateOk(eventDate)||(kind==='event'&&!eventDate))return null;
- return {kind:kind as Kind,title,summary,eventDate,location,verified:v?.verified===true};
+ const audience=['general','faculty','students','press'].includes(v?.audience)?v.audience as Audience:'general';
+ return {kind:kind as Kind,audience,title,summary,eventDate,location,verified:v?.verified===true};
 };
 const all=(db:Operations):Entry[]=>
  db.all("SELECT value FROM settings WHERE key LIKE 'site-news:%'").flatMap(row=>{
@@ -96,7 +98,7 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
    e.media=[...(e.media||[]),media];
    // Asset edits always return to a private editorial draft, retaining live snapshot.
    if(e.status==='published'){
-     e.live={kind:e.kind,title:e.title,summary:e.summary,eventDate:e.eventDate,
+     e.live={kind:e.kind,audience:e.audience||'general',title:e.title,summary:e.summary,eventDate:e.eventDate,
        location:e.location,verified:e.verified,media:e.live?.media??(e.media||[]).filter(m=>m.id!==media.id)};
    }
    e.status='draft';e.verified=false;e.scheduledAt=undefined;e.updatedAt=new Date().toISOString();
@@ -139,7 +141,7 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
 
  app.get('/api/public/news-events',(_req,res)=>{
   for(const pending of all(db).filter(x=>x.status==='draft'&&x.scheduledAt&&x.verified&&Date.parse(x.scheduledAt)<=Date.now())){
-   pending.status='published';pending.live={kind:pending.kind,title:pending.title,summary:pending.summary,eventDate:pending.eventDate,location:pending.location,verified:true,media:[...(pending.media||[])]};
+   pending.status='published';pending.live={kind:pending.kind,audience:pending.audience||'general',title:pending.title,summary:pending.summary,eventDate:pending.eventDate,location:pending.location,verified:true,media:[...(pending.media||[])]};
    pending.publishedAt=new Date().toISOString();pending.updatedAt=pending.publishedAt;pending.scheduledAt=undefined;
    save(db,pending);db.audit('system','NEWS_SCHEDULED_PUBLISH',pending.id,null,{});
   }
@@ -148,7 +150,7 @@ export function installPublicNewsEvents(app:Express,db:Operations,directory:stri
    const live=contentLive(x);
    if(!live)return [];
    // Never expose draft metadata, the scheduled release time or private revisions.
-   return [{id:x.id,kind:live.kind,title:live.title,summary:live.summary,
+   return [{id:x.id,kind:live.kind,audience:live.audience||'general',title:live.title,summary:live.summary,
      eventDate:live.eventDate,location:live.location,status:'published',verified:true,
      publishedAt:x.publishedAt,media:mediaUrls(x,live.media||[])}];
   })});

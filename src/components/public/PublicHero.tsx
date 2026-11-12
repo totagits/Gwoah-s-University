@@ -22,6 +22,7 @@ interface HeroVideoSlide {
   title: string;
   subtitle: string;
   src: string;
+  poster?: string;
   badge: string;
   label: string;
 }
@@ -32,6 +33,7 @@ const HERO_VIDEOS: HeroVideoSlide[] = [
     title: 'HIAU Main Academic Campus',
     subtitle: 'Exterior complex, 2nd-floor lecture halls & palm quadrangle',
     src: '/api/public/video/hero-campus',
+    poster: '/assets/aistudio/hero-campus-poster.jpg',
     badge: 'Video 1 • Campus First',
     label: '01 Campus Tour',
   },
@@ -40,6 +42,7 @@ const HERO_VIDEOS: HeroVideoSlide[] = [
     title: 'Interactive Laptop Lab & Smart Classroom',
     subtitle: 'Individual wooden carrels, dedicated laptops & interactive projection',
     src: '/api/public/video/hero-classroom',
+    poster: '/assets/aistudio/hero-classroom-poster.jpg',
     badge: 'Video 2 • Classroom Second',
     label: '02 Smart Lab',
   },
@@ -304,6 +307,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
                 }
               }}
               src={index===activeVideoIndex||preloadStarted||isPreparingNext?clip.src:undefined}
+              poster={clip.poster}
               preload={index===activeVideoIndex||preloadStarted||isPreparingNext?'auto':'none'}
               autoPlay={index===activeVideoIndex&&wantsPlayback}
               muted={index!==activeVideoIndex||isMuted}

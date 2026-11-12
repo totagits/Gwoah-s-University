@@ -65,6 +65,18 @@ const save=(store:Operations,slot:string,state:State)=>{
   store.run('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',KEY+slot,JSON.stringify(state));
 };
 const mediaPath=(directory:string,name:string)=>path.join(directory,'public-media',name);
+const bundledPath=(src:string)=>{
+  if(!src||!src.startsWith('/assets/'))return null;
+  const rel=src.slice(1);
+  const candidates=[path.join(process.cwd(),'dist',rel),path.join(process.cwd(),'public',rel)];
+  return candidates.find(file=>fs.existsSync(file))||null;
+};
+const publishedPath=(store:Operations,directory:string,slot:string)=>{
+  const published=parse(store,slot).published;
+  if(!published||!/^[a-f0-9-]{36}\\.mp4$/.test(published))return null;
+  const file=mediaPath(directory,published);
+  return fs.existsSync(file)?file:null;
+};
 const sendMedia=(req:Request,res:Response,file:string,publiclyPublished=false)=>{
   try{
     const stat=fs.statSync(file);
@@ -115,34 +127,25 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
       label:String(index+1).padStart(2,'0')+' '+(v.slot==='hero-campus'?'Campus':v.slot==='hero-classroom'?'Classroom':v.label),
     }))});
   });
-  app.get('/api/public/video/:slot',(req,res)=>{
+  app.get('/api/public/video-status/:slot',(req,res)=>{
     const item=resolveSlot(store,req.params.slot);
-    if(!item)return res.status(404).end();
-    const published=parse(store,item.slot).published;
-    if(published&&fs.existsSync(mediaPath(directory,published)))
-      return sendMedia(req,res,mediaPath(directory,published),true);
-    // In production, stream the bundled original MP4 with HTTP ranges.
-    // Avoid the extra 302 request that delays the very first carousel frame.
-    if(item.defaultSrc&&process.env.NODE_ENV==='production'){
-      const file=path.join(process.cwd(),'dist',item.defaultSrc.slice(1));
-      if(fs.existsSync(file))return sendMedia(req,res,file,true);
-    }
-    return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
+    if(!item)return res.status(404).json({available:false});
+    const published=publishedPath(store,directory,item.slot);
+    const bundled=bundledPath(item.defaultSrc);
+    res.set('Cache-Control','no-store');
+    return res.json({available:Boolean(published||bundled),
+      source:published?'published':bundled?'bundled':'missing'});
   });
-  app.head('/api/public/video/:slot',(req,res)=>{
-    const item=resolveSlot(store,req.params.slot);
-    if(!item)return res.status(404).end();
-    const published=parse(store,item.slot).published;
-    if(published&&fs.existsSync(mediaPath(directory,published)))
-      return sendMedia(req,res,mediaPath(directory,published),true);
-    // In production, stream the bundled original MP4 with HTTP ranges.
-    // Avoid the extra 302 request that delays the very first carousel frame.
-    if(item.defaultSrc&&process.env.NODE_ENV==='production'){
-      const file=path.join(process.cwd(),'dist',item.defaultSrc.slice(1));
-      if(fs.existsSync(file))return sendMedia(req,res,file,true);
-    }
-    return item.defaultSrc?res.redirect(302,item.defaultSrc):res.status(404).end();
-  });
+  // Do not redirect to a nonexistent fallback asset; absent videos should
+  // render as clearly unavailable, never as a misleading campus poster.
+  for(const method of ['get','head'] as const){
+    app[method]('/api/public/video/:slot',(req,res)=>{
+      const item=resolveSlot(store,req.params.slot);
+      if(!item)return res.status(404).end();
+      const file=publishedPath(store,directory,item.slot)||bundledPath(item.defaultSrc);
+      return file?sendMedia(req,res,file,true):res.status(404).end();
+    });
+  }
   app.post('/api/admin/website-videos',(req,res)=>{
     if(!isAdmin(res))return res.sendStatus(403);
     const label=typeof req.body?.title==='string'?req.body.title.trim():'';
@@ -192,10 +195,8 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     if(!isAdmin(res))return res.sendStatus(403);
     return res.json({videos:allSlots(store).map(v=>({
       ...v,...parse(store,v.slot),
-      defaultAvailable:Boolean(v.defaultSrc&&(
-        fs.existsSync(path.join(process.cwd(),'dist',v.defaultSrc.slice(1)))||
-        fs.existsSync(path.join(process.cwd(),'public',v.defaultSrc.slice(1)))
-      )),
+      defaultAvailable:Boolean(bundledPath(v.defaultSrc)),
+      publicAvailable:Boolean(publishedPath(store,directory,v.slot)||bundledPath(v.defaultSrc)),
       previewSrc:'/api/admin/website-video/'+v.slot+'/preview',
       publicSrc:'/api/public/video/'+v.slot,
     }))});
@@ -206,8 +207,8 @@ export function installPublicWebsiteMedia(app:Express,store:Operations,directory
     if(!item)return res.sendStatus(404);
     const state=parse(store,item.slot);
     if(state.draft)return sendMedia(req,res,mediaPath(directory,state.draft));
-    const target=state.published?'/api/public/video/'+item.slot:item.defaultSrc;
-    return target?res.redirect(302,target):res.status(404).end();
+    const file=publishedPath(store,directory,item.slot)||bundledPath(item.defaultSrc);
+    return file?sendMedia(req,res,file):res.status(404).end();
   });
   // Small authenticated chunks avoid a reverse-proxy limit on one large PUT.
   // Upload sessions are process-local; partial transfers must restart after app restart.

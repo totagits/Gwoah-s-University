@@ -52,7 +52,7 @@ function render(kind,size){
  const header=Buffer.alloc(13);header.writeUInt32BE(size,0);header.writeUInt32BE(size,4);header[8]=8;header[9]=6;
  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(raw,{level:9})),chunk('IEND',Buffer.alloc(0))]);
 }
-for(const kind of ['student','staff'])for(const size of [192,512]){
+for(const kind of ['student','staff'])for(const size of [180,192,512]){
  const file=`hiau-${kind}-${size}.png`;writeFileSync(resolve(destination,file),render(kind,size));
  process.stdout.write('Generated '+file+'\\n');
 }

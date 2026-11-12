@@ -226,19 +226,19 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
         </div>
 
         {/* Sub tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs">
+        <div className="flex flex-wrap items-center gap-2 bg-white p-2 rounded-xl border border-[#d9cadf] text-sm">
           <button
             onClick={() => setActiveSubTab('grades')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-              activeSubTab === 'grades' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+            className={`min-h-10 px-3 py-2 rounded-lg font-semibold transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
+              activeSubTab === 'grades' ? 'bg-[#4a1249] !text-white font-bold' : 'text-[#4a1249] hover:bg-[#f4edf4]'
             }`}
           >
             Grade Roster
           </button>
           <button
             onClick={() => setActiveSubTab('messages')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-              activeSubTab === 'messages' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+            className={`min-h-10 px-3 py-2 rounded-lg font-semibold transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
+              activeSubTab === 'messages' ? 'bg-[#4a1249] !text-white font-bold' : 'text-[#4a1249] hover:bg-[#f4edf4]'
             }`}
           >
             Communication ({messages.length})
@@ -247,16 +247,16 @@ export const FacultyAdminDashboard: React.FC<FacultyAdminDashboardProps> = ({
             <>
               <button
                 onClick={() => setActiveSubTab('users')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  activeSubTab === 'users' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                className={`min-h-10 px-3 py-2 rounded-lg font-semibold transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
+                  activeSubTab === 'users' ? 'bg-[#4a1249] !text-white font-bold' : 'text-[#4a1249] hover:bg-[#f4edf4]'
                 }`}
               >
                 User Accounts
               </button>
               <button
                 onClick={() => setActiveSubTab('catalog')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  activeSubTab === 'catalog' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                className={`min-h-10 px-3 py-2 rounded-lg font-semibold transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a1249] ${
+                  activeSubTab === 'catalog' ? 'bg-[#4a1249] !text-white font-bold' : 'text-[#4a1249] hover:bg-[#f4edf4]'
                 }`}
               >
                 Course Catalog

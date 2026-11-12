@@ -107,9 +107,10 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     if(incoming && incoming.readyState>=HTMLMediaElement.HAVE_FUTURE_DATA){
       pendingVideoIndex.current=null;
       setIsPreparingNext(false);
+      videoRefs.current[activeVideoIndex]?.pause();
       setIsActuallyPlaying(false);
-      setActiveVideoIndex(next);
       incoming.currentTime=0;
+      setActiveVideoIndex(next);
     }else{
       pendingVideoIndex.current=next;
       setIsPreparingNext(true);
@@ -172,6 +173,7 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
       pendingVideoIndex.current=null;
       setIsPreparingNext(false);
       setIsActuallyPlaying(false);
+      videoRefs.current[activeVideoIndex]?.pause();
       const player=videoRefs.current[index];
       if(player)player.currentTime=0;
       setActiveVideoIndex(index);

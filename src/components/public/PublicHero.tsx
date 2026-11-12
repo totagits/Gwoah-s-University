@@ -62,6 +62,19 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
   const pendingVideoIndex=useRef<number|null>(null);
   const preloadArmed=useRef<Set<string>>(new Set());
   const currentVideo=videos[activeVideoIndex]||videos[0];
+  // Explicitly opt-in via ?heroDebug=1 on staging. No user or account data
+  // is collected; state only describes these two public media elements.
+  const [debugEnabled]=useState(()=>typeof window!=='undefined' &&
+    new URLSearchParams(window.location.search).get('heroDebug')==='1');
+  const [debugEvents,setDebugEvents]=useState<string[]>([]);
+  const captureMedia=(event:string,index:number)=>{
+    if(!debugEnabled)return;
+    const media=videoRefs.current[index];
+    const status=media
+      ? `paused=${media.paused} ready=${media.readyState} net=${media.networkState} muted=${media.muted} time=${media.currentTime.toFixed(1)} frames=${media.videoWidth}x${media.videoHeight} error=${media.error?.code??'none'}`
+      : 'no element';
+    setDebugEvents(previous=>[...previous.slice(-15),`#${index+1} ${event}: ${status}`]);
+  };
 
   useEffect(()=>{
     const controller=new AbortController();
@@ -103,7 +116,9 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
     const player=videoRefs.current[index];
     if(!player||!player.paused)return;
     player.muted=isMuted;
-    void player.play().catch(error=>{
+    captureMedia('play requested',index);
+    void player.play().then(()=>captureMedia('play resolved',index)).catch(error=>{
+      captureMedia('play rejected '+String(error?.name||error),index);
       if(index!==activeIndexRef.current)return;
       if(error?.name==='NotAllowedError'){
         // Autoplay policy is browser-controlled. Stop retrying automatically
@@ -292,18 +307,20 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
               playsInline
               disablePictureInPicture
               aria-hidden={index!==activeVideoIndex}
-              onCanPlay={()=>onClipCanPlay(index)}
-              onLoadedData={()=>onClipCanPlay(index)}
-              onPlaying={()=>{
+              onLoadStart={()=>captureMedia('loadstart',index)}
+              onLoadedMetadata={()=>captureMedia('loadedmetadata',index)}
+              onCanPlay={()=>{captureMedia('canplay',index);onClipCanPlay(index);}}
+              onLoadedData={()=>{captureMedia('loadeddata',index);onClipCanPlay(index);}}
+              onPlaying={()=>{captureMedia('playing',index);
                 if(index!==activeIndexRef.current){videoRefs.current[index]?.pause();return;}
                 playingRef.current=true;
                 setIsActuallyPlaying(true);
                 setVideoError('');
               }}
-              onPause={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
-              onWaiting={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
-              onStalled={()=>{if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
-              onError={()=>{
+              onPause={()=>{captureMedia('pause',index);if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
+              onWaiting={()=>{captureMedia('waiting',index);if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
+              onStalled={()=>{captureMedia('stalled',index);if(index===activeIndexRef.current){playingRef.current=false;setIsActuallyPlaying(false);}}}
+              onError={()=>{captureMedia('error',index);
                 if(index===activeIndexRef.current){
                   setVideoError('This video is unavailable. Retry or play the next clip.');
                 }
@@ -330,6 +347,12 @@ export const PublicHero: React.FC<PublicHeroProps> = ({
             </div>
           </div>}
 
+          {debugEnabled && (
+            <aside aria-label="Hero autoplay diagnostics" className="absolute top-24 left-3 right-14 z-30 max-h-56 overflow-auto rounded border border-[#C39A53] bg-black/90 p-2 font-mono text-[11px] text-white">
+              <strong>Hero debug · active clip {activeVideoIndex+1} · requested {String(wantsPlayback)} · playing {String(isActuallyPlaying)}</strong>
+              <div className="mt-1 space-y-1">{debugEvents.map((item,index)=><p key={index}>{item}</p>)}</div>
+            </aside>
+          )}
           {/* Top Video Overlay: Slide Indicator & Continuous Stream Badge */}
           <div className="absolute top-4 left-4 right-12 z-20 flex items-center justify-between pointer-events-none">
             <span className="bg-[#4A1249]/90 text-[#C39A53] border border-[#C39A53]/70 px-3 py-1 rounded text-xs font-collegiate font-bold uppercase tracking-wider backdrop-blur-md flex items-center gap-1.5 shadow-md">

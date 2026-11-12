@@ -18,7 +18,7 @@ test('WEB-GATE video endpoint never redirects to nonexistent degree media and su
  const server:Server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s));});
  const addr=server.address();if(!addr||typeof addr==='string')throw Error('No server port');
  const base='http://127.0.0.1:'+addr.port;
- t.after(async()=>{await new Promise<void>((ok,bad)=>server.close(e=>e?bad(e):ok()));store.close();fs.rmSync(dir,{recursive:true,force:true});});
+ t.after(async()=>{server.closeAllConnections();await new Promise<void>((ok,bad)=>server.close(e=>e?bad(e):ok()));store.close();fs.rmSync(dir,{recursive:true,force:true});});
  const missing='education--bachelor-of-education-in-early-childhood-education';
  const url=base+'/api/public/video/'+missing;
  const status=await fetch(base+'/api/public/video-status/'+missing);

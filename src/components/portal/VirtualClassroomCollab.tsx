@@ -453,7 +453,7 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
                   {/* Code snippet display */}
                   <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto">
                     <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-sans">
-                      Live Code Collaboration Buffer:
+                      Sample code snippet — not synchronized:
                     </div>
                     <pre className="text-[11px] leading-relaxed">{presentationSlides[currentSlide].codeSnippet}</pre>
                   </div>
@@ -487,7 +487,7 @@ public AgroSensorNode rotateRight(AgroSensorNode y) {
                 <button
                   onClick={() => setCurrentSlide((prev) => Math.min(presentationSlides.length - 1, prev + 1))}
                   disabled={currentSlide === presentationSlides.length - 1}
-                  className="px-4 py-2 rounded-lg bg-[#4A1249] hover:bg-[#661B69] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer disabled:opacity-40 border border-[#C39A53]/50"
+                  className="px-4 py-2 rounded-lg bg-[#4A1249] hover:bg-[#661B69] !text-white hover:!text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer disabled:opacity-40 border border-[#C39A53]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4A1249]"
                 >
                   <span>Next</span>
                   <ChevronRight className="w-4 h-4" />

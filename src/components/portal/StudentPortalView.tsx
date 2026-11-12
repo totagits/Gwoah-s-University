@@ -184,7 +184,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => onOpenPrintModal('transcript')}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow cursor-pointer"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow cursor-pointer"
             >
               <QrCode className="w-4 h-4" />
               <span>Verified Transcript</span>
@@ -475,7 +475,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
                       setMsgNotification(`Downloaded "${mat.title}" for offline study.`);
                       setTimeout(() => setMsgNotification(null), 4000);
                     }}
-                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow cursor-pointer"
+                    className="hiau-action-primary px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download</span>
@@ -498,7 +498,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
             </div>
             <button
               onClick={() => setActiveTab('library')}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shrink-0 cursor-pointer shadow-md transition-colors"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shrink-0 cursor-pointer shadow-md transition-colors"
             >
               Open Shared Resource Library →
             </button>
@@ -536,7 +536,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
             </div>
             <button
               onClick={() => setIsMessageModalOpen(true)}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
+              className="hiau-action-primary px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Send Message</span>
@@ -641,7 +641,7 @@ export const StudentPortalView: React.FC<StudentPortalViewProps> = ({
                 <button
                   type="submit"
                   disabled={sendingMsg}
-                  className="px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl disabled:opacity-50"
+                  className="hiau-action-primary px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl disabled:opacity-50"
                 >
                   {sendingMsg ? 'Sending...' : 'Send Message'}
                 </button>

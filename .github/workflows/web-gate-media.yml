@@ -1,0 +1,36 @@
+name: WEB-GATE Degree Media Focused Validation
+
+on:
+  pull_request:
+    branches: [staging]
+    paths:
+      - 'server/publicWebsiteMedia.ts'
+      - 'server/web-gate-video-availability.test.ts'
+      - 'server/identity.ts'
+      - 'src/components/public/PublicDegreeVideo.tsx'
+      - 'src/components/portal/WebsiteVideoLibrary.tsx'
+      - 'src/utils/degreeVideoAudit.ts'
+      - 'src/utils/degreeVideoAudit.test.ts'
+      - '.github/workflows/web-gate-media.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  degree-media-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: TypeScript correctness
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: Degree-media focused regression
+        run: npx tsx --test server/web-gate-video-availability.test.ts src/utils/degreeVideoAudit.test.ts

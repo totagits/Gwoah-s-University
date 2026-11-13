@@ -66,15 +66,18 @@ test('4.4 MB private video is uploaded as bounded ordered chunks and published o
       offset+=piece.length;
     }
     const before=await send('/api/public/video/hero-campus');
-    assert.equal(before.status,302,'draft must not be public');
+    assert.equal(before.status,200,'bundled campus footage remains publicly available');
+    assert.equal((await (await send('/api/public/video-status/hero-campus')).json()).source,'bundled');
     const complete=await post(endpoint+'/uploads/'+uploadId+'/complete','super_admin',{});
     assert.equal(complete.status,201);
     const admin=await send('/api/admin/website-videos','super_admin');
     const {videos}=await admin.json();
     assert.ok(videos.find((v:any)=>v.slot==='hero-campus').draft);
-    assert.equal((await send('/api/public/video/hero-campus')).status,302);
+    assert.equal((await send('/api/public/video/hero-campus')).status,200);
+    assert.equal((await (await send('/api/public/video-status/hero-campus')).json()).source,'bundled');
     const publish=await post(endpoint+'/publish','super_admin',{confirmation:'PUBLISH_WEBSITE_VIDEO'});
     assert.equal(publish.status,200);
+    assert.equal((await (await send('/api/public/video-status/hero-campus')).json()).source,'published');
     const served=await send('/api/public/video/hero-campus','visitor',{
       headers:{Range:'bytes=0-11'},
     });

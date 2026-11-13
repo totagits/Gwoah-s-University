@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/**'
       - 'server/**'
+      - 'scripts/**'
       - 'package*.json'
       - '.github/workflows/hiau-restore-check.yml'
   workflow_dispatch:

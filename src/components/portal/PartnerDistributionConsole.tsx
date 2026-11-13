@@ -105,7 +105,7 @@ export const PartnerDistributionConsole:React.FC<{currentUser:UserProfile}>=({cu
                 </select>
               </label>
               <button type="button" className={primary+' mt-3'} disabled={busy||!userId}
-                onClick={()=>void action('/api/partner-distribution/admin/resources/'+selected+'/grants',{userId},'Access granted to the selected HIAU account.')}>Grant access</button>
+                onClick={()=>void action('/api/partner-distribution/admin/resources/'+selected+'/grants',{recipientId:userId},'Access granted to the selected HIAU account.')}>Grant access</button>
             </div>
             <div className="border-t pt-4">
               <h4 className="font-semibold text-[#35103B]">Revoke distribution</h4>

@@ -37,8 +37,9 @@ test('website media stays private until Super Administrator publishes and can re
     assert.equal((await request('/api/admin/website-videos')).status,403);
     assert.equal((await request(admin,'registrar',{method:'PUT',headers:{'Content-Type':'video/mp4'},body:Buffer.alloc(30)})).status,403);
     const original=await request(media);
-    assert.equal(original.status,302);
-    assert.match(original.headers.get('location')||'',/image_20261105_121706_f720baa0\.mp4$/);
+    assert.equal(original.status,200);
+    assert.match(original.headers.get('content-type')||'',/video\/mp4/);
+    assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     const invalid=await request(admin,'super_admin',{method:'PUT',headers:{'Content-Type':'video/mp4'},body:Buffer.alloc(30)});
     assert.equal(invalid.status,400);
     const payload=Buffer.alloc(32);
@@ -72,7 +73,7 @@ test('website media stays private until Super Administrator publishes and can re
     assert.equal((await request(media)).status,200);
     assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     assert.equal((await request(admin,'super_admin',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'RESTORE_DEFAULT_WEBSITE_VIDEO'})})).status,200);
-    assert.equal((await request(media)).status,302);
+    assert.equal((await request(media)).status,200);
     assert.equal(store.all('SELECT * FROM programs').length,0);
     assert.equal(store.all('SELECT * FROM students').length,0);
     assert.ok(store.all("SELECT action FROM audit WHERE action='WEBSITE_VIDEO_PUBLISH'").length===1);

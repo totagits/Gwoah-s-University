@@ -21,9 +21,16 @@ test('4.4 MB private video is uploaded as bounded ordered chunks and published o
   const server=app.listen(0,'127.0.0.1');
   await new Promise<void>(r=>server.once('listening',r));
   const base='http://127.0.0.1:'+(server.address() as any).port;
-  const send=(p:string,role='visitor',options:RequestInit={})=>fetch(base+p,{
-    redirect:'manual',...options,headers:{'x-test-role':role,...options.headers},
-  });
+  const send=async(p:string,role='visitor',options:RequestInit={})=>{
+    // Node fetch uses keep-alive connections. Fully drain the response before
+    // a status-only assertion so close() cannot wait on unconsumed bodies.
+    const response=await fetch(base+p,{
+      redirect:'manual',signal:AbortSignal.timeout(15000),
+      ...options,headers:{'x-test-role':role,...options.headers},
+    });
+    await response.clone().arrayBuffer();
+    return response;
+  };
   const post=(p:string,role:string,body:object)=>send(p,role,{
     method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),
   });
@@ -76,7 +83,9 @@ test('4.4 MB private video is uploaded as bounded ordered chunks and published o
     const rows=store.all("SELECT action FROM audit WHERE action='WEBSITE_VIDEO_DRAFT_UPLOAD'");
     assert.equal(rows.length,1);
   }finally{
-    await new Promise<void>(r=>server.close(()=>r()));
+    server.closeAllConnections();
+    await new Promise<void>((resolve,reject)=>server.close(error=>error&&
+      (error as NodeJS.ErrnoException).code!=='ERR_SERVER_NOT_RUNNING'?reject(error):resolve()));
     store.close();
     fs.rmSync(directory,{recursive:true,force:true});
   }

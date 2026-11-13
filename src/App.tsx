@@ -45,6 +45,7 @@ import {StudentFinancialStatement} from './components/portal/StudentFinancialSta
 import {StudentAssistanceRequests} from './components/portal/StudentAssistanceRequests';
 import { AdmissionsReviewModule } from './components/portal/AdmissionsReviewModule';
 import {RegistrarStudentLinking} from './components/portal/RegistrarStudentLinking';
+import {StagingStudentRecordSetup} from './components/portal/StagingStudentRecordSetup';
 import { FinanceBursarModule } from './components/portal/FinanceBursarModule';
 import {FinanceRegistrationHandoff} from './components/portal/FinanceRegistrationHandoff';
 import { PolicyComplianceRegister } from './components/portal/PolicyComplianceRegister';

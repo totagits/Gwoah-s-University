@@ -33,6 +33,7 @@ import { FacultyAdminDashboard } from './components/portal/FacultyAdminDashboard
 import { AcademicPlanningRegistration } from './components/portal/AcademicPlanningRegistration';
 import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import {GlobalAcademicCollaborationHub} from './components/portal/GlobalAcademicCollaborationHub';
+import {CollaborationEventsWorkspace} from './components/portal/CollaborationEventsWorkspace';
 import { PartnerAdministration } from './components/portal/PartnerAdministration';
 import {PartnerResourceExchange} from './components/portal/PartnerResourceExchange';
 import {PartnerDistributionConsole} from './components/portal/PartnerDistributionConsole';
@@ -523,6 +524,9 @@ export default function App() {
 
             {activePortalTab === 'curriculum' && (
               <CurriculumStudio currentUser={currentUser} />
+            )}
+            {activePortalTab === 'collaboration_events' && (
+              <CollaborationEventsWorkspace currentUser={currentUser} />
             )}
             {activePortalTab === 'collaboration_hub' && (
               <GlobalAcademicCollaborationHub

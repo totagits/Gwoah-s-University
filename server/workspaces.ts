@@ -323,7 +323,7 @@ export function installWorkspaces(app: Express, store: Operations) {
     const actor=actorOf(res);
     if(!actor||!workspacePermissions(actor.role).registrar)
       return res.status(403).json({error:'Registrar authorization required.'});
-    const studentId=req.body?.studentId,userId=req.body?.userId;
+    const studentId=req.body?.studentId,userId=req.body?.studentAccountId;
     if(typeof studentId!=='string'||typeof userId!=='string'||
        !/^[a-f0-9-]{36}$/.test(studentId)||!/^[a-f0-9-]{36}$/.test(userId))
       return res.status(400).json({error:'Select an existing student record and student account.'});

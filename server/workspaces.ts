@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import type { Express, Response } from 'express';
 import { Operations, WorkflowError } from './operations';
 import { actorOf } from './identity';
@@ -233,6 +234,76 @@ export function installWorkspaces(app: Express, store: Operations) {
         .json({ error: 'Could not load workspace records.' });
     }
   });
+  const stagingRequest=(req:any)=>{
+    const requestHost=String(req.hostname||req.get?.('host')||'').toLowerCase().split(':')[0];
+    let configuredHost='';
+    try{configuredHost=new URL(process.env.APP_URL||'https://invalid.local').hostname.toLowerCase();}catch{}
+    return requestHost==='hiau-staging.totag.network'||configuredHost==='hiau-staging.totag.network';
+  };
+  // Explicit staging-only acceptance fixture. This is intentionally NOT part
+  // of the production admissions workflow. It creates no grades, registration,
+  // invoice, aid, payment or credit records and is hard-blocked outside the
+  // HIAU staging hostname.
+  app.get('/api/workspaces/staging-student-setup',(req,res)=>{
+    const actor=actorOf(res);
+    if(!actor||actor.role!=='super_admin')return res.status(403).json({error:'Super Administrator authorization required.'});
+    if(!stagingRequest(req))return res.status(404).json({error:'Staging acceptance utility is unavailable.'});
+    const linked=new Set(store.all('SELECT user_id FROM students WHERE user_id IS NOT NULL').map((r:any)=>r.user_id));
+    const accounts=store.users().filter(u=>u.role==='student'&&!linked.has(u.id)).map(u=>({
+      id:u.id,name:u.name,email:u.email,
+    }));
+    const programs=store.all('SELECT id,code,title FROM programs ORDER BY code');
+    const terms=store.all("SELECT id,code,title,start_date,end_date,status,max_credits FROM terms WHERE status='open' ORDER BY start_date DESC");
+    return res.json({accounts,programs,terms});
+  });
+  app.post('/api/workspaces/staging-student-setup',(req,res)=>{
+    const actor=actorOf(res);
+    if(!actor||actor.role!=='super_admin')return res.status(403).json({error:'Super Administrator authorization required.'});
+    if(!stagingRequest(req))return res.status(404).json({error:'Staging acceptance utility is unavailable.'});
+    const accountId=typeof req.body?.accountId==='string'?req.body.accountId:'';
+    const programId=typeof req.body?.programId==='string'?req.body.programId:'';
+    const termId=typeof req.body?.termId==='string'?req.body.termId:'';
+    if(!/^[a-f0-9-]{36}$/i.test(accountId)||!/^[a-f0-9-]{36}$/i.test(programId)||!/^[a-f0-9-]{36}$/i.test(termId))
+      return res.status(400).json({error:'Choose an existing student login, program and open term.'});
+    try{
+      const result=store.transaction(()=>{
+        const account=store.one("SELECT id,name,email,role FROM users WHERE id=? AND role='student'",accountId);
+        const program=store.one('SELECT id,code,title FROM programs WHERE id=?',programId);
+        const term=store.one("SELECT id,code,title,status FROM terms WHERE id=? AND status='open'",termId);
+        if(!account||!program||!term)throw new WorkflowError('Selected account, program or open term is no longer available.',409);
+        if(store.one('SELECT id FROM students WHERE user_id=? OR email=? COLLATE NOCASE',account.id,account.email))
+          throw new WorkflowError('This student login or email is already linked to an academic record.',409);
+        const applicationId=crypto.randomUUID(),studentId=crypto.randomUUID();
+        const suffix=crypto.randomBytes(3).toString('hex').toUpperCase();
+        const year=new Date().getUTCFullYear();
+        const studentNumber=`HIAU-STG-${year}-${suffix}`;
+        const applicationNumber=`STG-APP-${suffix}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+        const stamp=new Date().toISOString();
+        const note='STAGING TEST ONLY — admitted academic record created for authenticated end-to-end Student PWA acceptance.';
+        store.run(`INSERT INTO applications
+          (id,number,full_name,email,phone,program_id,status,decision_note,created_at,updated_at)
+          VALUES(?,?,?,?,?,?,'admitted',?,?,?)`,
+          applicationId,applicationNumber,account.name,account.email,'STAGING TEST',program.id,note,stamp,stamp);
+        store.run(`INSERT INTO students
+          (id,user_id,application_id,student_number,full_name,email,program_id,admitted_term_id,status,financial_hold,created_at)
+          VALUES(?,?,?,?,?,?,?,?, 'active',0,?)`,
+          studentId,account.id,applicationId,studentNumber,account.name,account.email,program.id,term.id,stamp);
+        store.audit(actor,'STAGING_TEST_STUDENT_LINK','student',null,{
+          studentId,userId:account.id,studentNumber,email:account.email,programId:program.id,termId:term.id,
+          testData:true,
+        });
+        return {studentId,studentNumber,fullName:account.name,email:account.email,
+          programTitle:program.title,termTitle:term.title,status:'active',testData:true};
+      });
+      return res.status(201).json({success:true,student:result,
+        message:'Staging test student record created and linked. No grades, registrations, invoices or payments were created.'});
+    }catch(error:any){
+      return res.status(error instanceof WorkflowError?error.status:500).json({
+        error:error instanceof WorkflowError?error.message:'Could not create the staging test student record. No partial change was saved.',
+      });
+    }
+  });
+
   // Registrar-controlled linking of an EXISTING admitted academic record to
   // an activated student identity. Do not create a record or invent admission.
   app.get('/api/workspaces/student-links', (_req,res)=>{
@@ -252,7 +323,7 @@ export function installWorkspaces(app: Express, store: Operations) {
     const actor=actorOf(res);
     if(!actor||!workspacePermissions(actor.role).registrar)
       return res.status(403).json({error:'Registrar authorization required.'});
-    const studentId=req.body?.studentId,userId=req.body?.userId;
+    const studentId=req.body?.studentId,userId=req.body?.studentAccountId;
     if(typeof studentId!=='string'||typeof userId!=='string'||
        !/^[a-f0-9-]{36}$/.test(studentId)||!/^[a-f0-9-]{36}$/.test(userId))
       return res.status(400).json({error:'Select an existing student record and student account.'});

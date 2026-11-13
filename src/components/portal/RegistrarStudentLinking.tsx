@@ -23,9 +23,13 @@ export const RegistrarStudentLinking:React.FC<{currentUser:UserProfile}>=({curre
   if(!window.confirm('Link the existing approved record '+selected.student_number+' to the student account '+match.email+'? This is an audited Registrar action.'))return;
   setBusy(true);setError('');setMessage('');
   try{
+   const auth=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});
+   const session=await auth.json().catch(()=>({}));
+   if(!auth.ok||typeof session.csrf!=='string'||!session.csrf)throw new Error('Session verification unavailable. Refresh and sign in again.');
    const response=await fetch('/api/workspaces/student-links',{
-    method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({studentId,userId})
+    method:'POST',credentials:'same-origin',
+    headers:{'Content-Type':'application/json','x-csrf-token':session.csrf},
+    body:JSON.stringify({studentId,studentAccountId:userId})
    });
    const data=await response.json();
    if(!response.ok)throw new Error(data.error||'Could not link student identity.');

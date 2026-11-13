@@ -47,7 +47,8 @@ test('website media stays private until Super Administrator publishes and can re
     payload.write('isom',8,'ascii');
     const uploaded=await request(admin,'super_admin',{method:'PUT',headers:{'Content-Type':'video/mp4'},body:payload});
     assert.equal(uploaded.status,201);
-    assert.equal((await request(media)).status,302,'uploaded draft must not go public');
+    assert.equal((await request(media)).status,200,'bundled footage must remain public while replacement stays a draft');
+    assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     const library=await request('/api/admin/website-videos','super_admin');
     assert.equal(library.status,200);
     const data=await library.json();
@@ -68,7 +69,8 @@ test('website media stays private until Super Administrator publishes and can re
     // the original site video rather than an unusable player.
     const saved=JSON.parse(store.one('SELECT value FROM settings WHERE key=?','public-media:hero-campus').value);
     fs.rmSync(path.join(directory,'public-media',saved.published),{force:true});
-    assert.equal((await request(media)).status,302);
+    assert.equal((await request(media)).status,200);
+    assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     assert.equal((await request(admin,'super_admin',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'RESTORE_DEFAULT_WEBSITE_VIDEO'})})).status,200);
     assert.equal((await request(media)).status,302);
     assert.equal(store.all('SELECT * FROM programs').length,0);

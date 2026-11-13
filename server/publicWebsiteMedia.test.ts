@@ -21,9 +21,16 @@ test('website media stays private until Super Administrator publishes and can re
   const server=app.listen(0,'127.0.0.1');
   await new Promise<void>(resolve=>server.once('listening',resolve));
   const base='http://127.0.0.1:'+(server.address() as any).port;
-  const request=(route:string,role='visitor',options:RequestInit={})=>fetch(base+route,{
-    redirect:'manual',...options,headers:{'x-test-role':role,...options.headers},
-  });
+  const request=async(route:string,role='visitor',options:RequestInit={})=>{
+    const response=await fetch(base+route,{
+      redirect:'manual',signal:AbortSignal.timeout(15000),
+      ...options,headers:{'x-test-role':role,...options.headers},
+    });
+    // Clone-drain status-only HTTP responses so keep-alive/open streamed
+    // bodies cannot cause the test server's close() to wait forever.
+    await response.clone().arrayBuffer();
+    return response;
+  };
   const media='/api/public/video/hero-campus';
   const admin='/api/admin/website-video/hero-campus';
   try{
@@ -68,7 +75,9 @@ test('website media stays private until Super Administrator publishes and can re
     assert.equal(store.all('SELECT * FROM students').length,0);
     assert.ok(store.all("SELECT action FROM audit WHERE action='WEBSITE_VIDEO_PUBLISH'").length===1);
   }finally{
-    await new Promise<void>(resolve=>server.close(()=>resolve()));
+    server.closeAllConnections();
+    await new Promise<void>((resolve,reject)=>server.close(error=>error&&
+      (error as NodeJS.ErrnoException).code!=='ERR_SERVER_NOT_RUNNING'?reject(error):resolve()));
     store.close();
     fs.rmSync(directory,{recursive:true,force:true});
   }

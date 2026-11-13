@@ -2,16 +2,28 @@
  * Never cache authenticated HTML, API responses, student records or media.
  * The only offline document is a neutral static help page.
  */
-const OFFLINE_CACHE='hiau-public-offline-v1';
+const OFFLINE_CACHE='hiau-public-offline-v2';
 const OFFLINE_URL='/offline.html';
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(OFFLINE_CACHE).then(cache=>cache.add(OFFLINE_URL)).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',event=>{
- event.waitUntil(Promise.all([
-  caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==OFFLINE_CACHE).map(key=>caches.delete(key)))),
-  self.clients.claim()
- ]));
+ event.waitUntil((async()=>{
+  await caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==OFFLINE_CACHE).map(key=>caches.delete(key))));
+  await self.clients.claim();
+  // A newly activated worker means the installed Student/Staff PWA may still
+  // be executing an older in-memory JS bundle. Refresh only those dedicated
+  // app routes; never force-refresh the public university website.
+  const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  await Promise.all(windows.map(client=>{
+   try{
+    const url=new URL(client.url);
+    if(url.origin===self.location.origin&&/^\/(?:student|staff)(?:\/|$)/.test(url.pathname))
+      return client.navigate(client.url);
+   }catch{}
+   return undefined;
+  }));
+ })());
 });
 self.addEventListener('fetch',event=>{
  const req=event.request;

@@ -22,6 +22,8 @@ const moduleIcons: Record<PortalModuleId, React.ElementType> = {
   curriculum: BookOpen,
   partners: Building2,
   partner_resources: BookOpen,
+  partner_distribution: ShieldCheck,
+  partner_library: BookOpen,
   admissions: Inbox,
   finance: CreditCard,
   compliance: ShieldCheck,

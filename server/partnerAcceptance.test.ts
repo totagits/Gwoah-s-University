@@ -132,7 +132,7 @@ test('authenticated partner -> review -> rights -> student/faculty access, with 
     },admin)).status,200);
     for(const account of [records[1].id,records[3].id])
       assert.equal((await doCall('POST','/api/partner-distribution/admin/resources/'+resource+'/grants',{
-        userId:account,
+        recipientId:account,
       },admin)).status,200);
     assert.equal((await doCall('GET','/api/partner-distribution/library',undefined,student)).data.resources.length,1);
     assert.equal((await doCall('GET','/api/partner-distribution/library',undefined,lecturer)).data.resources.length,1);

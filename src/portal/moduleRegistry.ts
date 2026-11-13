@@ -11,6 +11,7 @@ export const PORTAL_MODULES = [
   { id: 'faculty_admin', label: 'Faculty & Staff', group: 'primary' },
   { id: 'academics', label: 'Academic Planning', group: 'primary' },
   { id: 'curriculum', label: 'Curriculum Studio', group: 'secondary' },
+  { id: 'partners', label: 'Institutional Partnerships', group: 'secondary' },
   { id: 'website_media', label: 'Website Video Library', group: 'secondary' },
   { id: 'website_staff', label: 'Public Staff Profiles', group: 'secondary' },
   { id: 'campus_content', label: 'Campus Content Manager', group: 'secondary' },

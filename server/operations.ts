@@ -222,6 +222,88 @@ export class Operations {
       CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT,created_at TEXT NOT NULL);
       CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit BEGIN SELECT RAISE(ABORT,'Audit entries cannot be modified'); END;
       CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit BEGIN SELECT RAISE(ABORT,'Audit entries cannot be removed'); END;
+      -- Partner tables are initialized with the primary operations database,
+      -- not only when HTTP modules mount: backups and standalone ERP operations
+      -- must work before or without installing the collaboration endpoints.
+      CREATE TABLE IF NOT EXISTS institutional_partners(
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        country TEXT NOT NULL,
+        contact_email TEXT NOT NULL,
+        institution_type TEXT NOT NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL CHECK(status IN ('draft','verified','active','suspended')),
+        created_by TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        verified_by TEXT,
+        verified_at TEXT,
+        activated_by TEXT,
+        activated_at TEXT
+      );
+      CREATE TABLE IF NOT EXISTS institutional_partner_agreements(
+        id TEXT PRIMARY KEY,
+        partner_id TEXT NOT NULL REFERENCES institutional_partners(id),
+        signed_reference TEXT NOT NULL,
+        activities_json TEXT NOT NULL,
+        starts_on TEXT NOT NULL,
+        expires_on TEXT NOT NULL,
+        accepted_by TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        revoked_at TEXT
+      );
+      CREATE INDEX IF NOT EXISTS partner_agreements_current
+        ON institutional_partner_agreements(partner_id,expires_on);
+      CREATE TABLE IF NOT EXISTS institutional_partner_members(
+        id TEXT PRIMARY KEY,
+        partner_id TEXT NOT NULL REFERENCES institutional_partners(id),
+        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        name TEXT NOT NULL,
+        invited_by TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        revoked_at TEXT
+      );
+      CREATE INDEX IF NOT EXISTS partner_member_institution
+        ON institutional_partner_members(partner_id);
+      CREATE TABLE IF NOT EXISTS institutional_partner_resources(
+        id TEXT PRIMARY KEY,
+        partner_id TEXT NOT NULL REFERENCES institutional_partners(id),
+        member_email TEXT NOT NULL,
+        kind TEXT NOT NULL CHECK(kind IN ('lesson','lecture','symposium','research','library')),
+        title TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        source_url TEXT NOT NULL,
+        license_statement TEXT NOT NULL,
+        status TEXT NOT NULL CHECK(status IN ('submitted','approved','rejected','withdrawn')),
+        submitted_at TEXT NOT NULL,
+        reviewed_by TEXT,
+        reviewed_at TEXT,
+        reviewer_note TEXT NOT NULL DEFAULT '',
+        updated_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS partner_resources_queue
+        ON institutional_partner_resources(status,submitted_at);
+      CREATE INDEX IF NOT EXISTS partner_resources_tenant
+        ON institutional_partner_resources(partner_id,status);
+      CREATE TABLE IF NOT EXISTS institutional_partner_distributions(
+        resource_id TEXT PRIMARY KEY REFERENCES institutional_partner_resources(id),
+        rights_evidence TEXT NOT NULL,
+        rights_expires_on TEXT NOT NULL,
+        approved_by TEXT NOT NULL,
+        approved_at TEXT NOT NULL,
+        withdrawn_at TEXT
+      );
+      CREATE TABLE IF NOT EXISTS institutional_partner_distribution_grants(
+        id TEXT PRIMARY KEY,
+        resource_id TEXT NOT NULL REFERENCES institutional_partner_resources(id),
+        user_id TEXT NOT NULL REFERENCES users(id),
+        granted_by TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        revoked_at TEXT,
+        UNIQUE(resource_id,user_id)
+      );
+      CREATE INDEX IF NOT EXISTS partner_distribution_grants_user
+        ON institutional_partner_distribution_grants(user_id,revoked_at);
       INSERT OR IGNORE INTO migrations VALUES(1,datetime('now'));`);
   }
   all(query: string, ...parameters: any[]): any[] {

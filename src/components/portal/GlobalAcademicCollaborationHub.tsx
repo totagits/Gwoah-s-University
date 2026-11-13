@@ -134,8 +134,8 @@ export const GlobalAcademicCollaborationHub:React.FC<Props>=({currentUser,openMo
     },
     {
       title:'International Lectures & Symposiums',
-      description:'Symposium and lecture resources can already enter the approval pipeline. Event registration, live streaming, attendance, recordings and certificates are not yet live.',
-      status:'foundation',module:role==='partner_representative'?'partner_resources':role==='super_admin'?'partner_resources':undefined,icon:CalendarDays,
+      description:'Approved partners can propose lectures, seminars, workshops and symposiums. HIAU controls academic review, registration, attendance verification and participation certificates. Live streaming remains link-out rather than HIAU-hosted.',
+      status:'available',module:'collaboration_events',icon:CalendarDays,
       roles:['super_admin','partner_representative','student','lecturer','dean'],
     },
     {

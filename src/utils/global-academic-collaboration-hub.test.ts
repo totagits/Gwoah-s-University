@@ -40,5 +40,6 @@ test('Online & Hybrid Classroom remains explicitly non-live while the hub is int
   const classroom=readFileSync(new URL('../components/portal/VirtualClassroomCollab.tsx',import.meta.url),'utf8');
   assert.match(registry,/Online & Hybrid Classroom/);
   assert.match(classroom,/DEMO ONLY/);
-  assert.match(classroom,/no live class/i);
+  assert.match(classroom,/DEMO ONLY/);
+  assert.match(classroom,/not a live stream/i);
 });

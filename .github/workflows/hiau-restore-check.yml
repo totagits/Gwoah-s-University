@@ -5,6 +5,8 @@ on:
     paths:
       - 'src/**'
       - 'server/**'
+      - 'server.ts'
+      - '.github/workflows/hiau-staging-public-smoke.yml'
       - 'scripts/**'
       - 'package*.json'
       - '.github/workflows/hiau-restore-check.yml'

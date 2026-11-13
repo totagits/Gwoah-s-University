@@ -40,8 +40,17 @@ const identity = installIdentity(app, {
     users = operations.users();
   },
 });
+// Coolify exposes SOURCE_COMMIT at runtime for Git-based deployments.
+// Reporting it on the public health endpoint makes the staging smoke test
+// prove that the *running* container matches the merged staging SHA.
+const deployedCommit = (process.env.SOURCE_COMMIT || process.env.HIAU_RELEASE_SHA || '').trim();
 app.get('/api/health', (_req, res) =>
-  res.json({ status: 'ok', version: '0.4.0', schemaVersion: 1 }),
+  res.json({
+    status: 'ok',
+    version: '0.4.0',
+    schemaVersion: 1,
+    commit: /^[0-9a-f]{40,64}$/i.test(deployedCommit) ? deployedCommit.toLowerCase() : null,
+  }),
 );
 installPublicAdmissions(app, operations);
 installWorkspaces(app, operations);

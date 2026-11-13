@@ -24,19 +24,22 @@ jobs:
         run: |
           set -euo pipefail
           echo "Checking DNS and HTTPS for staging (no application changes)"
+          # The endpoint can be healthy while Coolify is still serving an old
+          # image; require the running runtime SOURCE_COMMIT to equal this push.
           for attempt in $(seq 1 12); do
             if curl --silent --show-error --fail --max-time 12 \
               "${HIAU_STAGING_ORIGIN}/api/health" -o /tmp/hiau-health.json; then
-              break
+              if node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('/tmp/hiau-health.json','utf8')); const expected=process.env.GITHUB_SHA.toLowerCase(); if(x.status==='ok' && x.commit===expected) {console.log('Verified deployed staging commit:',x.commit,'version:',x.version);process.exit(0)} console.error('Staging deployment not current; running:',x.commit||'(commit missing)','expected:',expected);process.exit(1)"; then
+                break
+              fi
             fi
-            echo "Staging not reachable yet: check ${attempt}/12"
+            echo "Staging revision not ready: check ${attempt}/12"
             if [ "${attempt}" -eq 12 ]; then
-              echo "::error::Staging health endpoint could not be reached over HTTPS."
+              echo "::error::Unable to verify matching deployed SOURCE_COMMIT after 12 checks. Inspect Coolify staging deployment SHA and runtime SOURCE_COMMIT variable."
               exit 1
             fi
             sleep 15
           done
-          node -e "const f=require('fs'); const x=JSON.parse(f.readFileSync('/tmp/hiau-health.json','utf8')); if(x.status!=='ok') process.exit(1); console.log('Health:', x.status, 'version:', x.version)"
           curl --silent --show-error --fail --max-time 15 \
             "${HIAU_STAGING_ORIGIN}/api/public/hero-videos" -o /tmp/hiau-videos.json
           node -e "const f=require('fs'); const x=JSON.parse(f.readFileSync('/tmp/hiau-videos.json','utf8')); if(!Array.isArray(x.videos)||x.videos.length<2||x.videos[0].id!=='hero-campus'||x.videos[1].id!=='hero-classroom') {console.error('Missing original homepage videos'); process.exit(1);} if(x.videos.some(v=>typeof v.src!=='string'||!v.src.startsWith('/api/public/video/')))process.exit(1); console.log('Published homepage videos:',x.videos.length)"

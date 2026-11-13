@@ -14,6 +14,7 @@ test('Global Academic Collaboration Hub is visible in the correct ERP/PWA roles'
     assert.ok(!ids(role).includes('collaboration_hub'),role+' must not inherit collaboration access');
 
   assert.ok(ids('student').includes('partner_library'),'Student PWA must expose approved Partner Academic Library');
+  assert.ok(ids('student').includes('collaboration_events'),'Student PWA must expose approved joint academic events');
   assert.ok(ids('lecturer').includes('partner_library'),'Faculty must expose approved Partner Academic Library');
   assert.equal(defaultPortalModule('partner_representative'),'collaboration_hub',
     'Partner representatives should land in the governed collaboration overview');
@@ -30,6 +31,8 @@ test('Hub renderer distinguishes real capabilities from demo/future milestones',
   assert.match(hub,/Demonstration only/);
   assert.match(hub,/Planned next phase/);
   assert.match(hub,/Partner Academic Library/);
+  assert.match(hub,/International Lectures & Symposiums/);
+  assert.match(hub,/status:'available',module:'collaboration_events'/);
   assert.match(hub,/Academic Credit Recognition/);
   assert.match(hub,/no automatic academic credit/i);
   assert.match(hub,/adaptive live streaming and authorized offline learning packages remain future milestones/i);

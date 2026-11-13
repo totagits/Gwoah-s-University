@@ -155,7 +155,9 @@ export function installPartnerDistribution(app:Express,store:Operations){
       if(!publication||record.status!=='approved'||record.partner_status!=='active'||
          !inScope(store,record.partner_id,record.kind))
         throw new WorkflowError('Resource distribution is not currently permitted.',409);
-      const userId=required(req.body.userId,'Authorized HIAU user',100);
+      // Identity middleware intentionally overwrites req.body.userId with the actor ID.
+      // Use a distinct recipientId for this administrative assignment.
+      const userId=required(req.body.recipientId,'Authorized HIAU user',100);
       const person=eligible(store,userId);
       if(!person)throw new WorkflowError('Only active enrolled students or authorized faculty may be granted access.',403);
       const previous=store.one(`SELECT * FROM institutional_partner_distribution_grants

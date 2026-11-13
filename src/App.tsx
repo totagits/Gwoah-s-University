@@ -32,6 +32,7 @@ import { IntegratedAnalyticsHub } from './components/portal/IntegratedAnalyticsH
 import { FacultyAdminDashboard } from './components/portal/FacultyAdminDashboard';
 import { AcademicPlanningRegistration } from './components/portal/AcademicPlanningRegistration';
 import { CurriculumStudio } from './components/portal/CurriculumStudio';
+import {GlobalAcademicCollaborationHub} from './components/portal/GlobalAcademicCollaborationHub';
 import { PartnerAdministration } from './components/portal/PartnerAdministration';
 import {PartnerResourceExchange} from './components/portal/PartnerResourceExchange';
 import {PartnerDistributionConsole} from './components/portal/PartnerDistributionConsole';
@@ -522,6 +523,12 @@ export default function App() {
 
             {activePortalTab === 'curriculum' && (
               <CurriculumStudio currentUser={currentUser} />
+            )}
+            {activePortalTab === 'collaboration_hub' && (
+              <GlobalAcademicCollaborationHub
+                currentUser={currentUser}
+                openModule={(id) => { if (isPortalModuleAvailable(currentUser.role,id)) setActivePortalTab(id); }}
+              />
             )}
             {activePortalTab === 'partner_distribution' && (
               <PartnerDistributionConsole currentUser={currentUser} />

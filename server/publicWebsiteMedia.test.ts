@@ -21,17 +21,25 @@ test('website media stays private until Super Administrator publishes and can re
   const server=app.listen(0,'127.0.0.1');
   await new Promise<void>(resolve=>server.once('listening',resolve));
   const base='http://127.0.0.1:'+(server.address() as any).port;
-  const request=(route:string,role='visitor',options:RequestInit={})=>fetch(base+route,{
-    redirect:'manual',...options,headers:{'x-test-role':role,...options.headers},
-  });
+  const request=async(route:string,role='visitor',options:RequestInit={})=>{
+    const response=await fetch(base+route,{
+      redirect:'manual',signal:AbortSignal.timeout(15000),
+      ...options,headers:{'x-test-role':role,...options.headers},
+    });
+    // Clone-drain status-only HTTP responses so keep-alive/open streamed
+    // bodies cannot cause the test server's close() to wait forever.
+    await response.clone().arrayBuffer();
+    return response;
+  };
   const media='/api/public/video/hero-campus';
   const admin='/api/admin/website-video/hero-campus';
   try{
     assert.equal((await request('/api/admin/website-videos')).status,403);
     assert.equal((await request(admin,'registrar',{method:'PUT',headers:{'Content-Type':'video/mp4'},body:Buffer.alloc(30)})).status,403);
     const original=await request(media);
-    assert.equal(original.status,302);
-    assert.match(original.headers.get('location')||'',/image_20261105_121706_f720baa0\.mp4$/);
+    assert.equal(original.status,200);
+    assert.match(original.headers.get('content-type')||'',/video\/mp4/);
+    assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     const invalid=await request(admin,'super_admin',{method:'PUT',headers:{'Content-Type':'video/mp4'},body:Buffer.alloc(30)});
     assert.equal(invalid.status,400);
     const payload=Buffer.alloc(32);
@@ -40,7 +48,8 @@ test('website media stays private until Super Administrator publishes and can re
     payload.write('isom',8,'ascii');
     const uploaded=await request(admin,'super_admin',{method:'PUT',headers:{'Content-Type':'video/mp4'},body:payload});
     assert.equal(uploaded.status,201);
-    assert.equal((await request(media)).status,302,'uploaded draft must not go public');
+    assert.equal((await request(media)).status,200,'bundled footage must remain public while replacement stays a draft');
+    assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     const library=await request('/api/admin/website-videos','super_admin');
     assert.equal(library.status,200);
     const data=await library.json();
@@ -61,14 +70,17 @@ test('website media stays private until Super Administrator publishes and can re
     // the original site video rather than an unusable player.
     const saved=JSON.parse(store.one('SELECT value FROM settings WHERE key=?','public-media:hero-campus').value);
     fs.rmSync(path.join(directory,'public-media',saved.published),{force:true});
-    assert.equal((await request(media)).status,302);
+    assert.equal((await request(media)).status,200);
+    assert.equal((await (await request('/api/public/video-status/hero-campus')).json()).source,'bundled');
     assert.equal((await request(admin,'super_admin',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'RESTORE_DEFAULT_WEBSITE_VIDEO'})})).status,200);
-    assert.equal((await request(media)).status,302);
+    assert.equal((await request(media)).status,200);
     assert.equal(store.all('SELECT * FROM programs').length,0);
     assert.equal(store.all('SELECT * FROM students').length,0);
     assert.ok(store.all("SELECT action FROM audit WHERE action='WEBSITE_VIDEO_PUBLISH'").length===1);
   }finally{
-    await new Promise<void>(resolve=>server.close(()=>resolve()));
+    server.closeAllConnections();
+    await new Promise<void>((resolve,reject)=>server.close(error=>error&&
+      (error as NodeJS.ErrnoException).code!=='ERR_SERVER_NOT_RUNNING'?reject(error):resolve()));
     store.close();
     fs.rmSync(directory,{recursive:true,force:true});
   }

@@ -19,6 +19,7 @@ test('institutional partner registry is admin-only, audited, and agreement-gated
   });
   installInstitutionalPartners(app,store);
   const server=app.listen(0,'127.0.0.1');
+  await new Promise<void>(resolve=>server.once('listening',resolve));
   try {
     const addr=server.address();
     if(!addr||typeof addr==='string') throw new Error('Missing test port');
@@ -67,7 +68,9 @@ test('institutional partner registry is admin-only, audited, and agreement-gated
     role='student';
     assert.equal((await call('GET',`/api/institutional-partners/${id}`)).status,403);
   } finally {
-    await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
+    server.closeAllConnections();
+    await new Promise<void>((resolve,reject)=>server.close(error=>error&&
+      (error as NodeJS.ErrnoException).code!=='ERR_SERVER_NOT_RUNNING'?reject(error):resolve()));
     store.sql.close();
     fs.rmSync(directory,{recursive:true,force:true});
   }

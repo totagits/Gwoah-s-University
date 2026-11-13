@@ -5,12 +5,14 @@ on:
     paths:
       - 'src/**'
       - 'server/**'
+      - 'scripts/**'
       - 'package*.json'
       - '.github/workflows/hiau-restore-check.yml'
   workflow_dispatch:
 jobs:
   validation:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     permissions:
       contents: read
     steps:
@@ -22,4 +24,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-      - run: npm test
+      - name: Identify failing or hanging test files (bounded sequential run)
+        run: npm test

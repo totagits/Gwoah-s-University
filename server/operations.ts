@@ -94,6 +94,8 @@ const operationalTables = [
   'institutional_partner_resources',
   'institutional_partner_distributions',
   'institutional_partner_distribution_grants',
+  'institutional_partner_events',
+  'institutional_partner_event_registrations',
 ] as const;
 
 export class Operations {
@@ -304,6 +306,47 @@ export class Operations {
       );
       CREATE INDEX IF NOT EXISTS partner_distribution_grants_user
         ON institutional_partner_distribution_grants(user_id,revoked_at);
+      CREATE TABLE IF NOT EXISTS institutional_partner_events(
+        id TEXT PRIMARY KEY,
+        partner_id TEXT REFERENCES institutional_partners(id),
+        proposed_by_email TEXT NOT NULL,
+        title TEXT NOT NULL,
+        event_type TEXT NOT NULL CHECK(event_type IN ('guest_lecture','seminar','symposium','conference','workshop','professional_development')),
+        summary TEXT NOT NULL,
+        delivery_mode TEXT NOT NULL CHECK(delivery_mode IN ('online','hybrid','in_person')),
+        venue TEXT NOT NULL DEFAULT '',
+        meeting_url TEXT NOT NULL DEFAULT '',
+        starts_at TEXT NOT NULL,
+        ends_at TEXT NOT NULL,
+        timezone TEXT NOT NULL,
+        status TEXT NOT NULL CHECK(status IN ('proposed','approved','rejected','cancelled','completed')),
+        registration_open INTEGER NOT NULL DEFAULT 0,
+        max_participants INTEGER NOT NULL DEFAULT 0,
+        certificate_eligible INTEGER NOT NULL DEFAULT 0,
+        reviewed_by TEXT,
+        reviewed_at TEXT,
+        review_note TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS partner_events_status_time
+        ON institutional_partner_events(status,starts_at);
+      CREATE INDEX IF NOT EXISTS partner_events_partner
+        ON institutional_partner_events(partner_id,status);
+      CREATE TABLE IF NOT EXISTS institutional_partner_event_registrations(
+        id TEXT PRIMARY KEY,
+        event_id TEXT NOT NULL REFERENCES institutional_partner_events(id),
+        user_id TEXT NOT NULL REFERENCES users(id),
+        registered_at TEXT NOT NULL,
+        status TEXT NOT NULL CHECK(status IN ('registered','cancelled','attended')),
+        attended_at TEXT,
+        attendance_verified_by TEXT,
+        certificate_code TEXT,
+        certificate_issued_at TEXT,
+        UNIQUE(event_id,user_id)
+      );
+      CREATE INDEX IF NOT EXISTS partner_event_regs_user
+        ON institutional_partner_event_registrations(user_id,status);
       INSERT OR IGNORE INTO migrations VALUES(1,datetime('now'));`);
   }
   all(query: string, ...parameters: any[]): any[] {
@@ -1266,7 +1309,8 @@ export class Operations {
       !operationalTables.filter(name => !['curriculum_programs','curriculum_courses','curriculum_publications','student_assistance_requests','student_course_plans','student_course_plan_commits',
         'institutional_partners','institutional_partner_agreements','institutional_partner_members',
         'institutional_partner_resources','institutional_partner_distributions',
-        'institutional_partner_distribution_grants'].includes(name)).every((name) => Array.isArray(data.tables[name]))
+        'institutional_partner_distribution_grants','institutional_partner_events',
+        'institutional_partner_event_registrations'].includes(name)).every((name) => Array.isArray(data.tables[name]))
     )
       throw new WorkflowError(
         'Snapshot is not a relational operations snapshot.',

@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {portalModulesForRole,defaultPortalModule} from '../portal/moduleRegistry';
 
 test('external partner accounts cannot inherit internal Staff ERP or Student PWA navigation',()=>{
-  assert.deepEqual(portalModulesForRole('partner_representative').map(m=>m.id),['collaboration_hub','partner_resources']);
+  assert.deepEqual(portalModulesForRole('partner_representative').map(m=>m.id),['collaboration_hub','collaboration_events','partner_resources']);
   assert.equal(defaultPortalModule('partner_representative'),'collaboration_hub');
   assert.ok(portalModulesForRole('super_admin').some(m=>m.id==='partner_resources'));
   for(const role of ['student','lecturer','registrar','bursar','alumni'] as const)

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  BarChart3, BookOpen, Building2, ChevronLeft, ChevronRight, CreditCard, Globe2, GraduationCap,
+  BarChart3, BookOpen, Building2, CalendarDays, ChevronLeft, ChevronRight, CreditCard, Globe2, GraduationCap,
   Inbox, ListTodo, Menu, Settings, ShieldCheck, User, Users, X,
 } from 'lucide-react';
 import type { UserProfile } from '../../types';
@@ -21,6 +21,7 @@ const moduleIcons: Record<PortalModuleId, React.ElementType> = {
   academics: BookOpen,
   curriculum: BookOpen,
   collaboration_hub: Globe2,
+  collaboration_events: CalendarDays,
   partners: Building2,
   partner_resources: BookOpen,
   partner_distribution: ShieldCheck,

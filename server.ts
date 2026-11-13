@@ -19,6 +19,7 @@ import { installDirectMessages } from './server/directMessages';
 import { installInstitutionalPartners } from './server/institutionalPartners';
 import {installPartnerCollaboration,partnerInviteAllowed} from './server/partnerCollaboration';
 import {installPartnerDistribution} from './server/partnerDistribution';
+import {installPartnerEvents} from './server/partnerEvents';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -67,6 +68,7 @@ installDirectMessages(app, operations);
 installInstitutionalPartners(app, operations);
 installPartnerCollaboration(app, operations);
 installPartnerDistribution(app, operations);
+installPartnerEvents(app, operations);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

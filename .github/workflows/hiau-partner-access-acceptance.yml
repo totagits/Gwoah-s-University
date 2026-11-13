@@ -38,4 +38,5 @@ jobs:
           server/institutionalPartners.test.ts
           server/partnerCollaboration.test.ts
           server/partnerDistribution.test.ts
+          server/partnerEvents.test.ts
           server/partnerAcceptance.test.ts

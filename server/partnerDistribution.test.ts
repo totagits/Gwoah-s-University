@@ -99,9 +99,9 @@ test('approved partner materials remain dark until explicitly licensed and grant
     assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/authorize',{
       rightsEvidence:'Verified restricted distribution license',rightsExpiresOn:'2099-01-01',
     })).status,200);
-    assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/grants',{userId:inactive})).status,403);
-    assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/grants',{userId:student})).status,200);
-    assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/grants',{userId:faculty})).status,200);
+    assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/grants',{recipientId:inactive})).status,403);
+    assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/grants',{recipientId:student})).status,200);
+    assert.equal((await call('POST',prefix+'/admin/resources/'+id+'/grants',{recipientId:faculty})).status,200);
     role='student';userId=student;email='student@hiau.example';
     const library=await call('GET',prefix+'/library');
     assert.equal(library.status,200);

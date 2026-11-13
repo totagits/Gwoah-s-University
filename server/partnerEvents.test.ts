@@ -31,7 +31,7 @@ test('partner lecture proposal requires agreement, HIAU approval, registration a
     VALUES(?,?,?,?,?,?,?,?,?,?)`,studentRow,studentId,application,'EVENT-STU','Test Student','student@hiau.example',program,term,'active',stamp);
 
   const app=express();
-  let actor={id:adminId,email:'admin@hiau.example',name:'Test Admin',role:'super_admin',title:''};
+  let actor:{id:string;email:string;name:string;role:'super_admin'|'student'|'lecturer'|'partner_representative';title:string}={id:adminId,email:'admin@hiau.example',name:'Test Admin',role:'super_admin',title:''};
   app.use(express.json());
   app.use((_req,res,next)=>{res.locals.actor=actor;next();});
   installInstitutionalPartners(app,store);

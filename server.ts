@@ -17,6 +17,7 @@ import {installPublicNewsEvents} from './server/publicNewsEvents';
 import { installLiveAnalytics } from './server/liveAnalytics';
 import { installDirectMessages } from './server/directMessages';
 import { installInstitutionalPartners } from './server/institutionalPartners';
+import {installPartnerCollaboration,partnerInviteAllowed} from './server/partnerCollaboration';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const directory = process.env.DATA_DIR || path.join(root, 'data');
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
 const identity = installIdentity(app, {
   directory,
   users: () => users,
+  partnerInviteAllowed: email=>partnerInviteAllowed(operations,email),
   save: () => {
     operations.saveUsers(users);
     users = operations.users();
@@ -53,6 +55,7 @@ installPublicNewsEvents(app, operations, directory);
 installLiveAnalytics(app, operations);
 installDirectMessages(app, operations);
 installInstitutionalPartners(app, operations);
+installPartnerCollaboration(app, operations);
 const emptyCampus = () => ({
   documents: [],
   bookings: [],

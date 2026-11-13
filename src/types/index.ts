@@ -6,6 +6,7 @@ export type UserRole =
   | 'super_admin'
   | 'website_editor'
   | 'website_reviewer'
+  | 'partner_representative'
   | 'registrar'
   | 'dean'
   | 'lecturer'

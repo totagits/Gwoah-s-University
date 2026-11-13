@@ -33,6 +33,7 @@ import { FacultyAdminDashboard } from './components/portal/FacultyAdminDashboard
 import { AcademicPlanningRegistration } from './components/portal/AcademicPlanningRegistration';
 import { CurriculumStudio } from './components/portal/CurriculumStudio';
 import { PartnerAdministration } from './components/portal/PartnerAdministration';
+import {PartnerResourceExchange} from './components/portal/PartnerResourceExchange';
 import {WebsiteVideoLibrary} from './components/portal/WebsiteVideoLibrary';
 import { SecureStudentWorkspace } from './components/portal/SecureStudentWorkspace';
 import {StudentCoursePlanning} from './components/portal/StudentCoursePlanning';
@@ -90,7 +91,7 @@ export default function App() {
   const appKind=window.location.pathname.startsWith('/student/')?'student'
     :window.location.pathname.startsWith('/staff/')?'staff':null;
   const canUseInstalledApp=(role:string)=>appKind===null||
-    (appKind==='student'?role==='student':role!=='student'&&role!=='alumni');
+    (appKind==='student'?role==='student':role!=='student'&&role!=='alumni'&&role!=='partner_representative');
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -519,6 +520,9 @@ export default function App() {
 
             {activePortalTab === 'curriculum' && (
               <CurriculumStudio currentUser={currentUser} />
+            )}
+            {activePortalTab === 'partner_resources' && (
+              <PartnerResourceExchange currentUser={currentUser} />
             )}
             {activePortalTab === 'partners' && (
               <PartnerAdministration currentUser={currentUser} />

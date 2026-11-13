@@ -12,6 +12,7 @@ export const PORTAL_MODULES = [
   { id: 'academics', label: 'Academic Planning', group: 'primary' },
   { id: 'curriculum', label: 'Curriculum Studio', group: 'secondary' },
   { id: 'partners', label: 'Institutional Partnerships', group: 'secondary' },
+  { id: 'partner_resources', label: 'Academic Resource Exchange', group: 'secondary' },
   { id: 'website_media', label: 'Website Video Library', group: 'secondary' },
   { id: 'website_staff', label: 'Public Staff Profiles', group: 'secondary' },
   { id: 'campus_content', label: 'Campus Content Manager', group: 'secondary' },
@@ -37,6 +38,7 @@ const visibleByRole: Record<UserRole, readonly PortalModuleId[]> = {
   bursar: ['tasks', 'finance'],
   admissions_officer: ['tasks', 'admissions'],
   student: ['student_portal', 'academics', 'classroom'],
+  partner_representative: ['partner_resources'],
   alumni: [],
 };
 

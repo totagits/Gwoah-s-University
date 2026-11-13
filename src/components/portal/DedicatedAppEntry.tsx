@@ -10,7 +10,7 @@ export const DedicatedAppEntry:React.FC<{kind:Kind;currentUser:UserProfile|null;
 })=>{
  const [installPrompt,setInstallPrompt]=useState<InstallPrompt|null>(null);
  const [help,setHelp]=useState(false),[installed,setInstalled]=useState(false);
- const isStudent=kind==='student',correctRole=currentUser&&(isStudent?currentUser.role==='student':currentUser.role!=='student'&&currentUser.role!=='alumni');
+ const isStudent=kind==='student',correctRole=currentUser&&(isStudent?currentUser.role==='student':currentUser.role!=='student'&&currentUser.role!=='alumni'&&currentUser.role!=='partner_representative');
  useEffect(()=>{
   const standalone=window.matchMedia('(display-mode: standalone)').matches||
    (navigator as Navigator&{standalone?:boolean}).standalone===true;

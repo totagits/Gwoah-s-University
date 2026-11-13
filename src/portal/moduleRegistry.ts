@@ -25,7 +25,7 @@ export const PORTAL_MODULES = [
   { id: 'finance', label: 'Finance', group: 'primary' },
   { id: 'compliance', label: 'Compliance & Audit', group: 'primary' },
   { id: 'student_portal', label: 'Student Workspace', group: 'secondary' },
-  { id: 'classroom', label: 'Virtual Classroom', group: 'secondary' },
+  { id: 'classroom', label: 'Online & Hybrid Classroom', group: 'secondary' },
 ] as const;
 
 export type PortalModuleId = (typeof PORTAL_MODULES)[number]['id'];

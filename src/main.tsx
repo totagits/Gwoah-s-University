@@ -4,10 +4,8 @@ import App from './App';
 import { LocalizationProvider } from './i18n/Localization';
 import './index.css';
 import './styles/campus.css';
+import {registerPwaUpdates} from './pwa/updateGuard';
 
 createRoot(document.getElementById('root')!).render(<LocalizationProvider><App /></LocalizationProvider>);
 
-if('serviceWorker' in navigator&&window.isSecureContext){
- window.addEventListener('load',()=>{void navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'})
-  .catch(error=>console.warn('HIAU PWA registration unavailable',error));});
-}
+window.addEventListener('load',()=>{void registerPwaUpdates();});

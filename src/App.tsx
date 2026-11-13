@@ -578,6 +578,7 @@ export default function App() {
             {activePortalTab === 'admissions' && (
               <>
                 <AdmissionsReviewModule currentUser={currentUser} />
+                <StagingStudentRecordSetup currentUser={currentUser} />
                 <RegistrarStudentLinking currentUser={currentUser} />
                 <StudentAssistanceRequests currentUser={currentUser} />
                 <StudentCoursePlanning currentUser={currentUser} />

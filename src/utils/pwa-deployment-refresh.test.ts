@@ -13,7 +13,7 @@ test('installed Student/Staff PWAs detect deployment revision changes and reload
   assert.match(guard,/serviceWorker\.addEventListener\('controllerchange'/);
   assert.match(guard,/window\.addEventListener\('focus'/);
   assert.match(guard,/document\.addEventListener\('visibilitychange'/);
-  assert.match(guard,/^\^\\\/(?:\\\?:student\|staff)/);
+  assert.ok(guard.includes('/^\\/(?:student|staff)(?:\\/|$)/'), 'dedicated PWA path guard must cover only student/staff routes');
 });
 
 test('updated service worker refreshes only dedicated app windows and never caches authenticated pages',()=>{
